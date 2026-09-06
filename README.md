@@ -15,10 +15,15 @@
 | Web 集成方案 | ✅ 完成（JavaScriptBridge + DOM 叠加，V2 实现） |
 | 工具安装 | ✅ Godot 4.7.2 + Blender 4.2.8 |
 | 项目骨架 | ✅ 创建完成（含后端 AI 网关） |
-| 技术验证（PoC） | ⏳ 待进行 |
-| 资产制作 | ⏳ 待进行 |
+| **巴黎街景（Rue des Rosiers）** | ✅ **S1-S5 完成**（OSM 数据 → Godot 生成街景 + Blender 咖啡馆） |
+| 对话系统 | ✅ 键盘输入 + AI 网关 + NPC 触发（headless 验证通过） |
+| 技术验证（PoC） | ✅ 结构自检 0 失败 + 路径可达性验证通过 |
+| 资产制作 | 🟡 部分完成（咖啡馆 .glb ✅；更多家具/道具待做） |
+| 视觉验收 | ⏳ 待真实 GPU 目检（沙箱软渲染有色差） |
 
 > **V1 平台：** Godot Desktop（Linux/Windows/macOS）。Web 导出在 V2 实现。
+
+**最近更新：** 2026-09-06 巴黎街景 S1-S5 完成并提交（`441cb3a` `2f2df12` `5d53bf5`），详见 [巴黎场景搭建-实施计划](docs/巴黎场景搭建-实施计划.md)
 
 ## 快速开始
 
@@ -48,9 +53,13 @@ LinguaVerse/
 │   │   └── autoload/       # 全局单例
 │   └── assets/             # 3D 资产
 ├── backend/                # Node.js AI 网关（LLM 统一接口）
-├── blender-assets/         # Blender 源文件（待创建）
+├── data/                   # OSM 原始数据（Overpass 拉取存档）
 ├── docs/                   # 设计文档
-└── tools/                  # 开发工具（Godot + Blender）
+└── tools/                  # 开发工具 + 生成脚本
+    ├── Godot_v4.7.2...     # Godot 引擎
+    ├── blender-4.2.8...    # Blender
+    ├── osm_to_layout.py    # OSM → 街景布局（S1）
+    └── build_cafe.py       # Blender 咖啡馆建模（S3）
 ```
 
 ## 技术栈
@@ -82,7 +91,9 @@ LinguaVerse/
 - [系统规则设计](docs/系统规则设计讨论稿.md)
 - [设计决策锁定](docs/设计决策锁定记录.md)
 - [技术选型（V1 垂直切片）](docs/技术选型-巴黎咖啡馆垂直切片.md)
+- [项目进度](docs/项目进度.md)
 - [V1 开发计划](docs/V1开发计划.md)
+- [巴黎场景搭建-实施计划](docs/巴黎场景搭建-实施计划.md)
 - [Godot Web 集成方案（V2 参考）](docs/Godot-Web集成技术方案.md)
 - [巴黎数字孪生技术方案](docs/巴黎数字孪生技术方案.md)
 - [性能优化与模型灵活性](docs/性能优化与模型灵活性.md)
