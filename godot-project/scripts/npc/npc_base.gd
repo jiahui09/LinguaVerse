@@ -20,6 +20,7 @@ signal dialog_ended(npc_name: String)
 
 func _ready():
 	# 设置 NPC 名称标签
+	add_to_group("npc")
 	$NameLabel.text = npc_name
 
 func _physics_process(_delta: float):

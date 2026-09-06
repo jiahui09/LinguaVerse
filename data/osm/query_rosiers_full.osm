@@ -1,0 +1,8 @@
+[out:json][timeout:35];
+way["highway"]["name"="Rue des Rosiers"](48.8500,2.3550,48.8600,2.3650)->.street;
+(
+  way["building"](around.street:50);
+  node["amenity"="cafe"](around.street:50);
+);
+out geom tags;
+.street out geom tags;

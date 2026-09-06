@@ -1,0 +1,3060 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.11 87bfad18",
+  "osm3s": {
+    "timestamp_osm_base": "2026-09-06T14:27:46Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+
+{
+  "type": "node",
+  "id": 251043135,
+  "lat": 48.8562335,
+  "lon": 2.3610458,
+  "tags": {
+    "addr:housenumber": "3",
+    "addr:street": "Rue des Rosiers",
+    "amenity": "cafe",
+    "contact:city": "Paris",
+    "contact:housenumber": "3",
+    "contact:postcode": "75004",
+    "contact:street": "Rue des Rosiers",
+    "contact:website": "http://leloirdanslatheiere.com/",
+    "cuisine": "teahouse",
+    "name": "Le Loir dans la Théière",
+    "name:fr": "Le Loir dans la Théière",
+    "opening_hours": "Mo-Su 09:00-19:30",
+    "phone": "+33 1 42 72 90 61",
+    "website": "http://leloirdanslatheiere.com/"
+  }
+},
+{
+  "type": "node",
+  "id": 3738028664,
+  "lat": 48.8570502,
+  "lon": 2.3598207,
+  "tags": {
+    "addr:city": "Paris",
+    "addr:country": "FR",
+    "addr:street": "Rue des Rosiers",
+    "amenity": "cafe",
+    "name": "Cafe des Psaumes",
+    "name:fr": "Cafe des Psaumes",
+    "survey:date": "2025-04-14",
+    "wheelchair": "limited"
+  }
+},
+{
+  "type": "node",
+  "id": 13072563501,
+  "lat": 48.8569470,
+  "lon": 2.3596972,
+  "tags": {
+    "addr:housenumber": "19",
+    "addr:postcode": "75004",
+    "addr:street": "Rue Ferdinand Duval",
+    "amenity": "cafe",
+    "contact:instagram": "hanoicornerparis",
+    "cuisine": "coffee_shop",
+    "name": "Hanoi Corner",
+    "opening_hours": "Mo-Su 10:00-19:00",
+    "website": "https://boutique.hanoicorner.fr"
+  }
+},
+{
+  "type": "way",
+  "id": 55981021,
+  "bounds": {
+    "minlat": 48.8580678,
+    "minlon": 2.3571525,
+    "maxlat": 48.8583646,
+    "maxlon": 2.3575105
+  },
+  "geometry": [
+    { "lat": 48.8583076, "lon": 2.3575105 },
+    { "lat": 48.8582843, "lon": 2.3574868 },
+    { "lat": 48.8582541, "lon": 2.3574561 },
+    { "lat": 48.8581934, "lon": 2.3573943 },
+    { "lat": 48.8581589, "lon": 2.3573593 },
+    { "lat": 48.8581699, "lon": 2.3573309 },
+    { "lat": 48.8580787, "lon": 2.3572379 },
+    { "lat": 48.8580678, "lon": 2.3572268 },
+    { "lat": 48.8581058, "lon": 2.3571525 },
+    { "lat": 48.8581328, "lon": 2.3571762 },
+    { "lat": 48.8581191, "lon": 2.3572052 },
+    { "lat": 48.8581250, "lon": 2.3572121 },
+    { "lat": 48.8581320, "lon": 2.3571963 },
+    { "lat": 48.8581413, "lon": 2.3572060 },
+    { "lat": 48.8581477, "lon": 2.3571909 },
+    { "lat": 48.8581723, "lon": 2.3572151 },
+    { "lat": 48.8582221, "lon": 2.3572624 },
+    { "lat": 48.8582927, "lon": 2.3573311 },
+    { "lat": 48.8582943, "lon": 2.3573326 },
+    { "lat": 48.8582598, "lon": 2.3574118 },
+    { "lat": 48.8582770, "lon": 2.3574291 },
+    { "lat": 48.8583113, "lon": 2.3573471 },
+    { "lat": 48.8583646, "lon": 2.3573966 },
+    { "lat": 48.8583076, "lon": 2.3575105 }
+  ],
+  "tags": {
+    "building": "yes",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 55984114,
+  "bounds": {
+    "minlat": 48.8576192,
+    "minlon": 2.3575032,
+    "maxlat": 48.8577185,
+    "maxlon": 2.3576325
+  },
+  "geometry": [
+    { "lat": 48.8576192, "lon": 2.3575699 },
+    { "lat": 48.8576193, "lon": 2.3575608 },
+    { "lat": 48.8576447, "lon": 2.3575131 },
+    { "lat": 48.8576499, "lon": 2.3575032 },
+    { "lat": 48.8577185, "lon": 2.3575673 },
+    { "lat": 48.8576874, "lon": 2.3576325 },
+    { "lat": 48.8576513, "lon": 2.3575994 },
+    { "lat": 48.8576192, "lon": 2.3575699 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "building:levels": "5",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 55984119,
+  "bounds": {
+    "minlat": 48.8576499,
+    "minlon": 2.3574252,
+    "maxlat": 48.8577599,
+    "maxlon": 2.3575673
+  },
+  "geometry": [
+    { "lat": 48.8576499, "lon": 2.3575032 },
+    { "lat": 48.8576867, "lon": 2.3574359 },
+    { "lat": 48.8576925, "lon": 2.3574252 },
+    { "lat": 48.8577599, "lon": 2.3574971 },
+    { "lat": 48.8577363, "lon": 2.3575431 },
+    { "lat": 48.8577320, "lon": 2.3575385 },
+    { "lat": 48.8577185, "lon": 2.3575673 },
+    { "lat": 48.8576499, "lon": 2.3575032 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "building:levels": "5",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 55984120,
+  "bounds": {
+    "minlat": 48.8577589,
+    "minlon": 2.3576057,
+    "maxlat": 48.8578364,
+    "maxlon": 2.3577257
+  },
+  "geometry": [
+    { "lat": 48.8578002, "lon": 2.3577257 },
+    { "lat": 48.8577589, "lon": 2.3576914 },
+    { "lat": 48.8578023, "lon": 2.3576057 },
+    { "lat": 48.8578226, "lon": 2.3576237 },
+    { "lat": 48.8578364, "lon": 2.3576373 },
+    { "lat": 48.8578002, "lon": 2.3577257 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "building:levels": "6",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 55984122,
+  "bounds": {
+    "minlat": 48.8582136,
+    "minlon": 2.3580013,
+    "maxlat": 48.8583785,
+    "maxlon": 2.3582422
+  },
+  "geometry": [
+    { "lat": 48.8583785, "lon": 2.3581008 },
+    { "lat": 48.8583565, "lon": 2.3581435 },
+    { "lat": 48.8583427, "lon": 2.3581703 },
+    { "lat": 48.8583056, "lon": 2.3582422 },
+    { "lat": 48.8582136, "lon": 2.3581358 },
+    { "lat": 48.8582660, "lon": 2.3580476 },
+    { "lat": 48.8582791, "lon": 2.3580652 },
+    { "lat": 48.8582805, "lon": 2.3580635 },
+    { "lat": 48.8582894, "lon": 2.3580748 },
+    { "lat": 48.8582972, "lon": 2.3580607 },
+    { "lat": 48.8582952, "lon": 2.3580452 },
+    { "lat": 48.8582791, "lon": 2.3580260 },
+    { "lat": 48.8582937, "lon": 2.3580013 },
+    { "lat": 48.8583153, "lon": 2.3580265 },
+    { "lat": 48.8583785, "lon": 2.3581008 }
+  ],
+  "tags": {
+    "building": "yes",
+    "building:levels": "5",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 55984123,
+  "bounds": {
+    "minlat": 48.8577342,
+    "minlon": 2.3573742,
+    "maxlat": 48.8579072,
+    "maxlon": 2.3576914
+  },
+  "geometry": [
+    { "lat": 48.8577589, "lon": 2.3576914 },
+    { "lat": 48.8577467, "lon": 2.3576808 },
+    { "lat": 48.8577342, "lon": 2.3576699 },
+    { "lat": 48.8577800, "lon": 2.3575833 },
+    { "lat": 48.8577730, "lon": 2.3575774 },
+    { "lat": 48.8577818, "lon": 2.3575583 },
+    { "lat": 48.8577650, "lon": 2.3575442 },
+    { "lat": 48.8577773, "lon": 2.3575163 },
+    { "lat": 48.8578182, "lon": 2.3574187 },
+    { "lat": 48.8578368, "lon": 2.3573742 },
+    { "lat": 48.8578804, "lon": 2.3574141 },
+    { "lat": 48.8579072, "lon": 2.3574402 },
+    { "lat": 48.8578780, "lon": 2.3575046 },
+    { "lat": 48.8578226, "lon": 2.3576237 },
+    { "lat": 48.8578023, "lon": 2.3576057 },
+    { "lat": 48.8577589, "lon": 2.3576914 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 55984128,
+  "bounds": {
+    "minlat": 48.8583087,
+    "minlon": 2.3579361,
+    "maxlat": 48.8584139,
+    "maxlon": 2.3581008
+  },
+  "geometry": [
+    { "lat": 48.8584139, "lon": 2.3580309 },
+    { "lat": 48.8583878, "lon": 2.3580824 },
+    { "lat": 48.8583829, "lon": 2.3580922 },
+    { "lat": 48.8583785, "lon": 2.3581008 },
+    { "lat": 48.8583153, "lon": 2.3580265 },
+    { "lat": 48.8583297, "lon": 2.3580021 },
+    { "lat": 48.8583087, "lon": 2.3579772 },
+    { "lat": 48.8583327, "lon": 2.3579383 },
+    { "lat": 48.8583338, "lon": 2.3579361 },
+    { "lat": 48.8584139, "lon": 2.3580309 }
+  ],
+  "tags": {
+    "building": "yes",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 55984129,
+  "bounds": {
+    "minlat": 48.8576868,
+    "minlon": 2.3575385,
+    "maxlat": 48.8577818,
+    "maxlon": 2.3576699
+  },
+  "geometry": [
+    { "lat": 48.8577342, "lon": 2.3576699 },
+    { "lat": 48.8576912, "lon": 2.3576374 },
+    { "lat": 48.8576868, "lon": 2.3576341 },
+    { "lat": 48.8576874, "lon": 2.3576325 },
+    { "lat": 48.8577185, "lon": 2.3575673 },
+    { "lat": 48.8577320, "lon": 2.3575385 },
+    { "lat": 48.8577363, "lon": 2.3575431 },
+    { "lat": 48.8577575, "lon": 2.3575630 },
+    { "lat": 48.8577650, "lon": 2.3575442 },
+    { "lat": 48.8577818, "lon": 2.3575583 },
+    { "lat": 48.8577730, "lon": 2.3575774 },
+    { "lat": 48.8577800, "lon": 2.3575833 },
+    { "lat": 48.8577342, "lon": 2.3576699 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "building:levels": "5",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 55984130,
+  "bounds": {
+    "minlat": 48.8580175,
+    "minlon": 2.3575029,
+    "maxlat": 48.8584474,
+    "maxlon": 2.3581358
+  },
+  "geometry": [
+    { "lat": 48.8582200, "lon": 2.3575029 },
+    { "lat": 48.8582933, "lon": 2.3575801 },
+    { "lat": 48.8583284, "lon": 2.3576171 },
+    { "lat": 48.8584284, "lon": 2.3577225 },
+    { "lat": 48.8584474, "lon": 2.3577425 },
+    { "lat": 48.8584050, "lon": 2.3578148 },
+    { "lat": 48.8583840, "lon": 2.3577929 },
+    { "lat": 48.8583858, "lon": 2.3577887 },
+    { "lat": 48.8582643, "lon": 2.3576654 },
+    { "lat": 48.8582025, "lon": 2.3577961 },
+    { "lat": 48.8583327, "lon": 2.3579383 },
+    { "lat": 48.8583087, "lon": 2.3579772 },
+    { "lat": 48.8582937, "lon": 2.3580013 },
+    { "lat": 48.8582791, "lon": 2.3580260 },
+    { "lat": 48.8582660, "lon": 2.3580476 },
+    { "lat": 48.8582136, "lon": 2.3581358 },
+    { "lat": 48.8581838, "lon": 2.3581022 },
+    { "lat": 48.8582411, "lon": 2.3579910 },
+    { "lat": 48.8581718, "lon": 2.3579153 },
+    { "lat": 48.8581155, "lon": 2.3580218 },
+    { "lat": 48.8580175, "lon": 2.3579245 },
+    { "lat": 48.8580680, "lon": 2.3578270 },
+    { "lat": 48.8580996, "lon": 2.3578609 },
+    { "lat": 48.8581313, "lon": 2.3577954 },
+    { "lat": 48.8581022, "lon": 2.3577616 },
+    { "lat": 48.8581245, "lon": 2.3577231 },
+    { "lat": 48.8581483, "lon": 2.3576769 },
+    { "lat": 48.8581443, "lon": 2.3576712 },
+    { "lat": 48.8581801, "lon": 2.3575940 },
+    { "lat": 48.8582200, "lon": 2.3575029 }
+  ],
+  "tags": {
+    "alt_name": "Hôtel des Ambassadeurs de Hollande",
+    "architect": "Pierre Cottart",
+    "architect:wikidata": "Q17353170",
+    "architect:wikipedia": "fr:Pierre Cottard",
+    "building": "apartments",
+    "heritage": "2",
+    "heritage:operator": "mhs",
+    "mhs:inscription_date": "1924-05-21",
+    "name": "Hôtel Amelot de Bisseuil",
+    "ref:mhs": "PA00086270",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010",
+    "source:architect": "survey",
+    "source:heritage": "data.gouv.fr:Ministère de la Culture - 03/2018",
+    "start_date": "1660",
+    "wikidata": "Q1553420",
+    "wikipedia": "fr:Hôtel Amelot de Bisseuil"
+  }
+},
+{
+  "type": "way",
+  "id": 55984134,
+  "bounds": {
+    "minlat": 48.8576925,
+    "minlon": 2.3573386,
+    "maxlat": 48.8578182,
+    "maxlon": 2.3575163
+  },
+  "geometry": [
+    { "lat": 48.8576925, "lon": 2.3574252 },
+    { "lat": 48.8577324, "lon": 2.3573513 },
+    { "lat": 48.8577393, "lon": 2.3573386 },
+    { "lat": 48.8578182, "lon": 2.3574187 },
+    { "lat": 48.8577773, "lon": 2.3575163 },
+    { "lat": 48.8577599, "lon": 2.3574971 },
+    { "lat": 48.8576925, "lon": 2.3574252 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "building:levels": "5",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 55984138,
+  "bounds": {
+    "minlat": 48.8578649,
+    "minlon": 2.3573313,
+    "maxlat": 48.8582200,
+    "maxlon": 2.3579245
+  },
+  "geometry": [
+    { "lat": 48.8580503, "lon": 2.3573313 },
+    { "lat": 48.8580679, "lon": 2.3573490 },
+    { "lat": 48.8580871, "lon": 2.3573685 },
+    { "lat": 48.8581222, "lon": 2.3574040 },
+    { "lat": 48.8582200, "lon": 2.3575029 },
+    { "lat": 48.8581801, "lon": 2.3575940 },
+    { "lat": 48.8580799, "lon": 2.3574874 },
+    { "lat": 48.8580654, "lon": 2.3574720 },
+    { "lat": 48.8579908, "lon": 2.3576191 },
+    { "lat": 48.8580072, "lon": 2.3576359 },
+    { "lat": 48.8580554, "lon": 2.3576923 },
+    { "lat": 48.8580704, "lon": 2.3576652 },
+    { "lat": 48.8581245, "lon": 2.3577231 },
+    { "lat": 48.8581022, "lon": 2.3577616 },
+    { "lat": 48.8580680, "lon": 2.3578270 },
+    { "lat": 48.8580175, "lon": 2.3579245 },
+    { "lat": 48.8579137, "lon": 2.3578266 },
+    { "lat": 48.8578649, "lon": 2.3577792 },
+    { "lat": 48.8579153, "lon": 2.3576715 },
+    { "lat": 48.8579743, "lon": 2.3575671 },
+    { "lat": 48.8579472, "lon": 2.3575408 },
+    { "lat": 48.8579728, "lon": 2.3574975 },
+    { "lat": 48.8579925, "lon": 2.3574521 },
+    { "lat": 48.8580503, "lon": 2.3573313 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "source": "BDOrtho"
+  }
+},
+{
+  "type": "way",
+  "id": 55984144,
+  "bounds": {
+    "minlat": 48.8583338,
+    "minlon": 2.3578238,
+    "maxlat": 48.8584854,
+    "maxlon": 2.3580309
+  },
+  "geometry": [
+    { "lat": 48.8584854, "lon": 2.3578933 },
+    { "lat": 48.8584544, "lon": 2.3579530 },
+    { "lat": 48.8584459, "lon": 2.3579693 },
+    { "lat": 48.8584139, "lon": 2.3580309 },
+    { "lat": 48.8583338, "lon": 2.3579361 },
+    { "lat": 48.8583426, "lon": 2.3579221 },
+    { "lat": 48.8583584, "lon": 2.3579406 },
+    { "lat": 48.8583732, "lon": 2.3579121 },
+    { "lat": 48.8583593, "lon": 2.3578936 },
+    { "lat": 48.8583882, "lon": 2.3578440 },
+    { "lat": 48.8584030, "lon": 2.3578647 },
+    { "lat": 48.8584105, "lon": 2.3578484 },
+    { "lat": 48.8584129, "lon": 2.3578497 },
+    { "lat": 48.8584265, "lon": 2.3578238 },
+    { "lat": 48.8584854, "lon": 2.3578933 }
+  ],
+  "tags": {
+    "building": "yes",
+    "building:levels": "6",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 55988153,
+  "bounds": {
+    "minlat": 48.8574418,
+    "minlon": 2.3571142,
+    "maxlat": 48.8576768,
+    "maxlon": 2.3574048
+  },
+  "geometry": [
+    { "lat": 48.8576633, "lon": 2.3572830 },
+    { "lat": 48.8576768, "lon": 2.3572972 },
+    { "lat": 48.8576496, "lon": 2.3573508 },
+    { "lat": 48.8576221, "lon": 2.3574048 },
+    { "lat": 48.8575581, "lon": 2.3573377 },
+    { "lat": 48.8575833, "lon": 2.3572881 },
+    { "lat": 48.8575926, "lon": 2.3572689 },
+    { "lat": 48.8575165, "lon": 2.3571977 },
+    { "lat": 48.8575084, "lon": 2.3572197 },
+    { "lat": 48.8574899, "lon": 2.3572689 },
+    { "lat": 48.8574874, "lon": 2.3572689 },
+    { "lat": 48.8574843, "lon": 2.3572770 },
+    { "lat": 48.8574418, "lon": 2.3572383 },
+    { "lat": 48.8574694, "lon": 2.3571735 },
+    { "lat": 48.8574879, "lon": 2.3571142 },
+    { "lat": 48.8575768, "lon": 2.3571984 },
+    { "lat": 48.8576010, "lon": 2.3572229 },
+    { "lat": 48.8576138, "lon": 2.3572351 },
+    { "lat": 48.8576633, "lon": 2.3572830 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "building:levels": "4",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 55996987,
+  "bounds": {
+    "minlat": 48.8572792,
+    "minlon": 2.3581985,
+    "maxlat": 48.8574817,
+    "maxlon": 2.3586849
+  },
+  "geometry": [
+    { "lat": 48.8573947, "lon": 2.3583018 },
+    { "lat": 48.8574089, "lon": 2.3582651 },
+    { "lat": 48.8574246, "lon": 2.3582246 },
+    { "lat": 48.8574347, "lon": 2.3581985 },
+    { "lat": 48.8574817, "lon": 2.3582430 },
+    { "lat": 48.8574610, "lon": 2.3583095 },
+    { "lat": 48.8574435, "lon": 2.3583601 },
+    { "lat": 48.8574677, "lon": 2.3583806 },
+    { "lat": 48.8574660, "lon": 2.3583857 },
+    { "lat": 48.8574041, "lon": 2.3585554 },
+    { "lat": 48.8573555, "lon": 2.3586849 },
+    { "lat": 48.8572792, "lon": 2.3586154 },
+    { "lat": 48.8573947, "lon": 2.3583018 }
+  ],
+  "tags": {
+    "building": "yes",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 55996991,
+  "bounds": {
+    "minlat": 48.8573322,
+    "minlon": 2.3581698,
+    "maxlat": 48.8574246,
+    "maxlon": 2.3582651
+  },
+  "geometry": [
+    { "lat": 48.8574089, "lon": 2.3582651 },
+    { "lat": 48.8573322, "lon": 2.3582062 },
+    { "lat": 48.8573431, "lon": 2.3581728 },
+    { "lat": 48.8573506, "lon": 2.3581698 },
+    { "lat": 48.8574246, "lon": 2.3582246 },
+    { "lat": 48.8574089, "lon": 2.3582651 }
+  ],
+  "tags": {
+    "building": "yes",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 55997006,
+  "bounds": {
+    "minlat": 48.8571869,
+    "minlon": 2.3587312,
+    "maxlat": 48.8573250,
+    "maxlon": 2.3589329
+  },
+  "geometry": [
+    { "lat": 48.8572669, "lon": 2.3589329 },
+    { "lat": 48.8572229, "lon": 2.3588937 },
+    { "lat": 48.8572033, "lon": 2.3588762 },
+    { "lat": 48.8571869, "lon": 2.3588616 },
+    { "lat": 48.8572124, "lon": 2.3588032 },
+    { "lat": 48.8572287, "lon": 2.3587603 },
+    { "lat": 48.8572538, "lon": 2.3587787 },
+    { "lat": 48.8572717, "lon": 2.3587312 },
+    { "lat": 48.8573250, "lon": 2.3587809 },
+    { "lat": 48.8572669, "lon": 2.3589329 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "heritage": "3",
+    "heritage:operator": "mhs",
+    "mhs:inscription_date": "1965-10-19",
+    "name": "Hôtel Brulart",
+    "ref:mhs": "PA00086279",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010",
+    "source:heritage": "Ministère de la Culture - 07/2018",
+    "wikidata": "Q22921416"
+  }
+},
+{
+  "type": "way",
+  "id": 55997008,
+  "bounds": {
+    "minlat": 48.8575716,
+    "minlon": 2.3580514,
+    "maxlat": 48.8577427,
+    "maxlon": 2.3582722
+  },
+  "geometry": [
+    { "lat": 48.8577427, "lon": 2.3581552 },
+    { "lat": 48.8576962, "lon": 2.3582644 },
+    { "lat": 48.8576929, "lon": 2.3582722 },
+    { "lat": 48.8575716, "lon": 2.3581623 },
+    { "lat": 48.8576103, "lon": 2.3580514 },
+    { "lat": 48.8577427, "lon": 2.3581552 }
+  ],
+  "tags": {
+    "building": "yes",
+    "building:levels": "6",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 55997010,
+  "bounds": {
+    "minlat": 48.8569716,
+    "minlon": 2.3584257,
+    "maxlat": 48.8571419,
+    "maxlon": 2.3587014
+  },
+  "geometry": [
+    { "lat": 48.8570501, "lon": 2.3586823 },
+    { "lat": 48.8570171, "lon": 2.3586492 },
+    { "lat": 48.8569879, "lon": 2.3587014 },
+    { "lat": 48.8569716, "lon": 2.3586875 },
+    { "lat": 48.8570343, "lon": 2.3585727 },
+    { "lat": 48.8570117, "lon": 2.3585487 },
+    { "lat": 48.8569963, "lon": 2.3585323 },
+    { "lat": 48.8569721, "lon": 2.3585093 },
+    { "lat": 48.8570079, "lon": 2.3584542 },
+    { "lat": 48.8570234, "lon": 2.3584257 },
+    { "lat": 48.8570490, "lon": 2.3584458 },
+    { "lat": 48.8570837, "lon": 2.3584748 },
+    { "lat": 48.8571419, "lon": 2.3585220 },
+    { "lat": 48.8571304, "lon": 2.3585551 },
+    { "lat": 48.8571264, "lon": 2.3585547 },
+    { "lat": 48.8570975, "lon": 2.3586106 },
+    { "lat": 48.8570501, "lon": 2.3586823 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 55997015,
+  "bounds": {
+    "minlat": 48.8570199,
+    "minlon": 2.3585220,
+    "maxlat": 48.8572740,
+    "maxlon": 2.3588616
+  },
+  "geometry": [
+    { "lat": 48.8571869, "lon": 2.3588616 },
+    { "lat": 48.8571769, "lon": 2.3588535 },
+    { "lat": 48.8571496, "lon": 2.3588292 },
+    { "lat": 48.8570282, "lon": 2.3587326 },
+    { "lat": 48.8570199, "lon": 2.3587260 },
+    { "lat": 48.8570501, "lon": 2.3586823 },
+    { "lat": 48.8570975, "lon": 2.3586106 },
+    { "lat": 48.8571264, "lon": 2.3585547 },
+    { "lat": 48.8571304, "lon": 2.3585551 },
+    { "lat": 48.8571419, "lon": 2.3585220 },
+    { "lat": 48.8572740, "lon": 2.3586297 },
+    { "lat": 48.8572416, "lon": 2.3587230 },
+    { "lat": 48.8571545, "lon": 2.3586515 },
+    { "lat": 48.8571247, "lon": 2.3587204 },
+    { "lat": 48.8571748, "lon": 2.3587740 },
+    { "lat": 48.8571781, "lon": 2.3587740 },
+    { "lat": 48.8572124, "lon": 2.3588032 },
+    { "lat": 48.8571869, "lon": 2.3588616 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "heritage": "3",
+    "heritage:operator": "mhs",
+    "mhs:inscription_date": "1964-04-28",
+    "ref:mhs": "PA00086342",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010",
+    "source:heritage": "Ministère de la Culture - 07/2018",
+    "wikidata": "Q22921472"
+  }
+},
+{
+  "type": "way",
+  "id": 55997022,
+  "bounds": {
+    "minlat": 48.8574355,
+    "minlon": 2.3576496,
+    "maxlat": 48.8575994,
+    "maxlon": 2.3579755
+  },
+  "geometry": [
+    { "lat": 48.8575360, "lon": 2.3576496 },
+    { "lat": 48.8575906, "lon": 2.3576954 },
+    { "lat": 48.8575994, "lon": 2.3577027 },
+    { "lat": 48.8575511, "lon": 2.3578471 },
+    { "lat": 48.8575123, "lon": 2.3579672 },
+    { "lat": 48.8574944, "lon": 2.3579546 },
+    { "lat": 48.8574873, "lon": 2.3579755 },
+    { "lat": 48.8574355, "lon": 2.3579379 },
+    { "lat": 48.8574519, "lon": 2.3578871 },
+    { "lat": 48.8575360, "lon": 2.3576496 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 55997040,
+  "bounds": {
+    "minlat": 48.8568944,
+    "minlon": 2.3585093,
+    "maxlat": 48.8570343,
+    "maxlon": 2.3586875
+  },
+  "geometry": [
+    { "lat": 48.8569716, "lon": 2.3586875 },
+    { "lat": 48.8569685, "lon": 2.3586850 },
+    { "lat": 48.8569701, "lon": 2.3586825 },
+    { "lat": 48.8569419, "lon": 2.3586593 },
+    { "lat": 48.8568944, "lon": 2.3586201 },
+    { "lat": 48.8569721, "lon": 2.3585093 },
+    { "lat": 48.8569963, "lon": 2.3585323 },
+    { "lat": 48.8569776, "lon": 2.3585697 },
+    { "lat": 48.8569916, "lon": 2.3585855 },
+    { "lat": 48.8570117, "lon": 2.3585487 },
+    { "lat": 48.8570343, "lon": 2.3585727 },
+    { "lat": 48.8569716, "lon": 2.3586875 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "building:levels": "6",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 55997065,
+  "bounds": {
+    "minlat": 48.8573555,
+    "minlon": 2.3585554,
+    "maxlat": 48.8575374,
+    "maxlon": 2.3587965
+  },
+  "geometry": [
+    { "lat": 48.8575374, "lon": 2.3586777 },
+    { "lat": 48.8575326, "lon": 2.3586892 },
+    { "lat": 48.8574875, "lon": 2.3587965 },
+    { "lat": 48.8573585, "lon": 2.3586875 },
+    { "lat": 48.8573555, "lon": 2.3586849 },
+    { "lat": 48.8574041, "lon": 2.3585554 },
+    { "lat": 48.8574707, "lon": 2.3586166 },
+    { "lat": 48.8574623, "lon": 2.3586364 },
+    { "lat": 48.8574715, "lon": 2.3586458 },
+    { "lat": 48.8574799, "lon": 2.3586250 },
+    { "lat": 48.8575374, "lon": 2.3586777 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010",
+    "wikidata": "Q22921556"
+  }
+},
+{
+  "type": "way",
+  "id": 55997068,
+  "bounds": {
+    "minlat": 48.8570837,
+    "minlon": 2.3581451,
+    "maxlat": 48.8573947,
+    "maxlon": 2.3586297
+  },
+  "geometry": [
+    { "lat": 48.8571926, "lon": 2.3581451 },
+    { "lat": 48.8572935, "lon": 2.3582246 },
+    { "lat": 48.8572917, "lon": 2.3582310 },
+    { "lat": 48.8573536, "lon": 2.3582779 },
+    { "lat": 48.8573556, "lon": 2.3582728 },
+    { "lat": 48.8573947, "lon": 2.3583018 },
+    { "lat": 48.8572792, "lon": 2.3586154 },
+    { "lat": 48.8572740, "lon": 2.3586297 },
+    { "lat": 48.8571419, "lon": 2.3585220 },
+    { "lat": 48.8570837, "lon": 2.3584748 },
+    { "lat": 48.8571421, "lon": 2.3582957 },
+    { "lat": 48.8571926, "lon": 2.3581451 }
+  ],
+  "tags": {
+    "building": "yes",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 55997073,
+  "bounds": {
+    "minlat": 48.8572669,
+    "minlon": 2.3586875,
+    "maxlat": 48.8574875,
+    "maxlon": 2.3590109
+  },
+  "geometry": [
+    { "lat": 48.8574875, "lon": 2.3587965 },
+    { "lat": 48.8574642, "lon": 2.3588371 },
+    { "lat": 48.8574610, "lon": 2.3588350 },
+    { "lat": 48.8574581, "lon": 2.3588349 },
+    { "lat": 48.8574467, "lon": 2.3588572 },
+    { "lat": 48.8574355, "lon": 2.3588792 },
+    { "lat": 48.8574355, "lon": 2.3588841 },
+    { "lat": 48.8573539, "lon": 2.3590109 },
+    { "lat": 48.8572955, "lon": 2.3589585 },
+    { "lat": 48.8572669, "lon": 2.3589329 },
+    { "lat": 48.8573250, "lon": 2.3587809 },
+    { "lat": 48.8573585, "lon": 2.3586875 },
+    { "lat": 48.8574875, "lon": 2.3587965 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 55997982,
+  "bounds": {
+    "minlat": 48.8578985,
+    "minlon": 2.3582471,
+    "maxlat": 48.8583579,
+    "maxlon": 2.3589442
+  },
+  "geometry": [
+    { "lat": 48.8578985, "lon": 2.3586653 },
+    { "lat": 48.8579069, "lon": 2.3586524 },
+    { "lat": 48.8579943, "lon": 2.3585188 },
+    { "lat": 48.8580492, "lon": 2.3584349 },
+    { "lat": 48.8580840, "lon": 2.3583818 },
+    { "lat": 48.8581684, "lon": 2.3582529 },
+    { "lat": 48.8581722, "lon": 2.3582471 },
+    { "lat": 48.8582174, "lon": 2.3583139 },
+    { "lat": 48.8582200, "lon": 2.3583115 },
+    { "lat": 48.8582715, "lon": 2.3583890 },
+    { "lat": 48.8583139, "lon": 2.3584529 },
+    { "lat": 48.8583125, "lon": 2.3584556 },
+    { "lat": 48.8583579, "lon": 2.3585257 },
+    { "lat": 48.8583555, "lon": 2.3585294 },
+    { "lat": 48.8583479, "lon": 2.3585411 },
+    { "lat": 48.8582664, "lon": 2.3586657 },
+    { "lat": 48.8582627, "lon": 2.3586714 },
+    { "lat": 48.8581761, "lon": 2.3588038 },
+    { "lat": 48.8581612, "lon": 2.3588266 },
+    { "lat": 48.8580896, "lon": 2.3589362 },
+    { "lat": 48.8580844, "lon": 2.3589442 },
+    { "lat": 48.8580389, "lon": 2.3588755 },
+    { "lat": 48.8580368, "lon": 2.3588780 },
+    { "lat": 48.8579941, "lon": 2.3588146 },
+    { "lat": 48.8579414, "lon": 2.3587372 },
+    { "lat": 48.8579437, "lon": 2.3587337 },
+    { "lat": 48.8578985, "lon": 2.3586653 }
+  ],
+  "tags": {
+    "addr:city": "Paris",
+    "addr:housenumber": "48",
+    "addr:postcode": "75004",
+    "addr:street": "Rue Vieille du Temple",
+    "alt_name": "Pierre-Charles Krieg",
+    "amenity": "exhibition_centre",
+    "building": "yes",
+    "building:levels": "2",
+    "contact:phone": "+33 1 42 74 26 75",
+    "internet_access": "wlan",
+    "internet_access:fee": "no",
+    "internet_access:operator": "Mairie de Paris",
+    "name": "Espace des Blancs-Manteaux",
+    "old_name": "La Halle des Blancs-Manteaux",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010",
+    "source:internet_access": "Paris Open Data",
+    "website": "https://www.paris.fr/lieux/espace-des-blancs-manteaux-19550",
+    "wikidata": "Q135684658"
+  }
+},
+{
+  "type": "way",
+  "id": 55997983,
+  "bounds": {
+    "minlat": 48.8578560,
+    "minlon": 2.3580964,
+    "maxlat": 48.8581295,
+    "maxlon": 2.3585364
+  },
+  "geometry": [
+    { "lat": 48.8580772, "lon": 2.3580964 },
+    { "lat": 48.8581081, "lon": 2.3581223 },
+    { "lat": 48.8581253, "lon": 2.3581367 },
+    { "lat": 48.8581275, "lon": 2.3581578 },
+    { "lat": 48.8581295, "lon": 2.3581774 },
+    { "lat": 48.8580455, "lon": 2.3583045 },
+    { "lat": 48.8579474, "lon": 2.3584542 },
+    { "lat": 48.8578936, "lon": 2.3585364 },
+    { "lat": 48.8578560, "lon": 2.3584975 },
+    { "lat": 48.8580772, "lon": 2.3580964 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 55997997,
+  "bounds": {
+    "minlat": 48.8577125,
+    "minlon": 2.3583605,
+    "maxlat": 48.8577515,
+    "maxlon": 2.3584249
+  },
+  "geometry": [
+    { "lat": 48.8577515, "lon": 2.3583943 },
+    { "lat": 48.8577357, "lon": 2.3584249 },
+    { "lat": 48.8577172, "lon": 2.3583949 },
+    { "lat": 48.8577125, "lon": 2.3583837 },
+    { "lat": 48.8577144, "lon": 2.3583706 },
+    { "lat": 48.8577180, "lon": 2.3583605 },
+    { "lat": 48.8577515, "lon": 2.3583943 }
+  ],
+  "tags": {
+    "building": "yes",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 55998000,
+  "bounds": {
+    "minlat": 48.8577357,
+    "minlon": 2.3583943,
+    "maxlat": 48.8578936,
+    "maxlon": 2.3585983
+  },
+  "geometry": [
+    { "lat": 48.8578936, "lon": 2.3585364 },
+    { "lat": 48.8578729, "lon": 2.3585677 },
+    { "lat": 48.8578528, "lon": 2.3585983 },
+    { "lat": 48.8578239, "lon": 2.3585555 },
+    { "lat": 48.8577357, "lon": 2.3584249 },
+    { "lat": 48.8577515, "lon": 2.3583943 },
+    { "lat": 48.8577725, "lon": 2.3584125 },
+    { "lat": 48.8578560, "lon": 2.3584975 },
+    { "lat": 48.8578936, "lon": 2.3585364 }
+  ],
+  "tags": {
+    "building": "yes",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56003287,
+  "bounds": {
+    "minlat": 48.8565871,
+    "minlon": 2.3608339,
+    "maxlat": 48.8567862,
+    "maxlon": 2.3611295
+  },
+  "geometry": [
+    { "lat": 48.8566754, "lon": 2.3611295 },
+    { "lat": 48.8566300, "lon": 2.3610415 },
+    { "lat": 48.8565871, "lon": 2.3609582 },
+    { "lat": 48.8566558, "lon": 2.3608820 },
+    { "lat": 48.8566658, "lon": 2.3608723 },
+    { "lat": 48.8566981, "lon": 2.3608339 },
+    { "lat": 48.8567862, "lon": 2.3609361 },
+    { "lat": 48.8567670, "lon": 2.3609705 },
+    { "lat": 48.8567500, "lon": 2.3609986 },
+    { "lat": 48.8567384, "lon": 2.3609850 },
+    { "lat": 48.8567226, "lon": 2.3610102 },
+    { "lat": 48.8567353, "lon": 2.3610265 },
+    { "lat": 48.8567202, "lon": 2.3610531 },
+    { "lat": 48.8566754, "lon": 2.3611295 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "building:levels": "7",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56003288,
+  "bounds": {
+    "minlat": 48.8570399,
+    "minlon": 2.3597163,
+    "maxlat": 48.8571492,
+    "maxlon": 2.3598435
+  },
+  "geometry": [
+    { "lat": 48.8570499, "lon": 2.3597608 },
+    { "lat": 48.8570399, "lon": 2.3597498 },
+    { "lat": 48.8570478, "lon": 2.3597328 },
+    { "lat": 48.8570555, "lon": 2.3597163 },
+    { "lat": 48.8571492, "lon": 2.3598060 },
+    { "lat": 48.8571291, "lon": 2.3598435 },
+    { "lat": 48.8571068, "lon": 2.3598145 },
+    { "lat": 48.8570499, "lon": 2.3597608 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "building:levels": "4",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56003291,
+  "bounds": {
+    "minlat": 48.8576352,
+    "minlon": 2.3588767,
+    "maxlat": 48.8579436,
+    "maxlon": 2.3593487
+  },
+  "geometry": [
+    { "lat": 48.8576352, "lon": 2.3592160 },
+    { "lat": 48.8577457, "lon": 2.3590436 },
+    { "lat": 48.8576947, "lon": 2.3589683 },
+    { "lat": 48.8577143, "lon": 2.3589344 },
+    { "lat": 48.8577461, "lon": 2.3588767 },
+    { "lat": 48.8577481, "lon": 2.3588784 },
+    { "lat": 48.8577602, "lon": 2.3588969 },
+    { "lat": 48.8577626, "lon": 2.3588949 },
+    { "lat": 48.8577750, "lon": 2.3589133 },
+    { "lat": 48.8577882, "lon": 2.3589328 },
+    { "lat": 48.8577867, "lon": 2.3589352 },
+    { "lat": 48.8578016, "lon": 2.3589577 },
+    { "lat": 48.8578321, "lon": 2.3589118 },
+    { "lat": 48.8578549, "lon": 2.3589462 },
+    { "lat": 48.8578784, "lon": 2.3589824 },
+    { "lat": 48.8578982, "lon": 2.3590112 },
+    { "lat": 48.8579217, "lon": 2.3590467 },
+    { "lat": 48.8579200, "lon": 2.3590493 },
+    { "lat": 48.8578923, "lon": 2.3590961 },
+    { "lat": 48.8579051, "lon": 2.3591163 },
+    { "lat": 48.8579084, "lon": 2.3591119 },
+    { "lat": 48.8579194, "lon": 2.3591296 },
+    { "lat": 48.8579300, "lon": 2.3591469 },
+    { "lat": 48.8579271, "lon": 2.3591519 },
+    { "lat": 48.8579436, "lon": 2.3591785 },
+    { "lat": 48.8579336, "lon": 2.3591880 },
+    { "lat": 48.8578839, "lon": 2.3592540 },
+    { "lat": 48.8578360, "lon": 2.3591813 },
+    { "lat": 48.8577250, "lon": 2.3593487 },
+    { "lat": 48.8576352, "lon": 2.3592160 }
+  ],
+  "tags": {
+    "building": "yes",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56003292,
+  "bounds": {
+    "minlat": 48.8565230,
+    "minlon": 2.3606894,
+    "maxlat": 48.8566981,
+    "maxlon": 2.3609582
+  },
+  "geometry": [
+    { "lat": 48.8565871, "lon": 2.3609582 },
+    { "lat": 48.8565526, "lon": 2.3608908 },
+    { "lat": 48.8565236, "lon": 2.3608342 },
+    { "lat": 48.8565230, "lon": 2.3607934 },
+    { "lat": 48.8565347, "lon": 2.3607704 },
+    { "lat": 48.8565523, "lon": 2.3607358 },
+    { "lat": 48.8565760, "lon": 2.3606894 },
+    { "lat": 48.8566981, "lon": 2.3608339 },
+    { "lat": 48.8566658, "lon": 2.3608723 },
+    { "lat": 48.8566416, "lon": 2.3608249 },
+    { "lat": 48.8566273, "lon": 2.3608257 },
+    { "lat": 48.8566558, "lon": 2.3608820 },
+    { "lat": 48.8565871, "lon": 2.3609582 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "building:levels": "7",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56003294,
+  "bounds": {
+    "minlat": 48.8574318,
+    "minlon": 2.3589627,
+    "maxlat": 48.8575482,
+    "maxlon": 2.3591368
+  },
+  "geometry": [
+    { "lat": 48.8574484, "lon": 2.3589858 },
+    { "lat": 48.8574603, "lon": 2.3589627 },
+    { "lat": 48.8575482, "lon": 2.3590808 },
+    { "lat": 48.8575307, "lon": 2.3591172 },
+    { "lat": 48.8575199, "lon": 2.3591368 },
+    { "lat": 48.8574318, "lon": 2.3590162 },
+    { "lat": 48.8574484, "lon": 2.3589858 }
+  ],
+  "tags": {
+    "building": "yes",
+    "building:levels": "5",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56003296,
+  "bounds": {
+    "minlat": 48.8574904,
+    "minlon": 2.3588517,
+    "maxlat": 48.8576006,
+    "maxlon": 2.3590154
+  },
+  "geometry": [
+    { "lat": 48.8574904, "lon": 2.3589068 },
+    { "lat": 48.8575080, "lon": 2.3588733 },
+    { "lat": 48.8575193, "lon": 2.3588517 },
+    { "lat": 48.8576006, "lon": 2.3589569 },
+    { "lat": 48.8575707, "lon": 2.3590154 },
+    { "lat": 48.8574904, "lon": 2.3589068 }
+  ],
+  "tags": {
+    "building": "yes",
+    "building:levels": "6",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56003301,
+  "bounds": {
+    "minlat": 48.8573790,
+    "minlon": 2.3590162,
+    "maxlat": 48.8575927,
+    "maxlon": 2.3592730
+  },
+  "geometry": [
+    { "lat": 48.8573790, "lon": 2.3590946 },
+    { "lat": 48.8574095, "lon": 2.3590493 },
+    { "lat": 48.8574318, "lon": 2.3590162 },
+    { "lat": 48.8575199, "lon": 2.3591368 },
+    { "lat": 48.8575307, "lon": 2.3591172 },
+    { "lat": 48.8575457, "lon": 2.3591360 },
+    { "lat": 48.8575625, "lon": 2.3591074 },
+    { "lat": 48.8575927, "lon": 2.3591484 },
+    { "lat": 48.8575312, "lon": 2.3592500 },
+    { "lat": 48.8575171, "lon": 2.3592730 },
+    { "lat": 48.8573790, "lon": 2.3590946 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56003305,
+  "bounds": {
+    "minlat": 48.8564545,
+    "minlon": 2.3610849,
+    "maxlat": 48.8566203,
+    "maxlon": 2.3613068
+  },
+  "geometry": [
+    { "lat": 48.8565365, "lon": 2.3610849 },
+    { "lat": 48.8565824, "lon": 2.3611743 },
+    { "lat": 48.8566203, "lon": 2.3612482 },
+    { "lat": 48.8565988, "lon": 2.3613068 },
+    { "lat": 48.8565349, "lon": 2.3612958 },
+    { "lat": 48.8565293, "lon": 2.3612948 },
+    { "lat": 48.8564545, "lon": 2.3612818 },
+    { "lat": 48.8564590, "lon": 2.3612214 },
+    { "lat": 48.8564702, "lon": 2.3612218 },
+    { "lat": 48.8564709, "lon": 2.3612114 },
+    { "lat": 48.8564818, "lon": 2.3612124 },
+    { "lat": 48.8564862, "lon": 2.3611650 },
+    { "lat": 48.8564852, "lon": 2.3611550 },
+    { "lat": 48.8564813, "lon": 2.3611454 },
+    { "lat": 48.8565365, "lon": 2.3610849 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "building:levels": "6",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56003307,
+  "bounds": {
+    "minlat": 48.8571247,
+    "minlon": 2.3595636,
+    "maxlat": 48.8573907,
+    "maxlon": 2.3599000
+  },
+  "geometry": [
+    { "lat": 48.8571247, "lon": 2.3596190 },
+    { "lat": 48.8571277, "lon": 2.3596129 },
+    { "lat": 48.8571431, "lon": 2.3595821 },
+    { "lat": 48.8571522, "lon": 2.3595636 },
+    { "lat": 48.8573264, "lon": 2.3597765 },
+    { "lat": 48.8573426, "lon": 2.3597965 },
+    { "lat": 48.8573907, "lon": 2.3598560 },
+    { "lat": 48.8573553, "lon": 2.3599000 },
+    { "lat": 48.8572808, "lon": 2.3598079 },
+    { "lat": 48.8572559, "lon": 2.3597776 },
+    { "lat": 48.8571247, "lon": 2.3596190 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56003308,
+  "bounds": {
+    "minlat": 48.8574603,
+    "minlon": 2.3589068,
+    "maxlat": 48.8575707,
+    "maxlon": 2.3590808
+  },
+  "geometry": [
+    { "lat": 48.8574603, "lon": 2.3589627 },
+    { "lat": 48.8574767, "lon": 2.3589323 },
+    { "lat": 48.8574904, "lon": 2.3589068 },
+    { "lat": 48.8575707, "lon": 2.3590154 },
+    { "lat": 48.8575562, "lon": 2.3590444 },
+    { "lat": 48.8575619, "lon": 2.3590528 },
+    { "lat": 48.8575482, "lon": 2.3590808 },
+    { "lat": 48.8574603, "lon": 2.3589627 }
+  ],
+  "tags": {
+    "building": "yes",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56003309,
+  "bounds": {
+    "minlat": 48.8567481,
+    "minlon": 2.3611295,
+    "maxlat": 48.8568812,
+    "maxlon": 2.3613407
+  },
+  "geometry": [
+    { "lat": 48.8568002, "lon": 2.3613407 },
+    { "lat": 48.8567766, "lon": 2.3613095 },
+    { "lat": 48.8567481, "lon": 2.3612718 },
+    { "lat": 48.8568296, "lon": 2.3611295 },
+    { "lat": 48.8568812, "lon": 2.3611983 },
+    { "lat": 48.8568002, "lon": 2.3613407 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "building:levels": "3",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56003312,
+  "bounds": {
+    "minlat": 48.8567298,
+    "minlon": 2.3601943,
+    "maxlat": 48.8569625,
+    "maxlon": 2.3605162
+  },
+  "geometry": [
+    { "lat": 48.8567298, "lon": 2.3603895 },
+    { "lat": 48.8567637, "lon": 2.3603231 },
+    { "lat": 48.8567859, "lon": 2.3602795 },
+    { "lat": 48.8568295, "lon": 2.3601943 },
+    { "lat": 48.8568872, "lon": 2.3602619 },
+    { "lat": 48.8568270, "lon": 2.3603470 },
+    { "lat": 48.8568318, "lon": 2.3603551 },
+    { "lat": 48.8568311, "lon": 2.3603623 },
+    { "lat": 48.8568116, "lon": 2.3603909 },
+    { "lat": 48.8568039, "lon": 2.3603802 },
+    { "lat": 48.8567977, "lon": 2.3603894 },
+    { "lat": 48.8568251, "lon": 2.3604366 },
+    { "lat": 48.8569224, "lon": 2.3603067 },
+    { "lat": 48.8569625, "lon": 2.3603574 },
+    { "lat": 48.8569317, "lon": 2.3603947 },
+    { "lat": 48.8568997, "lon": 2.3604348 },
+    { "lat": 48.8568697, "lon": 2.3604733 },
+    { "lat": 48.8568338, "lon": 2.3605162 },
+    { "lat": 48.8567298, "lon": 2.3603895 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56003314,
+  "bounds": {
+    "minlat": 48.8568295,
+    "minlon": 2.3601235,
+    "maxlat": 48.8570084,
+    "maxlon": 2.3603591
+  },
+  "geometry": [
+    { "lat": 48.8568295, "lon": 2.3601943 },
+    { "lat": 48.8568526, "lon": 2.3601483 },
+    { "lat": 48.8568652, "lon": 2.3601235 },
+    { "lat": 48.8569301, "lon": 2.3602042 },
+    { "lat": 48.8570084, "lon": 2.3603006 },
+    { "lat": 48.8569636, "lon": 2.3603591 },
+    { "lat": 48.8569625, "lon": 2.3603574 },
+    { "lat": 48.8569224, "lon": 2.3603067 },
+    { "lat": 48.8568872, "lon": 2.3602619 },
+    { "lat": 48.8568295, "lon": 2.3601943 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56003315,
+  "bounds": {
+    "minlat": 48.8563075,
+    "minlon": 2.3610711,
+    "maxlat": 48.8564590,
+    "maxlon": 2.3612818
+  },
+  "geometry": [
+    { "lat": 48.8563177, "lon": 2.3612577 },
+    { "lat": 48.8563126, "lon": 2.3612385 },
+    { "lat": 48.8563075, "lon": 2.3612193 },
+    { "lat": 48.8563447, "lon": 2.3611463 },
+    { "lat": 48.8563733, "lon": 2.3610902 },
+    { "lat": 48.8563830, "lon": 2.3610711 },
+    { "lat": 48.8564456, "lon": 2.3611451 },
+    { "lat": 48.8564415, "lon": 2.3611596 },
+    { "lat": 48.8564384, "lon": 2.3612050 },
+    { "lat": 48.8564488, "lon": 2.3612070 },
+    { "lat": 48.8564486, "lon": 2.3612181 },
+    { "lat": 48.8564590, "lon": 2.3612214 },
+    { "lat": 48.8564545, "lon": 2.3612818 },
+    { "lat": 48.8563879, "lon": 2.3612700 },
+    { "lat": 48.8563205, "lon": 2.3612582 },
+    { "lat": 48.8563177, "lon": 2.3612577 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "building:levels": "6",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56003317,
+  "bounds": {
+    "minlat": 48.8574850,
+    "minlon": 2.3596215,
+    "maxlat": 48.8579353,
+    "maxlon": 2.3601704
+  },
+  "geometry": [
+    { "lat": 48.8579353, "lon": 2.3600424 },
+    { "lat": 48.8579024, "lon": 2.3601054 },
+    { "lat": 48.8578876, "lon": 2.3601343 },
+    { "lat": 48.8578690, "lon": 2.3601704 },
+    { "lat": 48.8576591, "lon": 2.3599366 },
+    { "lat": 48.8574850, "lon": 2.3597411 },
+    { "lat": 48.8575830, "lon": 2.3596215 },
+    { "lat": 48.8579353, "lon": 2.3600424 }
+  ],
+  "tags": {
+    "addr:housenumber": "39",
+    "addr:street": "Rue des Francs Bourgeois",
+    "brand": "Uniqlo",
+    "brand:wikidata": "Q26070",
+    "brand:wikipedia": "en:Uniqlo",
+    "building": "retail",
+    "building:levels": "3",
+    "check_date": "2025-06-12",
+    "contact:city": "Paris",
+    "contact:housenumber": "39",
+    "contact:phone": "+33 1 53 01 87 87",
+    "contact:postcode": "75004",
+    "contact:street": "Rue des Francs Bourgeois",
+    "contact:website": "http://www.uniqlo.com/fr/",
+    "name": "Uniqlo",
+    "opening_hours": "Mo-Fr 11:00-20:00; Sa-Su 10:00-20:00",
+    "shop": "clothes",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010",
+    "wheelchair": "yes",
+    "wikidata": "Q22980177"
+  }
+},
+{
+  "type": "way",
+  "id": 56003320,
+  "bounds": {
+    "minlat": 48.8568338,
+    "minlon": 2.3603947,
+    "maxlat": 48.8570518,
+    "maxlon": 2.3606786
+  },
+  "geometry": [
+    { "lat": 48.8569317, "lon": 2.3603947 },
+    { "lat": 48.8569933, "lon": 2.3604409 },
+    { "lat": 48.8570160, "lon": 2.3604580 },
+    { "lat": 48.8570518, "lon": 2.3604850 },
+    { "lat": 48.8570147, "lon": 2.3605718 },
+    { "lat": 48.8569690, "lon": 2.3606786 },
+    { "lat": 48.8568338, "lon": 2.3605162 },
+    { "lat": 48.8568697, "lon": 2.3604733 },
+    { "lat": 48.8569205, "lon": 2.3605250 },
+    { "lat": 48.8569420, "lon": 2.3604759 },
+    { "lat": 48.8568997, "lon": 2.3604348 },
+    { "lat": 48.8569317, "lon": 2.3603947 }
+  ],
+  "tags": {
+    "building": "yes",
+    "building:levels": "6",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56003322,
+  "bounds": {
+    "minlat": 48.8575193,
+    "minlon": 2.3586874,
+    "maxlat": 48.8577461,
+    "maxlon": 2.3591484
+  },
+  "geometry": [
+    { "lat": 48.8575193, "lon": 2.3588517 },
+    { "lat": 48.8575566, "lon": 2.3587642 },
+    { "lat": 48.8575894, "lon": 2.3586874 },
+    { "lat": 48.8576481, "lon": 2.3587470 },
+    { "lat": 48.8577461, "lon": 2.3588767 },
+    { "lat": 48.8577143, "lon": 2.3589344 },
+    { "lat": 48.8577061, "lon": 2.3589232 },
+    { "lat": 48.8577154, "lon": 2.3589064 },
+    { "lat": 48.8576836, "lon": 2.3588632 },
+    { "lat": 48.8576216, "lon": 2.3589745 },
+    { "lat": 48.8576300, "lon": 2.3589891 },
+    { "lat": 48.8576606, "lon": 2.3590265 },
+    { "lat": 48.8575927, "lon": 2.3591484 },
+    { "lat": 48.8575625, "lon": 2.3591074 },
+    { "lat": 48.8575457, "lon": 2.3591360 },
+    { "lat": 48.8575307, "lon": 2.3591172 },
+    { "lat": 48.8575482, "lon": 2.3590808 },
+    { "lat": 48.8575619, "lon": 2.3590528 },
+    { "lat": 48.8575562, "lon": 2.3590444 },
+    { "lat": 48.8575707, "lon": 2.3590154 },
+    { "lat": 48.8576006, "lon": 2.3589569 },
+    { "lat": 48.8575193, "lon": 2.3588517 }
+  ],
+  "tags": {
+    "building": "yes",
+    "building:levels": "4",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56003325,
+  "bounds": {
+    "minlat": 48.8568652,
+    "minlon": 2.3600595,
+    "maxlat": 48.8569624,
+    "maxlon": 2.3602042
+  },
+  "geometry": [
+    { "lat": 48.8568652, "lon": 2.3601235 },
+    { "lat": 48.8568821, "lon": 2.3600915 },
+    { "lat": 48.8568990, "lon": 2.3600595 },
+    { "lat": 48.8569624, "lon": 2.3601410 },
+    { "lat": 48.8569466, "lon": 2.3601719 },
+    { "lat": 48.8569301, "lon": 2.3602042 },
+    { "lat": 48.8568652, "lon": 2.3601235 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "building:levels": "4",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56003328,
+  "bounds": {
+    "minlat": 48.8570555,
+    "minlon": 2.3596514,
+    "maxlat": 48.8571758,
+    "maxlon": 2.3598060
+  },
+  "geometry": [
+    { "lat": 48.8570555, "lon": 2.3597163 },
+    { "lat": 48.8570734, "lon": 2.3596758 },
+    { "lat": 48.8570843, "lon": 2.3596514 },
+    { "lat": 48.8571287, "lon": 2.3596868 },
+    { "lat": 48.8571539, "lon": 2.3597158 },
+    { "lat": 48.8571758, "lon": 2.3597499 },
+    { "lat": 48.8571492, "lon": 2.3598060 },
+    { "lat": 48.8570555, "lon": 2.3597163 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56003329,
+  "bounds": {
+    "minlat": 48.8570843,
+    "minlon": 2.3595984,
+    "maxlat": 48.8572559,
+    "maxlon": 2.3598238
+  },
+  "geometry": [
+    { "lat": 48.8570843, "lon": 2.3596514 },
+    { "lat": 48.8571079, "lon": 2.3595984 },
+    { "lat": 48.8571247, "lon": 2.3596190 },
+    { "lat": 48.8572559, "lon": 2.3597776 },
+    { "lat": 48.8572301, "lon": 2.3598238 },
+    { "lat": 48.8571758, "lon": 2.3597499 },
+    { "lat": 48.8571539, "lon": 2.3597158 },
+    { "lat": 48.8571287, "lon": 2.3596868 },
+    { "lat": 48.8570843, "lon": 2.3596514 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "building:levels": "6",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56003332,
+  "bounds": {
+    "minlat": 48.8568570,
+    "minlon": 2.3608704,
+    "maxlat": 48.8570326,
+    "maxlon": 2.3611439
+  },
+  "geometry": [
+    { "lat": 48.8569108, "lon": 2.3611439 },
+    { "lat": 48.8568570, "lon": 2.3610792 },
+    { "lat": 48.8569169, "lon": 2.3609727 },
+    { "lat": 48.8569486, "lon": 2.3609128 },
+    { "lat": 48.8569566, "lon": 2.3608989 },
+    { "lat": 48.8569685, "lon": 2.3608781 },
+    { "lat": 48.8569719, "lon": 2.3608704 },
+    { "lat": 48.8570326, "lon": 2.3609251 },
+    { "lat": 48.8569138, "lon": 2.3611403 },
+    { "lat": 48.8569108, "lon": 2.3611439 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56003340,
+  "bounds": {
+    "minlat": 48.8563830,
+    "minlon": 2.3609531,
+    "maxlat": 48.8565365,
+    "maxlon": 2.3611454
+  },
+  "geometry": [
+    { "lat": 48.8563830, "lon": 2.3610711 },
+    { "lat": 48.8564003, "lon": 2.3610375 },
+    { "lat": 48.8564288, "lon": 2.3609818 },
+    { "lat": 48.8564432, "lon": 2.3609537 },
+    { "lat": 48.8564566, "lon": 2.3609534 },
+    { "lat": 48.8564699, "lon": 2.3609531 },
+    { "lat": 48.8565065, "lon": 2.3610254 },
+    { "lat": 48.8565365, "lon": 2.3610849 },
+    { "lat": 48.8564813, "lon": 2.3611454 },
+    { "lat": 48.8564740, "lon": 2.3611364 },
+    { "lat": 48.8564646, "lon": 2.3611328 },
+    { "lat": 48.8564546, "lon": 2.3611343 },
+    { "lat": 48.8564456, "lon": 2.3611451 },
+    { "lat": 48.8563830, "lon": 2.3610711 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "building:levels": "6",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56003341,
+  "bounds": {
+    "minlat": 48.8575894,
+    "minlon": 2.3586281,
+    "maxlat": 48.8577787,
+    "maxlon": 2.3588784
+  },
+  "geometry": [
+    { "lat": 48.8575894, "lon": 2.3586874 },
+    { "lat": 48.8576022, "lon": 2.3586524 },
+    { "lat": 48.8576112, "lon": 2.3586281 },
+    { "lat": 48.8576758, "lon": 2.3586987 },
+    { "lat": 48.8576620, "lon": 2.3587277 },
+    { "lat": 48.8577039, "lon": 2.3587751 },
+    { "lat": 48.8577191, "lon": 2.3587484 },
+    { "lat": 48.8577787, "lon": 2.3588250 },
+    { "lat": 48.8577764, "lon": 2.3588287 },
+    { "lat": 48.8577481, "lon": 2.3588784 },
+    { "lat": 48.8577461, "lon": 2.3588767 },
+    { "lat": 48.8576481, "lon": 2.3587470 },
+    { "lat": 48.8575894, "lon": 2.3586874 }
+  ],
+  "tags": {
+    "building": "yes",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56003342,
+  "bounds": {
+    "minlat": 48.8566754,
+    "minlon": 2.3608088,
+    "maxlat": 48.8569169,
+    "maxlon": 2.3612718
+  },
+  "geometry": [
+    { "lat": 48.8567481, "lon": 2.3612718 },
+    { "lat": 48.8567097, "lon": 2.3611967 },
+    { "lat": 48.8566754, "lon": 2.3611295 },
+    { "lat": 48.8567202, "lon": 2.3610531 },
+    { "lat": 48.8567419, "lon": 2.3610812 },
+    { "lat": 48.8567567, "lon": 2.3610583 },
+    { "lat": 48.8567746, "lon": 2.3610804 },
+    { "lat": 48.8567668, "lon": 2.3610943 },
+    { "lat": 48.8567735, "lon": 2.3611038 },
+    { "lat": 48.8568056, "lon": 2.3610460 },
+    { "lat": 48.8568177, "lon": 2.3610464 },
+    { "lat": 48.8568213, "lon": 2.3610384 },
+    { "lat": 48.8567670, "lon": 2.3609705 },
+    { "lat": 48.8567862, "lon": 2.3609361 },
+    { "lat": 48.8568600, "lon": 2.3608088 },
+    { "lat": 48.8569018, "lon": 2.3608569 },
+    { "lat": 48.8568844, "lon": 2.3608896 },
+    { "lat": 48.8568792, "lon": 2.3608917 },
+    { "lat": 48.8568749, "lon": 2.3608908 },
+    { "lat": 48.8568683, "lon": 2.3608819 },
+    { "lat": 48.8568416, "lon": 2.3609266 },
+    { "lat": 48.8568505, "lon": 2.3609388 },
+    { "lat": 48.8568598, "lon": 2.3609251 },
+    { "lat": 48.8568661, "lon": 2.3609333 },
+    { "lat": 48.8568707, "lon": 2.3609265 },
+    { "lat": 48.8568781, "lon": 2.3609252 },
+    { "lat": 48.8569169, "lon": 2.3609727 },
+    { "lat": 48.8568570, "lon": 2.3610792 },
+    { "lat": 48.8568296, "lon": 2.3611295 },
+    { "lat": 48.8567481, "lon": 2.3612718 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56003345,
+  "bounds": {
+    "minlat": 48.8565760,
+    "minlon": 2.3605482,
+    "maxlat": 48.8568600,
+    "maxlon": 2.3609361
+  },
+  "geometry": [
+    { "lat": 48.8565760, "lon": 2.3606894 },
+    { "lat": 48.8566136, "lon": 2.3606162 },
+    { "lat": 48.8566487, "lon": 2.3605482 },
+    { "lat": 48.8568600, "lon": 2.3608088 },
+    { "lat": 48.8567862, "lon": 2.3609361 },
+    { "lat": 48.8566981, "lon": 2.3608339 },
+    { "lat": 48.8565760, "lon": 2.3606894 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56003347,
+  "bounds": {
+    "minlat": 48.8574224,
+    "minlon": 2.3592500,
+    "maxlat": 48.8576905,
+    "maxlon": 2.3596201
+  },
+  "geometry": [
+    { "lat": 48.8575842, "lon": 2.3596201 },
+    { "lat": 48.8576905, "lon": 2.3594890 },
+    { "lat": 48.8575312, "lon": 2.3592500 },
+    { "lat": 48.8575171, "lon": 2.3592730 },
+    { "lat": 48.8574224, "lon": 2.3594229 },
+    { "lat": 48.8575842, "lon": 2.3596201 }
+  ],
+  "tags": {
+    "building": "yes",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56036624,
+  "bounds": {
+    "minlat": 48.8567588,
+    "minlon": 2.3586974,
+    "maxlat": 48.8569839,
+    "maxlon": 2.3589885
+  },
+  "geometry": [
+    { "lat": 48.8569046, "lon": 2.3586974 },
+    { "lat": 48.8569396, "lon": 2.3587230 },
+    { "lat": 48.8569839, "lon": 2.3587553 },
+    { "lat": 48.8569715, "lon": 2.3587769 },
+    { "lat": 48.8569165, "lon": 2.3588728 },
+    { "lat": 48.8568876, "lon": 2.3589186 },
+    { "lat": 48.8568430, "lon": 2.3589885 },
+    { "lat": 48.8568184, "lon": 2.3589683 },
+    { "lat": 48.8567588, "lon": 2.3589169 },
+    { "lat": 48.8567933, "lon": 2.3588782 },
+    { "lat": 48.8569046, "lon": 2.3586974 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56036633,
+  "bounds": {
+    "minlat": 48.8569857,
+    "minlon": 2.3588933,
+    "maxlat": 48.8571983,
+    "maxlon": 2.3591806
+  },
+  "geometry": [
+    { "lat": 48.8571107, "lon": 2.3589187 },
+    { "lat": 48.8571267, "lon": 2.3588933 },
+    { "lat": 48.8571596, "lon": 2.3589213 },
+    { "lat": 48.8571983, "lon": 2.3589543 },
+    { "lat": 48.8571850, "lon": 2.3589806 },
+    { "lat": 48.8571685, "lon": 2.3590138 },
+    { "lat": 48.8571484, "lon": 2.3590506 },
+    { "lat": 48.8571213, "lon": 2.3590124 },
+    { "lat": 48.8570647, "lon": 2.3591111 },
+    { "lat": 48.8570895, "lon": 2.3591417 },
+    { "lat": 48.8570624, "lon": 2.3591806 },
+    { "lat": 48.8569857, "lon": 2.3591223 },
+    { "lat": 48.8571107, "lon": 2.3589187 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "building:levels": "6",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56036638,
+  "bounds": {
+    "minlat": 48.8563240,
+    "minlon": 2.3595205,
+    "maxlat": 48.8565250,
+    "maxlon": 2.3600609
+  },
+  "geometry": [
+    { "lat": 48.8564593, "lon": 2.3595205 },
+    { "lat": 48.8564959, "lon": 2.3595474 },
+    { "lat": 48.8565250, "lon": 2.3595688 },
+    { "lat": 48.8563862, "lon": 2.3600609 },
+    { "lat": 48.8563240, "lon": 2.3600104 },
+    { "lat": 48.8564593, "lon": 2.3595205 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56036639,
+  "bounds": {
+    "minlat": 48.8569875,
+    "minlon": 2.3593906,
+    "maxlat": 48.8571009,
+    "maxlon": 2.3595193
+  },
+  "geometry": [
+    { "lat": 48.8571009, "lon": 2.3594557 },
+    { "lat": 48.8570894, "lon": 2.3594844 },
+    { "lat": 48.8570754, "lon": 2.3595193 },
+    { "lat": 48.8570100, "lon": 2.3594744 },
+    { "lat": 48.8570021, "lon": 2.3594725 },
+    { "lat": 48.8569875, "lon": 2.3594673 },
+    { "lat": 48.8570049, "lon": 2.3594177 },
+    { "lat": 48.8570133, "lon": 2.3594238 },
+    { "lat": 48.8570233, "lon": 2.3593906 },
+    { "lat": 48.8571009, "lon": 2.3594557 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "building:levels": "5",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56036648,
+  "bounds": {
+    "minlat": 48.8568598,
+    "minlon": 2.3588453,
+    "maxlat": 48.8571107,
+    "maxlon": 2.3593438
+  },
+  "geometry": [
+    { "lat": 48.8570383, "lon": 2.3588453 },
+    { "lat": 48.8570746, "lon": 2.3588821 },
+    { "lat": 48.8570857, "lon": 2.3588934 },
+    { "lat": 48.8571107, "lon": 2.3589187 },
+    { "lat": 48.8569857, "lon": 2.3591223 },
+    { "lat": 48.8569791, "lon": 2.3591185 },
+    { "lat": 48.8569268, "lon": 2.3592878 },
+    { "lat": 48.8569101, "lon": 2.3593438 },
+    { "lat": 48.8568598, "lon": 2.3593012 },
+    { "lat": 48.8569072, "lon": 2.3591625 },
+    { "lat": 48.8569335, "lon": 2.3590685 },
+    { "lat": 48.8569113, "lon": 2.3590507 },
+    { "lat": 48.8569492, "lon": 2.3589935 },
+    { "lat": 48.8569625, "lon": 2.3590133 },
+    { "lat": 48.8569988, "lon": 2.3589570 },
+    { "lat": 48.8569859, "lon": 2.3589367 },
+    { "lat": 48.8570383, "lon": 2.3588453 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56036651,
+  "bounds": {
+    "minlat": 48.8566250,
+    "minlon": 2.3599675,
+    "maxlat": 48.8567758,
+    "maxlon": 2.3602545
+  },
+  "geometry": [
+    { "lat": 48.8567758, "lon": 2.3600535 },
+    { "lat": 48.8567608, "lon": 2.3600830 },
+    { "lat": 48.8567407, "lon": 2.3601225 },
+    { "lat": 48.8566735, "lon": 2.3602545 },
+    { "lat": 48.8566250, "lon": 2.3601936 },
+    { "lat": 48.8566493, "lon": 2.3601220 },
+    { "lat": 48.8566655, "lon": 2.3601420 },
+    { "lat": 48.8566684, "lon": 2.3601381 },
+    { "lat": 48.8566663, "lon": 2.3601333 },
+    { "lat": 48.8566661, "lon": 2.3601275 },
+    { "lat": 48.8566720, "lon": 2.3601151 },
+    { "lat": 48.8566720, "lon": 2.3600985 },
+    { "lat": 48.8566768, "lon": 2.3600862 },
+    { "lat": 48.8566659, "lon": 2.3600734 },
+    { "lat": 48.8567028, "lon": 2.3599675 },
+    { "lat": 48.8567758, "lon": 2.3600535 }
+  ],
+  "tags": {
+    "building": "yes",
+    "building:levels": "6",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56036654,
+  "bounds": {
+    "minlat": 48.8563713,
+    "minlon": 2.3603595,
+    "maxlat": 48.8564465,
+    "maxlon": 2.3604819
+  },
+  "geometry": [
+    { "lat": 48.8564045, "lon": 2.3604819 },
+    { "lat": 48.8563762, "lon": 2.3604536 },
+    { "lat": 48.8563713, "lon": 2.3604385 },
+    { "lat": 48.8563805, "lon": 2.3604164 },
+    { "lat": 48.8564092, "lon": 2.3603595 },
+    { "lat": 48.8564149, "lon": 2.3603643 },
+    { "lat": 48.8564465, "lon": 2.3603999 },
+    { "lat": 48.8564045, "lon": 2.3604819 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "building:levels": "2",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56036666,
+  "bounds": {
+    "minlat": 48.8571685,
+    "minlon": 2.3589806,
+    "maxlat": 48.8572788,
+    "maxlon": 2.3591172
+  },
+  "geometry": [
+    { "lat": 48.8571850, "lon": 2.3589806 },
+    { "lat": 48.8572068, "lon": 2.3589991 },
+    { "lat": 48.8572660, "lon": 2.3590494 },
+    { "lat": 48.8572709, "lon": 2.3590915 },
+    { "lat": 48.8572788, "lon": 2.3591131 },
+    { "lat": 48.8572766, "lon": 2.3591172 },
+    { "lat": 48.8571685, "lon": 2.3590138 },
+    { "lat": 48.8571850, "lon": 2.3589806 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "building:levels": "7",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56036681,
+  "bounds": {
+    "minlat": 48.8567142,
+    "minlon": 2.3592620,
+    "maxlat": 48.8569101,
+    "maxlon": 2.3596642
+  },
+  "geometry": [
+    { "lat": 48.8568177, "lon": 2.3596642 },
+    { "lat": 48.8567659, "lon": 2.3596392 },
+    { "lat": 48.8567142, "lon": 2.3595987 },
+    { "lat": 48.8567673, "lon": 2.3594349 },
+    { "lat": 48.8567733, "lon": 2.3594399 },
+    { "lat": 48.8567772, "lon": 2.3594558 },
+    { "lat": 48.8567712, "lon": 2.3594758 },
+    { "lat": 48.8568045, "lon": 2.3595014 },
+    { "lat": 48.8568067, "lon": 2.3594951 },
+    { "lat": 48.8568093, "lon": 2.3594975 },
+    { "lat": 48.8567997, "lon": 2.3595289 },
+    { "lat": 48.8568209, "lon": 2.3595424 },
+    { "lat": 48.8568532, "lon": 2.3594218 },
+    { "lat": 48.8567842, "lon": 2.3593694 },
+    { "lat": 48.8568121, "lon": 2.3592620 },
+    { "lat": 48.8568598, "lon": 2.3593012 },
+    { "lat": 48.8569101, "lon": 2.3593438 },
+    { "lat": 48.8568743, "lon": 2.3594627 },
+    { "lat": 48.8568177, "lon": 2.3596642 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "building:levels": "5",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56036685,
+  "bounds": {
+    "minlat": 48.8564149,
+    "minlon": 2.3601573,
+    "maxlat": 48.8566511,
+    "maxlon": 2.3605135
+  },
+  "geometry": [
+    { "lat": 48.8566511, "lon": 2.3602981 },
+    { "lat": 48.8566220, "lon": 2.3603551 },
+    { "lat": 48.8565993, "lon": 2.3603996 },
+    { "lat": 48.8565412, "lon": 2.3605135 },
+    { "lat": 48.8564465, "lon": 2.3603999 },
+    { "lat": 48.8564149, "lon": 2.3603643 },
+    { "lat": 48.8564650, "lon": 2.3602729 },
+    { "lat": 48.8565089, "lon": 2.3601578 },
+    { "lat": 48.8565287, "lon": 2.3601573 },
+    { "lat": 48.8566511, "lon": 2.3602981 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56036686,
+  "bounds": {
+    "minlat": 48.8559194,
+    "minlon": 2.3598761,
+    "maxlat": 48.8564371,
+    "maxlon": 2.3606740
+  },
+  "geometry": [
+    { "lat": 48.8563868, "lon": 2.3606643 },
+    { "lat": 48.8563826, "lon": 2.3606740 },
+    { "lat": 48.8562577, "lon": 2.3605681 },
+    { "lat": 48.8560417, "lon": 2.3603851 },
+    { "lat": 48.8560090, "lon": 2.3603574 },
+    { "lat": 48.8559354, "lon": 2.3602950 },
+    { "lat": 48.8559890, "lon": 2.3601541 },
+    { "lat": 48.8559878, "lon": 2.3601520 },
+    { "lat": 48.8559974, "lon": 2.3601285 },
+    { "lat": 48.8559194, "lon": 2.3600701 },
+    { "lat": 48.8559384, "lon": 2.3600038 },
+    { "lat": 48.8559512, "lon": 2.3600132 },
+    { "lat": 48.8559757, "lon": 2.3599379 },
+    { "lat": 48.8560157, "lon": 2.3599691 },
+    { "lat": 48.8560578, "lon": 2.3598761 },
+    { "lat": 48.8561144, "lon": 2.3599119 },
+    { "lat": 48.8561514, "lon": 2.3599385 },
+    { "lat": 48.8561044, "lon": 2.3600891 },
+    { "lat": 48.8560934, "lon": 2.3601243 },
+    { "lat": 48.8561246, "lon": 2.3601494 },
+    { "lat": 48.8560925, "lon": 2.3602447 },
+    { "lat": 48.8564106, "lon": 2.3605050 },
+    { "lat": 48.8564125, "lon": 2.3605121 },
+    { "lat": 48.8564371, "lon": 2.3605289 },
+    { "lat": 48.8564249, "lon": 2.3605583 },
+    { "lat": 48.8564143, "lon": 2.3605886 },
+    { "lat": 48.8563868, "lon": 2.3606643 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "building:levels": "3",
+    "roof:levels": "1",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56036690,
+  "bounds": {
+    "minlat": 48.8569587,
+    "minlon": 2.3593057,
+    "maxlat": 48.8571298,
+    "maxlon": 2.3594557
+  },
+  "geometry": [
+    { "lat": 48.8571298, "lon": 2.3593865 },
+    { "lat": 48.8571151, "lon": 2.3594216 },
+    { "lat": 48.8571009, "lon": 2.3594557 },
+    { "lat": 48.8570233, "lon": 2.3593906 },
+    { "lat": 48.8570133, "lon": 2.3594238 },
+    { "lat": 48.8570049, "lon": 2.3594177 },
+    { "lat": 48.8569587, "lon": 2.3593760 },
+    { "lat": 48.8569787, "lon": 2.3593217 },
+    { "lat": 48.8569826, "lon": 2.3593126 },
+    { "lat": 48.8570356, "lon": 2.3593621 },
+    { "lat": 48.8570501, "lon": 2.3593057 },
+    { "lat": 48.8571298, "lon": 2.3593865 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "building:levels": "6",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56036699,
+  "bounds": {
+    "minlat": 48.8563868,
+    "minlon": 2.3603999,
+    "maxlat": 48.8565412,
+    "maxlon": 2.3606978
+  },
+  "geometry": [
+    { "lat": 48.8565412, "lon": 2.3605135 },
+    { "lat": 48.8565126, "lon": 2.3605704 },
+    { "lat": 48.8565027, "lon": 2.3605901 },
+    { "lat": 48.8564531, "lon": 2.3606885 },
+    { "lat": 48.8564270, "lon": 2.3606978 },
+    { "lat": 48.8563868, "lon": 2.3606643 },
+    { "lat": 48.8564143, "lon": 2.3605886 },
+    { "lat": 48.8564276, "lon": 2.3606037 },
+    { "lat": 48.8564408, "lon": 2.3605792 },
+    { "lat": 48.8564407, "lon": 2.3605731 },
+    { "lat": 48.8564249, "lon": 2.3605583 },
+    { "lat": 48.8564371, "lon": 2.3605289 },
+    { "lat": 48.8564125, "lon": 2.3605121 },
+    { "lat": 48.8564106, "lon": 2.3605050 },
+    { "lat": 48.8564045, "lon": 2.3604819 },
+    { "lat": 48.8564465, "lon": 2.3603999 },
+    { "lat": 48.8565412, "lon": 2.3605135 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "building:levels": "7",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56036701,
+  "bounds": {
+    "minlat": 48.8561044,
+    "minlon": 2.3598894,
+    "maxlat": 48.8565089,
+    "maxlon": 2.3603643
+  },
+  "geometry": [
+    { "lat": 48.8564092, "lon": 2.3603595 },
+    { "lat": 48.8563454, "lon": 2.3603029 },
+    { "lat": 48.8561655, "lon": 2.3601434 },
+    { "lat": 48.8561044, "lon": 2.3600891 },
+    { "lat": 48.8561514, "lon": 2.3599385 },
+    { "lat": 48.8561542, "lon": 2.3599395 },
+    { "lat": 48.8561703, "lon": 2.3598894 },
+    { "lat": 48.8562216, "lon": 2.3599296 },
+    { "lat": 48.8563240, "lon": 2.3600104 },
+    { "lat": 48.8563862, "lon": 2.3600609 },
+    { "lat": 48.8565089, "lon": 2.3601578 },
+    { "lat": 48.8564650, "lon": 2.3602729 },
+    { "lat": 48.8564149, "lon": 2.3603643 },
+    { "lat": 48.8564092, "lon": 2.3603595 }
+  ],
+  "tags": {
+    "building": "yes",
+    "building:levels": "4",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56036702,
+  "bounds": {
+    "minlat": 48.8568177,
+    "minlon": 2.3592878,
+    "maxlat": 48.8570754,
+    "maxlon": 2.3597403
+  },
+  "geometry": [
+    { "lat": 48.8569836, "lon": 2.3597403 },
+    { "lat": 48.8568960, "lon": 2.3597001 },
+    { "lat": 48.8568177, "lon": 2.3596642 },
+    { "lat": 48.8568743, "lon": 2.3594627 },
+    { "lat": 48.8569101, "lon": 2.3593438 },
+    { "lat": 48.8569268, "lon": 2.3592878 },
+    { "lat": 48.8569787, "lon": 2.3593217 },
+    { "lat": 48.8569587, "lon": 2.3593760 },
+    { "lat": 48.8570049, "lon": 2.3594177 },
+    { "lat": 48.8569875, "lon": 2.3594673 },
+    { "lat": 48.8569852, "lon": 2.3594682 },
+    { "lat": 48.8569281, "lon": 2.3594187 },
+    { "lat": 48.8569116, "lon": 2.3594681 },
+    { "lat": 48.8569128, "lon": 2.3594709 },
+    { "lat": 48.8568910, "lon": 2.3595430 },
+    { "lat": 48.8569584, "lon": 2.3595925 },
+    { "lat": 48.8570021, "lon": 2.3594725 },
+    { "lat": 48.8570100, "lon": 2.3594744 },
+    { "lat": 48.8570754, "lon": 2.3595193 },
+    { "lat": 48.8570494, "lon": 2.3595820 },
+    { "lat": 48.8570058, "lon": 2.3596869 },
+    { "lat": 48.8569836, "lon": 2.3597403 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "building:levels": "5",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56040566,
+  "bounds": {
+    "minlat": 48.8560396,
+    "minlon": 2.3613711,
+    "maxlat": 48.8561788,
+    "maxlon": 2.3617495
+  },
+  "geometry": [
+    { "lat": 48.8560629, "lon": 2.3613711 },
+    { "lat": 48.8560856, "lon": 2.3613754 },
+    { "lat": 48.8561788, "lon": 2.3613929 },
+    { "lat": 48.8561670, "lon": 2.3615542 },
+    { "lat": 48.8561579, "lon": 2.3616746 },
+    { "lat": 48.8561517, "lon": 2.3617495 },
+    { "lat": 48.8561177, "lon": 2.3617280 },
+    { "lat": 48.8560512, "lon": 2.3616826 },
+    { "lat": 48.8560396, "lon": 2.3616732 },
+    { "lat": 48.8560432, "lon": 2.3616271 },
+    { "lat": 48.8560586, "lon": 2.3616293 },
+    { "lat": 48.8560609, "lon": 2.3615937 },
+    { "lat": 48.8560460, "lon": 2.3615907 },
+    { "lat": 48.8560629, "lon": 2.3613711 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "building:levels": "7",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56040568,
+  "bounds": {
+    "minlat": 48.8556378,
+    "minlon": 2.3612947,
+    "maxlat": 48.8558321,
+    "maxlon": 2.3615167
+  },
+  "geometry": [
+    { "lat": 48.8556456, "lon": 2.3612947 },
+    { "lat": 48.8557502, "lon": 2.3613140 },
+    { "lat": 48.8557600, "lon": 2.3613158 },
+    { "lat": 48.8558321, "lon": 2.3613292 },
+    { "lat": 48.8558165, "lon": 2.3615167 },
+    { "lat": 48.8557562, "lon": 2.3614738 },
+    { "lat": 48.8557579, "lon": 2.3614676 },
+    { "lat": 48.8557612, "lon": 2.3614685 },
+    { "lat": 48.8557621, "lon": 2.3614643 },
+    { "lat": 48.8557777, "lon": 2.3614705 },
+    { "lat": 48.8557801, "lon": 2.3614311 },
+    { "lat": 48.8557345, "lon": 2.3614225 },
+    { "lat": 48.8557001, "lon": 2.3613973 },
+    { "lat": 48.8556926, "lon": 2.3614188 },
+    { "lat": 48.8556430, "lon": 2.3613807 },
+    { "lat": 48.8556378, "lon": 2.3613787 },
+    { "lat": 48.8556456, "lon": 2.3612947 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "building:levels": "6",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56040574,
+  "bounds": {
+    "minlat": 48.8558165,
+    "minlon": 2.3613292,
+    "maxlat": 48.8559482,
+    "maxlon": 2.3615967
+  },
+  "geometry": [
+    { "lat": 48.8558321, "lon": 2.3613292 },
+    { "lat": 48.8558901, "lon": 2.3613399 },
+    { "lat": 48.8559482, "lon": 2.3613507 },
+    { "lat": 48.8559352, "lon": 2.3615103 },
+    { "lat": 48.8559343, "lon": 2.3615184 },
+    { "lat": 48.8559281, "lon": 2.3615967 },
+    { "lat": 48.8558951, "lon": 2.3615773 },
+    { "lat": 48.8558950, "lon": 2.3615727 },
+    { "lat": 48.8558165, "lon": 2.3615167 },
+    { "lat": 48.8558321, "lon": 2.3613292 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56040575,
+  "bounds": {
+    "minlat": 48.8559757,
+    "minlon": 2.3617280,
+    "maxlat": 48.8563031,
+    "maxlon": 2.3623666
+  },
+  "geometry": [
+    { "lat": 48.8561781, "lon": 2.3623666 },
+    { "lat": 48.8561492, "lon": 2.3623500 },
+    { "lat": 48.8560914, "lon": 2.3623168 },
+    { "lat": 48.8560697, "lon": 2.3623043 },
+    { "lat": 48.8560624, "lon": 2.3623001 },
+    { "lat": 48.8560335, "lon": 2.3622835 },
+    { "lat": 48.8559757, "lon": 2.3622503 },
+    { "lat": 48.8560129, "lon": 2.3621279 },
+    { "lat": 48.8560344, "lon": 2.3621421 },
+    { "lat": 48.8560209, "lon": 2.3621664 },
+    { "lat": 48.8560350, "lon": 2.3621734 },
+    { "lat": 48.8560380, "lon": 2.3621606 },
+    { "lat": 48.8560496, "lon": 2.3621674 },
+    { "lat": 48.8560468, "lon": 2.3621810 },
+    { "lat": 48.8561653, "lon": 2.3622476 },
+    { "lat": 48.8561893, "lon": 2.3621491 },
+    { "lat": 48.8561536, "lon": 2.3621301 },
+    { "lat": 48.8562004, "lon": 2.3619392 },
+    { "lat": 48.8561882, "lon": 2.3619213 },
+    { "lat": 48.8561860, "lon": 2.3619247 },
+    { "lat": 48.8561684, "lon": 2.3619125 },
+    { "lat": 48.8561654, "lon": 2.3618828 },
+    { "lat": 48.8560897, "lon": 2.3618388 },
+    { "lat": 48.8561177, "lon": 2.3617280 },
+    { "lat": 48.8561517, "lon": 2.3617495 },
+    { "lat": 48.8562622, "lon": 2.3618269 },
+    { "lat": 48.8563031, "lon": 2.3618550 },
+    { "lat": 48.8562961, "lon": 2.3618843 },
+    { "lat": 48.8562793, "lon": 2.3618728 },
+    { "lat": 48.8562075, "lon": 2.3621611 },
+    { "lat": 48.8562247, "lon": 2.3621692 },
+    { "lat": 48.8562204, "lon": 2.3621881 },
+    { "lat": 48.8561781, "lon": 2.3623666 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56040577,
+  "bounds": {
+    "minlat": 48.8559281,
+    "minlon": 2.3613507,
+    "maxlat": 48.8560629,
+    "maxlon": 2.3616732
+  },
+  "geometry": [
+    { "lat": 48.8559482, "lon": 2.3613507 },
+    { "lat": 48.8559659, "lon": 2.3613538 },
+    { "lat": 48.8560629, "lon": 2.3613711 },
+    { "lat": 48.8560460, "lon": 2.3615907 },
+    { "lat": 48.8560432, "lon": 2.3616271 },
+    { "lat": 48.8560396, "lon": 2.3616732 },
+    { "lat": 48.8559281, "lon": 2.3615967 },
+    { "lat": 48.8559343, "lon": 2.3615184 },
+    { "lat": 48.8559463, "lon": 2.3615204 },
+    { "lat": 48.8559457, "lon": 2.3615332 },
+    { "lat": 48.8559428, "lon": 2.3615394 },
+    { "lat": 48.8560020, "lon": 2.3615487 },
+    { "lat": 48.8560040, "lon": 2.3615213 },
+    { "lat": 48.8559352, "lon": 2.3615103 },
+    { "lat": 48.8559482, "lon": 2.3613507 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56040582,
+  "bounds": {
+    "minlat": 48.8562622,
+    "minlon": 2.3614143,
+    "maxlat": 48.8564210,
+    "maxlon": 2.3619102
+  },
+  "geometry": [
+    { "lat": 48.8562973, "lon": 2.3614143 },
+    { "lat": 48.8563151, "lon": 2.3614176 },
+    { "lat": 48.8564210, "lon": 2.3614374 },
+    { "lat": 48.8563827, "lon": 2.3619102 },
+    { "lat": 48.8563031, "lon": 2.3618550 },
+    { "lat": 48.8562622, "lon": 2.3618269 },
+    { "lat": 48.8562677, "lon": 2.3617723 },
+    { "lat": 48.8563563, "lon": 2.3617880 },
+    { "lat": 48.8563685, "lon": 2.3616361 },
+    { "lat": 48.8563618, "lon": 2.3615899 },
+    { "lat": 48.8563393, "lon": 2.3615863 },
+    { "lat": 48.8563387, "lon": 2.3616024 },
+    { "lat": 48.8563345, "lon": 2.3616072 },
+    { "lat": 48.8563137, "lon": 2.3616039 },
+    { "lat": 48.8563109, "lon": 2.3615979 },
+    { "lat": 48.8563120, "lon": 2.3615806 },
+    { "lat": 48.8562832, "lon": 2.3615754 },
+    { "lat": 48.8562973, "lon": 2.3614143 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56040585,
+  "bounds": {
+    "minlat": 48.8560599,
+    "minlon": 2.3609435,
+    "maxlat": 48.8562310,
+    "maxlon": 2.3612297
+  },
+  "geometry": [
+    { "lat": 48.8562310, "lon": 2.3611210 },
+    { "lat": 48.8562074, "lon": 2.3611669 },
+    { "lat": 48.8561972, "lon": 2.3611868 },
+    { "lat": 48.8561752, "lon": 2.3612297 },
+    { "lat": 48.8561172, "lon": 2.3612188 },
+    { "lat": 48.8560599, "lon": 2.3612081 },
+    { "lat": 48.8560783, "lon": 2.3609609 },
+    { "lat": 48.8560795, "lon": 2.3609435 },
+    { "lat": 48.8562310, "lon": 2.3611210 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56040594,
+  "bounds": {
+    "minlat": 48.8561517,
+    "minlon": 2.3613929,
+    "maxlat": 48.8562973,
+    "maxlon": 2.3618269
+  },
+  "geometry": [
+    { "lat": 48.8561788, "lon": 2.3613929 },
+    { "lat": 48.8561958, "lon": 2.3613960 },
+    { "lat": 48.8562973, "lon": 2.3614143 },
+    { "lat": 48.8562832, "lon": 2.3615754 },
+    { "lat": 48.8562677, "lon": 2.3617723 },
+    { "lat": 48.8562622, "lon": 2.3618269 },
+    { "lat": 48.8561517, "lon": 2.3617495 },
+    { "lat": 48.8561579, "lon": 2.3616746 },
+    { "lat": 48.8562267, "lon": 2.3616870 },
+    { "lat": 48.8562361, "lon": 2.3615667 },
+    { "lat": 48.8561670, "lon": 2.3615542 },
+    { "lat": 48.8561788, "lon": 2.3613929 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56040595,
+  "bounds": {
+    "minlat": 48.8554654,
+    "minlon": 2.3613787,
+    "maxlat": 48.8561177,
+    "maxlon": 2.3622503
+  },
+  "geometry": [
+    { "lat": 48.8558951, "lon": 2.3615773 },
+    { "lat": 48.8558685, "lon": 2.3616647 },
+    { "lat": 48.8558156, "lon": 2.3616249 },
+    { "lat": 48.8557391, "lon": 2.3618672 },
+    { "lat": 48.8558154, "lon": 2.3619261 },
+    { "lat": 48.8558169, "lon": 2.3619237 },
+    { "lat": 48.8558218, "lon": 2.3619272 },
+    { "lat": 48.8557920, "lon": 2.3620142 },
+    { "lat": 48.8558666, "lon": 2.3620677 },
+    { "lat": 48.8558682, "lon": 2.3620651 },
+    { "lat": 48.8558736, "lon": 2.3620693 },
+    { "lat": 48.8558709, "lon": 2.3620781 },
+    { "lat": 48.8559679, "lon": 2.3621340 },
+    { "lat": 48.8559806, "lon": 2.3620826 },
+    { "lat": 48.8559951, "lon": 2.3620902 },
+    { "lat": 48.8560054, "lon": 2.3620519 },
+    { "lat": 48.8559984, "lon": 2.3620477 },
+    { "lat": 48.8560543, "lon": 2.3618263 },
+    { "lat": 48.8560655, "lon": 2.3618319 },
+    { "lat": 48.8560802, "lon": 2.3617718 },
+    { "lat": 48.8560564, "lon": 2.3617594 },
+    { "lat": 48.8560493, "lon": 2.3617830 },
+    { "lat": 48.8560299, "lon": 2.3617695 },
+    { "lat": 48.8560512, "lon": 2.3616826 },
+    { "lat": 48.8561177, "lon": 2.3617280 },
+    { "lat": 48.8560897, "lon": 2.3618388 },
+    { "lat": 48.8560742, "lon": 2.3619002 },
+    { "lat": 48.8560270, "lon": 2.3620836 },
+    { "lat": 48.8560129, "lon": 2.3621279 },
+    { "lat": 48.8559757, "lon": 2.3622503 },
+    { "lat": 48.8559126, "lon": 2.3622131 },
+    { "lat": 48.8558412, "lon": 2.3621710 },
+    { "lat": 48.8558389, "lon": 2.3621765 },
+    { "lat": 48.8557917, "lon": 2.3621494 },
+    { "lat": 48.8556636, "lon": 2.3620759 },
+    { "lat": 48.8555709, "lon": 2.3620118 },
+    { "lat": 48.8555846, "lon": 2.3619731 },
+    { "lat": 48.8555819, "lon": 2.3619595 },
+    { "lat": 48.8555554, "lon": 2.3619385 },
+    { "lat": 48.8554654, "lon": 2.3618671 },
+    { "lat": 48.8554976, "lon": 2.3617713 },
+    { "lat": 48.8556396, "lon": 2.3618875 },
+    { "lat": 48.8557211, "lon": 2.3616335 },
+    { "lat": 48.8555814, "lon": 2.3615358 },
+    { "lat": 48.8556050, "lon": 2.3614681 },
+    { "lat": 48.8556378, "lon": 2.3613787 },
+    { "lat": 48.8556430, "lon": 2.3613807 },
+    { "lat": 48.8556926, "lon": 2.3614188 },
+    { "lat": 48.8557579, "lon": 2.3614676 },
+    { "lat": 48.8557562, "lon": 2.3614738 },
+    { "lat": 48.8558165, "lon": 2.3615167 },
+    { "lat": 48.8558950, "lon": 2.3615727 },
+    { "lat": 48.8558951, "lon": 2.3615773 }
+  ],
+  "tags": {
+    "addr:housenumber": "7-9",
+    "addr:street": "Rue de Sévigné",
+    "building": "yes",
+    "historic": "manor",
+    "name": "Hôtel de Chavigny",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010",
+    "wikidata": "Q13426612",
+    "wikipedia": "fr:Hôtel de Chavigny"
+  }
+},
+{
+  "type": "way",
+  "id": 56040606,
+  "bounds": {
+    "minlat": 48.8561160,
+    "minlon": 2.3606045,
+    "maxlat": 48.8562281,
+    "maxlon": 2.3608356
+  },
+  "geometry": [
+    { "lat": 48.8561812, "lon": 2.3606045 },
+    { "lat": 48.8562014, "lon": 2.3606223 },
+    { "lat": 48.8562281, "lon": 2.3606459 },
+    { "lat": 48.8562147, "lon": 2.3606815 },
+    { "lat": 48.8561649, "lon": 2.3608356 },
+    { "lat": 48.8561160, "lon": 2.3608024 },
+    { "lat": 48.8561812, "lon": 2.3606045 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56040608,
+  "bounds": {
+    "minlat": 48.8558153,
+    "minlon": 2.3604629,
+    "maxlat": 48.8560491,
+    "maxlon": 2.3608959
+  },
+  "geometry": [
+    { "lat": 48.8558153, "lon": 2.3608398 },
+    { "lat": 48.8558389, "lon": 2.3607519 },
+    { "lat": 48.8558644, "lon": 2.3607685 },
+    { "lat": 48.8559093, "lon": 2.3606098 },
+    { "lat": 48.8559509, "lon": 2.3604629 },
+    { "lat": 48.8560033, "lon": 2.3605059 },
+    { "lat": 48.8560491, "lon": 2.3605437 },
+    { "lat": 48.8560296, "lon": 2.3606065 },
+    { "lat": 48.8560200, "lon": 2.3606001 },
+    { "lat": 48.8559765, "lon": 2.3607540 },
+    { "lat": 48.8559722, "lon": 2.3607512 },
+    { "lat": 48.8559521, "lon": 2.3608231 },
+    { "lat": 48.8559236, "lon": 2.3608033 },
+    { "lat": 48.8558963, "lon": 2.3608959 },
+    { "lat": 48.8558153, "lon": 2.3608398 }
+  ],
+  "tags": {
+    "amenity": "place_of_worship",
+    "architect": "Hector Guimard",
+    "architect:wikipedia": "fr:Hector Guimard",
+    "building": "church",
+    "building:levels": "5",
+    "check_date": "2025-03-06",
+    "heritage": "3",
+    "heritage:operator": "mhs",
+    "mhs:inscription_date": "1989-07-04",
+    "name": "Synagogue",
+    "ref:mhs": "PA00086477",
+    "religion": "jewish",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010",
+    "source:heritage": "data.gouv.fr:Ministère de la Culture - 08/2011",
+    "start_date": "1913",
+    "wikidata": "Q1567790",
+    "wikipedia": "fr:Synagogue de la rue Pavée"
+  }
+},
+{
+  "type": "way",
+  "id": 56040610,
+  "bounds": {
+    "minlat": 48.8560270,
+    "minlon": 2.3619002,
+    "maxlat": 48.8561395,
+    "maxlon": 2.3621243
+  },
+  "geometry": [
+    { "lat": 48.8560742, "lon": 2.3619002 },
+    { "lat": 48.8561395, "lon": 2.3619410 },
+    { "lat": 48.8560944, "lon": 2.3621243 },
+    { "lat": 48.8560270, "lon": 2.3620836 },
+    { "lat": 48.8560742, "lon": 2.3619002 }
+  ],
+  "tags": {
+    "building": "yes",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56040612,
+  "bounds": {
+    "minlat": 48.8558481,
+    "minlon": 2.3608033,
+    "maxlat": 48.8560783,
+    "maxlon": 2.3612081
+  },
+  "geometry": [
+    { "lat": 48.8560599, "lon": 2.3612081 },
+    { "lat": 48.8559510, "lon": 2.3611887 },
+    { "lat": 48.8558481, "lon": 2.3611705 },
+    { "lat": 48.8558570, "lon": 2.3610294 },
+    { "lat": 48.8558667, "lon": 2.3610020 },
+    { "lat": 48.8558963, "lon": 2.3608959 },
+    { "lat": 48.8559236, "lon": 2.3608033 },
+    { "lat": 48.8559521, "lon": 2.3608231 },
+    { "lat": 48.8559576, "lon": 2.3608275 },
+    { "lat": 48.8559466, "lon": 2.3608667 },
+    { "lat": 48.8559358, "lon": 2.3609964 },
+    { "lat": 48.8560024, "lon": 2.3610076 },
+    { "lat": 48.8560277, "lon": 2.3609247 },
+    { "lat": 48.8560783, "lon": 2.3609609 },
+    { "lat": 48.8560599, "lon": 2.3612081 }
+  ],
+  "tags": {
+    "alt_name": "Centre de Recherches Juridiques et Historiques. IMAf",
+    "amenity": "university",
+    "building": "yes",
+    "check_date": "2024-05-11",
+    "name": "Centre Malher",
+    "operator": "Paris 1 Panthéon-Sorbonne",
+    "website": "https://histoire.pantheonsorbonne.fr/lecole/centres-lecole-dhistoire-sorbonne"
+  }
+},
+{
+  "type": "way",
+  "id": 56040614,
+  "bounds": {
+    "minlat": 48.8561781,
+    "minlon": 2.3618550,
+    "maxlat": 48.8565284,
+    "maxlon": 2.3624701
+  },
+  "geometry": [
+    { "lat": 48.8563563, "lon": 2.3624701 },
+    { "lat": 48.8562678, "lon": 2.3624187 },
+    { "lat": 48.8561781, "lon": 2.3623666 },
+    { "lat": 48.8562204, "lon": 2.3621881 },
+    { "lat": 48.8563603, "lon": 2.3622964 },
+    { "lat": 48.8564200, "lon": 2.3621311 },
+    { "lat": 48.8563178, "lon": 2.3620446 },
+    { "lat": 48.8563458, "lon": 2.3619743 },
+    { "lat": 48.8563239, "lon": 2.3619560 },
+    { "lat": 48.8562750, "lon": 2.3621303 },
+    { "lat": 48.8562587, "lon": 2.3621416 },
+    { "lat": 48.8562368, "lon": 2.3621266 },
+    { "lat": 48.8562961, "lon": 2.3618843 },
+    { "lat": 48.8563031, "lon": 2.3618550 },
+    { "lat": 48.8563827, "lon": 2.3619102 },
+    { "lat": 48.8565284, "lon": 2.3620090 },
+    { "lat": 48.8564199, "lon": 2.3622978 },
+    { "lat": 48.8564135, "lon": 2.3623165 },
+    { "lat": 48.8564039, "lon": 2.3623391 },
+    { "lat": 48.8563563, "lon": 2.3624701 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "heritage": "3",
+    "heritage:operator": "mhs",
+    "mhs:inscription_date": "1925-06-17",
+    "ref:mhs": "PA00086446",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010",
+    "source:heritage": "Ministère de la Culture - 07/2018",
+    "wikidata": "Q22921750"
+  }
+},
+{
+  "type": "way",
+  "id": 56040615,
+  "bounds": {
+    "minlat": 48.8565715,
+    "minlon": 2.3614691,
+    "maxlat": 48.8567714,
+    "maxlon": 2.3616800
+  },
+  "geometry": [
+    { "lat": 48.8565887, "lon": 2.3614691 },
+    { "lat": 48.8566098, "lon": 2.3614732 },
+    { "lat": 48.8567300, "lon": 2.3614963 },
+    { "lat": 48.8567341, "lon": 2.3614971 },
+    { "lat": 48.8567331, "lon": 2.3615153 },
+    { "lat": 48.8567522, "lon": 2.3615179 },
+    { "lat": 48.8567714, "lon": 2.3615205 },
+    { "lat": 48.8567592, "lon": 2.3615494 },
+    { "lat": 48.8567481, "lon": 2.3615744 },
+    { "lat": 48.8567353, "lon": 2.3615973 },
+    { "lat": 48.8567279, "lon": 2.3616079 },
+    { "lat": 48.8567209, "lon": 2.3616180 },
+    { "lat": 48.8567051, "lon": 2.3616361 },
+    { "lat": 48.8566880, "lon": 2.3616514 },
+    { "lat": 48.8566710, "lon": 2.3616632 },
+    { "lat": 48.8566532, "lon": 2.3616722 },
+    { "lat": 48.8566349, "lon": 2.3616784 },
+    { "lat": 48.8566189, "lon": 2.3616800 },
+    { "lat": 48.8566029, "lon": 2.3616791 },
+    { "lat": 48.8565870, "lon": 2.3616757 },
+    { "lat": 48.8565715, "lon": 2.3616698 },
+    { "lat": 48.8565887, "lon": 2.3614691 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 56040617,
+  "bounds": {
+    "minlat": 48.8557403,
+    "minlon": 2.3609817,
+    "maxlat": 48.8558667,
+    "maxlon": 2.3611705
+  },
+  "geometry": [
+    { "lat": 48.8558481, "lon": 2.3611705 },
+    { "lat": 48.8557882, "lon": 2.3611594 },
+    { "lat": 48.8557403, "lon": 2.3611506 },
+    { "lat": 48.8557516, "lon": 2.3610075 },
+    { "lat": 48.8557592, "lon": 2.3609817 },
+    { "lat": 48.8557907, "lon": 2.3609876 },
+    { "lat": 48.8557840, "lon": 2.3610162 },
+    { "lat": 48.8558385, "lon": 2.3610257 },
+    { "lat": 48.8558497, "lon": 2.3609932 },
+    { "lat": 48.8558667, "lon": 2.3610020 },
+    { "lat": 48.8558570, "lon": 2.3610294 },
+    { "lat": 48.8558481, "lon": 2.3611705 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "building:levels": "6",
+    "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+  }
+},
+{
+  "type": "way",
+  "id": 23071686,
+  "bounds": {
+    "minlat": 48.8562036,
+    "minlon": 2.3612147,
+    "maxlat": 48.8562513,
+    "maxlon": 2.3613087
+  },
+  "geometry": [
+    { "lat": 48.8562036, "lon": 2.3613087 },
+    { "lat": 48.8562384, "lon": 2.3612401 },
+    { "lat": 48.8562513, "lon": 2.3612147 }
+  ],
+  "tags": {
+    "bicycle": "yes",
+    "cycleway:both": "no",
+    "highway": "living_street",
+    "lit": "yes",
+    "maxspeed": "20",
+    "motor_vehicle": "destination;permit",
+    "motor_vehicle:conditional": "no @ (Apr-Sep Su 10:00-19:30; Oct-Mar Su 10:00-18:00)",
+    "name": "Rue des Rosiers",
+    "name:etymology:wikidata": "Q34687",
+    "oneway": "yes",
+    "oneway:bicycle": "no",
+    "sidewalk:both": "separate",
+    "smoothness": "good",
+    "source:maxspeed": "BMO arrêté n°2013 P 0810",
+    "surface": "asphalt",
+    "zone:maxspeed": "FR:20"
+  }
+},
+{
+  "type": "way",
+  "id": 23071694,
+  "bounds": {
+    "minlat": 48.8570112,
+    "minlon": 2.3590571,
+    "maxlat": 48.8573578,
+    "maxlon": 2.3597738
+  },
+  "geometry": [
+    { "lat": 48.8570112, "lon": 2.3597738 },
+    { "lat": 48.8572037, "lon": 2.3593046 },
+    { "lat": 48.8573578, "lon": 2.3590571 }
+  ],
+  "tags": {
+    "access:motorcar": "destination",
+    "bicycle": "yes",
+    "cycleway:both": "no",
+    "highway": "pedestrian",
+    "lit": "yes",
+    "maxspeed": "20",
+    "name": "Rue des Rosiers",
+    "name:etymology:wikidata": "Q34687",
+    "oneway": "yes",
+    "oneway:bicycle": "no",
+    "paving_stones:material": "stone",
+    "sidewalk:left": "separate",
+    "sidewalk:right": "no",
+    "smoothness": "good",
+    "source:maxspeed": "BMO arrêté n°2013 P 0810",
+    "surface": "paving_stones",
+    "zone:maxspeed": "FR:20"
+  }
+},
+{
+  "type": "way",
+  "id": 220442415,
+  "bounds": {
+    "minlat": 48.8573578,
+    "minlon": 2.3584220,
+    "maxlat": 48.8576768,
+    "maxlon": 2.3590571
+  },
+  "geometry": [
+    { "lat": 48.8576768, "lon": 2.3584220 },
+    { "lat": 48.8575026, "lon": 2.3588269 },
+    { "lat": 48.8573578, "lon": 2.3590571 }
+  ],
+  "tags": {
+    "access:motorcar": "destination",
+    "cycleway:both": "no",
+    "highway": "pedestrian",
+    "lit": "yes",
+    "maxspeed": "15",
+    "name": "Rue des Rosiers",
+    "name:etymology:wikidata": "Q34687",
+    "oneway": "yes",
+    "oneway:bicycle": "no",
+    "sidewalk:both": "no",
+    "surface": "sett"
+  }
+},
+{
+  "type": "way",
+  "id": 220442418,
+  "bounds": {
+    "minlat": 48.8576768,
+    "minlon": 2.3578642,
+    "maxlat": 48.8578990,
+    "maxlon": 2.3584220
+  },
+  "geometry": [
+    { "lat": 48.8576768, "lon": 2.3584220 },
+    { "lat": 48.8578862, "lon": 2.3578963 },
+    { "lat": 48.8578990, "lon": 2.3578642 }
+  ],
+  "tags": {
+    "access:motorcar": "destination",
+    "cycleway:both": "no",
+    "highway": "pedestrian",
+    "lit": "yes",
+    "maxspeed": "15",
+    "name": "Rue des Rosiers",
+    "name:etymology:wikidata": "Q34687",
+    "oneway": "yes",
+    "oneway:bicycle": "no",
+    "sidewalk:both": "no",
+    "surface": "sett"
+  }
+},
+{
+  "type": "way",
+  "id": 576429481,
+  "bounds": {
+    "minlat": 48.8562513,
+    "minlon": 2.3609213,
+    "maxlat": 48.8563939,
+    "maxlon": 2.3612147
+  },
+  "geometry": [
+    { "lat": 48.8562513, "lon": 2.3612147 },
+    { "lat": 48.8563939, "lon": 2.3609213 }
+  ],
+  "tags": {
+    "bicycle": "yes",
+    "cycleway:both": "no",
+    "highway": "living_street",
+    "lit": "yes",
+    "maxspeed": "20",
+    "motor_vehicle": "destination;permit",
+    "motor_vehicle:conditional": "no @ (Apr-Sep Su 10:00-19:30; Oct-Mar Su 10:00-18:00)",
+    "name": "Rue des Rosiers",
+    "name:etymology:wikidata": "Q34687",
+    "oneway": "yes",
+    "oneway:bicycle": "no",
+    "sidewalk:both": "separate",
+    "smoothness": "good",
+    "source:maxspeed": "BMO arrêté n°2013 P 0810",
+    "surface": "paving_stones",
+    "zone:maxspeed": "FR:20"
+  }
+},
+{
+  "type": "way",
+  "id": 576429483,
+  "bounds": {
+    "minlat": 48.8563939,
+    "minlon": 2.3608853,
+    "maxlat": 48.8564111,
+    "maxlon": 2.3609213
+  },
+  "geometry": [
+    { "lat": 48.8563939, "lon": 2.3609213 },
+    { "lat": 48.8564111, "lon": 2.3608853 }
+  ],
+  "tags": {
+    "bicycle": "yes",
+    "cycleway": "opposite",
+    "highway": "living_street",
+    "lit": "yes",
+    "maxspeed": "20",
+    "motor_vehicle": "destination;permit",
+    "motor_vehicle:conditional": "no @ (Apr-Sep Su 10:00-19:30; Oct-Mar Su 10:00-18:00)",
+    "name": "Rue des Rosiers",
+    "name:etymology:wikidata": "Q34687",
+    "oneway": "yes",
+    "oneway:bicycle": "no",
+    "sidewalk:both": "separate",
+    "smoothness": "good",
+    "source:maxspeed": "BMO arrêté n°2013 P 0810",
+    "surface": "asphalt",
+    "zone:maxspeed": "FR:20"
+  }
+},
+{
+  "type": "way",
+  "id": 576429484,
+  "bounds": {
+    "minlat": 48.8564111,
+    "minlon": 2.3607656,
+    "maxlat": 48.8564708,
+    "maxlon": 2.3608853
+  },
+  "geometry": [
+    { "lat": 48.8564111, "lon": 2.3608853 },
+    { "lat": 48.8564529, "lon": 2.3608017 },
+    { "lat": 48.8564708, "lon": 2.3607656 }
+  ],
+  "tags": {
+    "bicycle": "yes",
+    "cycleway:both": "no",
+    "highway": "living_street",
+    "lit": "yes",
+    "maxspeed": "20",
+    "motor_vehicle": "destination;permit",
+    "motor_vehicle:conditional": "no @ (Apr-Sep Su 10:00-19:30; Oct-Mar Su 10:00-18:00)",
+    "name": "Rue des Rosiers",
+    "name:etymology:wikidata": "Q34687",
+    "oneway": "yes",
+    "oneway:bicycle": "no",
+    "sidewalk:both": "separate",
+    "smoothness": "good",
+    "source:maxspeed": "BMO arrêté n°2013 P 0810",
+    "surface": "paving_stones",
+    "zone:maxspeed": "FR:20"
+  }
+},
+{
+  "type": "way",
+  "id": 576429486,
+  "bounds": {
+    "minlat": 48.8564708,
+    "minlon": 2.3607152,
+    "maxlat": 48.8564968,
+    "maxlon": 2.3607656
+  },
+  "geometry": [
+    { "lat": 48.8564708, "lon": 2.3607656 },
+    { "lat": 48.8564806, "lon": 2.3607466 },
+    { "lat": 48.8564968, "lon": 2.3607152 }
+  ],
+  "tags": {
+    "bicycle": "yes",
+    "cycleway:both": "no",
+    "highway": "living_street",
+    "lit": "yes",
+    "maxspeed": "20",
+    "motor_vehicle": "destination;permit",
+    "motor_vehicle:conditional": "no @ (Apr-Sep Su 10:00-19:30; Oct-Mar Su 10:00-18:00)",
+    "name": "Rue des Rosiers",
+    "name:etymology:wikidata": "Q34687",
+    "oneway": "yes",
+    "oneway:bicycle": "no",
+    "sidewalk:both": "separate",
+    "smoothness": "good",
+    "source:maxspeed": "BMO arrêté n°2013 P 0810",
+    "surface": "asphalt",
+    "zone:maxspeed": "FR:20"
+  }
+},
+{
+  "type": "way",
+  "id": 576429487,
+  "bounds": {
+    "minlat": 48.8564968,
+    "minlon": 2.3599122,
+    "maxlat": 48.8569272,
+    "maxlon": 2.3607152
+  },
+  "geometry": [
+    { "lat": 48.8564968, "lon": 2.3607152 },
+    { "lat": 48.8568963, "lon": 2.3599616 },
+    { "lat": 48.8569272, "lon": 2.3599122 }
+  ],
+  "tags": {
+    "bicycle": "yes",
+    "cycleway:both": "no",
+    "highway": "living_street",
+    "lit": "yes",
+    "maxspeed": "20",
+    "motor_vehicle": "destination;permit",
+    "motor_vehicle:conditional": "no @ (Apr-Sep Su 10:00-19:30; Oct-Mar Su 10:00-18:00)",
+    "name": "Rue des Rosiers",
+    "name:etymology:wikidata": "Q34687",
+    "oneway": "yes",
+    "oneway:bicycle": "no",
+    "sidewalk:both": "separate",
+    "source:maxspeed": "BMO arrêté n°2013 P 0810",
+    "surface": "paving_stones",
+    "width": "3.5",
+    "zone:maxspeed": "FR:20"
+  }
+},
+{
+  "type": "way",
+  "id": 995241575,
+  "bounds": {
+    "minlat": 48.8569272,
+    "minlon": 2.3597738,
+    "maxlat": 48.8570112,
+    "maxlon": 2.3599122
+  },
+  "geometry": [
+    { "lat": 48.8569272, "lon": 2.3599122 },
+    { "lat": 48.8570112, "lon": 2.3597738 }
+  ],
+  "tags": {
+    "access:motorcar": "destination",
+    "bicycle": "yes",
+    "cycleway:both": "no",
+    "highway": "living_street",
+    "lit": "yes",
+    "maxspeed": "20",
+    "motor_vehicle": "destination;permit",
+    "name": "Rue des Rosiers",
+    "name:etymology:wikidata": "Q34687",
+    "oneway": "yes",
+    "oneway:bicycle": "no",
+    "sidewalk:left": "no",
+    "sidewalk:right": "separate",
+    "source:maxspeed": "BMO arrêté n°2013 P 0810",
+    "surface": "paving_stones",
+    "zone:maxspeed": "FR:20"
+  }
+}
+
+  ]
+}
