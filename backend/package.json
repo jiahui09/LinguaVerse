@@ -1,0 +1,21 @@
+{
+  "name": "linguaverse-backend",
+  "version": "0.1.0",
+  "description": "语宙 AI 网关 — LLM 统一对话接口",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js"
+  },
+  "dependencies": {
+    "fastify": "^5.3.3",
+    "@fastify/cors": "^11.0.1",
+    "dotenv": "^16.5.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "tsx": "^4.19.0",
+    "@types/node": "^22.15.0"
+  }
+}
