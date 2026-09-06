@@ -126,7 +126,7 @@ pnpm dev  # http://localhost:5173
 由于你的开发环境是 Linux：
 
 1. **如果选 R3F** → 直接开始，不需要额外安装任何东西
-2. **如果选 Godot** → 下载 AppImage 即可运行，但 Web 导出的包体和加载时间仍然是问题
+2. **如果选 Godot** → 下载 AppImage 即可运行，Desktop 原生性能极好（V1 目标平台）
 3. **如果用 Blender** → Blender 也有 Linux 版本，下载即用
 
 **Linux 不影响最终决定。**

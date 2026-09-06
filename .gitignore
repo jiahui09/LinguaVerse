@@ -19,3 +19,9 @@ build/
 # 系统文件
 .DS_Store
 Thumbs.db
+
+# Codex 技能库（本地辅助，不入库）
+.codex/
+
+# llvmpipe 软渲染缓存(仅沙箱验证用)
+.userdata/

@@ -12,11 +12,13 @@
 |------|------|
 | 设计文档 | ✅ 完成（16+ 项决策锁定） |
 | 技术调研 | ✅ 完成（引擎对比、资产方案、LLM API） |
-| Web 集成方案 | ✅ 完成（JavaScriptBridge + DOM 叠加） |
+| Web 集成方案 | ✅ 完成（JavaScriptBridge + DOM 叠加，V2 实现） |
 | 工具安装 | ✅ Godot 4.7.2 + Blender 4.2.8 |
-| 项目骨架 | ✅ 创建完成 |
+| 项目骨架 | ✅ 创建完成（含后端 AI 网关） |
 | 技术验证（PoC） | ⏳ 待进行 |
 | 资产制作 | ⏳ 待进行 |
+
+> **V1 平台：** Godot Desktop（Linux/Windows/macOS）。Web 导出在 V2 实现。
 
 ## 快速开始
 
@@ -26,6 +28,9 @@
 
 # 启动 Blender 制作资产
 ./tools/blender-4.2.8-linux-x64/blender
+
+# 启动后端 AI 网关
+cd backend && cp .env.example .env && pnpm install && pnpm dev
 ```
 
 ## 项目结构
@@ -42,7 +47,7 @@ LinguaVerse/
 │   │   ├── world/          # 世界系统（昼夜循环）
 │   │   └── autoload/       # 全局单例
 │   └── assets/             # 3D 资产
-├── backend/                # Node.js AI 网关（待创建）
+├── backend/                # Node.js AI 网关（LLM 统一接口）
 ├── blender-assets/         # Blender 源文件（待创建）
 ├── docs/                   # 设计文档
 └── tools/                  # 开发工具（Godot + Blender）
@@ -56,7 +61,7 @@ LinguaVerse/
 | 3D 资产 | Blender 4.2.8 | 建筑、家具、NPC 模型 |
 | 脚本语言 | GDScript | 游戏逻辑、NPC 行为 |
 | AI 网关 | Node.js + Fastify | LLM API 统一接口 |
-| Web UI | JavaScriptBridge + DOM | 对话输入框、台词气泡 |
+| Web UI（V2） | JavaScriptBridge + DOM | 对话输入框、台词气泡 |
 | LLM（开发） | Ollama + Qwen2.5 | 本地零成本开发 |
 | LLM（生产） | DeepSeek / OpenAI | 云 API |
 
@@ -77,4 +82,8 @@ LinguaVerse/
 - [系统规则设计](docs/系统规则设计讨论稿.md)
 - [设计决策锁定](docs/设计决策锁定记录.md)
 - [技术选型（V1 垂直切片）](docs/技术选型-巴黎咖啡馆垂直切片.md)
-- [Godot Web 集成方案](docs/Godot-Web集成技术方案.md)
+- [V1 开发计划](docs/V1开发计划.md)
+- [Godot Web 集成方案（V2 参考）](docs/Godot-Web集成技术方案.md)
+- [巴黎数字孪生技术方案](docs/巴黎数字孪生技术方案.md)
+- [性能优化与模型灵活性](docs/性能优化与模型灵活性.md)
+- [整个巴黎技术方案](docs/整个巴黎-技术方案.md)
