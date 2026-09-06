@@ -1,0 +1,17 @@
+# Godot 4 项目
+.godot/
+*.translation
+export_presets.cfg
+
+# 导出文件
+*.pck
+*.zip
+build/
+
+# Blender 临时文件
+*.blend1
+*.blend2
+
+# 系统文件
+.DS_Store
+Thumbs.db
