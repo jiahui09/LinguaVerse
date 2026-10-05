@@ -80,14 +80,110 @@ func _run():
 				no_col += 1
 	_check(no_col == 0, "所有建筑有碰撞体(缺失 %d)" % no_col)
 
-	# 面数估算
+	# ── 街道道具 (P1-4 / 决策 11 自然边界) ──
+	var props: Node = null
+	if bld_root:
+		props = bld_root.get_node_or_null("StreetProps")
+	_check(props != null, "StreetProps 存在")
+	var n_props := 0
+	if props:
+		n_props = props.get_child_count()
+	_check(n_props >= 10, "StreetProps 子节点 ≥ 10 (实际 %d)" % n_props)
+
+	var n_trees := 0
+	var n_lamps := 0
+	var n_benches := 0
+	var n_barriers := 0
+	var barriers: Array = []
+	var decor_layer_ok := false
+	var lamp_light: OmniLight3D = null
+	if props:
+		for child in props.get_children():
+			var nm := String(child.name)
+			if nm.begins_with("Tree_"):
+				n_trees += 1
+			elif nm.begins_with("Lamp_"):
+				n_lamps += 1
+				if lamp_light == null:
+					for c in child.get_children():
+						if c is OmniLight3D:
+							lamp_light = c as OmniLight3D
+							break
+			elif nm.begins_with("Bench_"):
+				n_benches += 1
+			elif nm.begins_with("Barrier_"):
+				n_barriers += 1
+				barriers.append(child)
+			# 装饰层抽样: 任取一个装饰道具(树/灯/椅)须在 layer 3(值 4)
+			if not decor_layer_ok and child is StaticBody3D \
+					and (child as StaticBody3D).collision_layer == 4:
+				decor_layer_ok = true
+	_check(n_trees >= 6, "行道树 ≥ 6 (实际 %d)" % n_trees)
+	_check(n_lamps >= 6, "路灯 ≥ 6 (实际 %d)" % n_lamps)
+	_check(n_benches >= 2, "长椅 ≥ 2 (实际 %d)" % n_benches)
+	_check(n_barriers == 2, "施工围栏 Barrier_* == 2 (实际 %d)" % n_barriers)
+
+	# 围栏须在世界层(1)且带碰撞体
+	var barrier_ok := n_barriers == 2
+	for bk in barriers:
+		var bar := bk as StaticBody3D
+		if bar == null or bar.collision_layer != 1:
+			barrier_ok = false
+			continue
+		var has_shape := false
+		for c in bar.get_children():
+			if c is CollisionShape3D:
+				has_shape = true
+		if not has_shape:
+			barrier_ok = false
+	_check(barrier_ok, "每道围栏 collision_layer==1 且有 CollisionShape3D")
+
+	# 路灯夜光: set_night_glow 驱动 OmniLight 能量 (测完恢复 0)
+	_check(lamp_light != null, "至少一盏路灯带 OmniLight3D")
+	var glow_on_ok := false
+	var glow_off_ok := false
+	if lamp_light != null and gen.has_method("set_night_glow"):
+		gen.set_night_glow(1.0)
+		glow_on_ok = lamp_light.light_energy > 0.0
+		gen.set_night_glow(0.0)
+		glow_off_ok = lamp_light.light_energy == 0.0
+		# 已恢复白天基线(0); 昼夜循环每 10 帧会按现实时间重新驱动
+	_check(glow_on_ok, "set_night_glow(1.0) → 灯 energy > 0")
+	_check(glow_off_ok, "set_night_glow(0.0) → 灯 energy == 0")
+
+	# 装饰道具层(4) + 玩家 mask(1|4=5); NPC mask 仍为 1 → 不撞装饰道具
+	_check(decor_layer_ok, "装饰道具 collision_layer == 4")
+	var pc := player as CharacterBody3D
+	var mask_v := -1
+	if pc != null:
+		mask_v = pc.collision_mask
+	_check(mask_v >= 0 and (mask_v & 5) == 5, "Player collision_mask & 5 == 5 (实际 %d)" % mask_v)
+
+	# ── 昼夜去锁 (决策 7): LV_FIXED_HOUR 为空 → 跟随现实时间 ──
+	var sun := main.get_node_or_null("Sun")
+	var env_hour := OS.get_environment("LV_FIXED_HOUR")
+	if env_hour.is_empty():
+		var fh := -2.0
+		if sun != null:
+			fh = float(sun.get("fixed_hour"))
+		_check(fh == -1.0, "未设 LV_FIXED_HOUR → sun.fixed_hour == -1 跟随现实 (实际 %.2f)" % fh)
+	else:
+		print("[SKIP] LV_FIXED_HOUR=", env_hour, " 已设置 → 跳过 fixed_hour 断言")
+
+	# 面数估算 (buildings_root 全部子节点, 含 StreetProps 道具)
 	var total_faces := 0
 	if bld_root:
 		for child in bld_root.get_children():
 			for mesh_node in _collect_mesh(child):
 				total_faces += _mesh_faces(mesh_node)
-	print("[StreetCheck] 建筑估算面数: ", total_faces)
-	_check(total_faces < 50000, "建筑面数预算(实际 %d)" % total_faces)
+	var prop_faces := 0
+	if props:
+		for child in props.get_children():
+			for mesh_node in _collect_mesh(child):
+				prop_faces += _mesh_faces(mesh_node)
+	print("[StreetCheck] 建筑估算面数: ", total_faces - prop_faces)
+	print("[StreetCheck] 道具估算面数: ", prop_faces)
+	_check(total_faces < 50000, "建筑+道具总面数预算(实际 %d)" % total_faces)
 
 	main.queue_free()
 	_quit()

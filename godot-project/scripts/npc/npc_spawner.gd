@@ -29,8 +29,11 @@ func spawn_all():
 		var marie := waiter_scene.instantiate() as Node3D
 		var staff_pos: Vector3 = gen.get_cafe_staff_pos()
 		marie.position = staff_pos
-		# 咖啡馆门面朝 -X(街), Marie 面向 -X
-		marie.rotation_degrees = Vector3(0, -90, 0)
+		# 咖啡馆门面朝 -X(街)：Marie 必须也朝 -X 才是"面向顾客"。
+		# Node3D 前向 = -Z，绕 Y 转 θ 后前向 = (-sinθ, 0, -cosθ)：
+		#   θ=-90° → +X（吧台后侧/后墙，错）；θ=+90° → -X（街道/门口，对）
+		# 旧值 -90 会让 Marie 背对顾客盯着后墙，故修正为 +90。
+		marie.rotation_degrees = Vector3(0, 90, 0)
 		add_child(marie)
 		spawned.append(marie)
 		print("[NPCSpawner] Marie 吧台后: ", staff_pos)

@@ -15,13 +15,15 @@ var settings: Dictionary = {
 }
 
 func _ready():
-	# 注册为自动加载单例
-	# 在 Project Settings → AutoLoad 中设置
-	pass
+	# 暂停时也要能收到 ESC 恢复（否则暂停即软锁）
+	process_mode = Node.PROCESS_MODE_ALWAYS
 
 func _unhandled_input(event: InputEvent):
-	# 全局暂停/恢复
+	# 全局暂停/恢复（对话中的 ESC 交给 dialog_manager 处理）
 	if event.is_action_pressed("ui_cancel"):
+		var dm = get_tree().get_first_node_in_group("dialog_manager")
+		if dm != null and dm.has_method("is_dialog_active") and dm.is_dialog_active():
+			return
 		toggle_pause()
 
 func toggle_pause():

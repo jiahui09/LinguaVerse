@@ -1,0 +1,51 @@
+{
+  "budgets": {
+    "max_glb_bytes": 8388608,
+    "max_texture_px": 2048,
+    "max_cafe_faces": 20000
+  },
+  "assets": {
+    "godot-project/assets/models/cafe.glb": {
+      "bytes": 250612,
+      "sha256": "bea935c9bbd47af11abbc6c7f96e49c90c5a5de18fc995c5f4ecc961dfb5dae1",
+      "triangles": 2080,
+      "primitives": 160,
+      "materials": 15,
+      "images": 0,
+      "generator": "Khronos glTF Blender I/O v4.2.83",
+      "gltf_version": 2
+    }
+  },
+  "updated_at": "2026-10-05T06:33:46+00:00",
+  "audio": {
+    "street_loop": {
+      "path": "godot-project/assets/audio/ambient/street_loop.wav",
+      "seconds": 8.0,
+      "bytes": 352844,
+      "sha256": "f72a6b7fa69da6c13c536a91d793f5b2939c9e8b1e4f9b272b52729852ebe041",
+      "source": "CC0-1.0 程序合成（本仓库 tools/make_ambience.py，无第三方素材）",
+      "generator_sha256": "188aeed9f7b44681cfc662a796e43f5c5969ff96506fa07cf20ef6c841938105"
+    },
+    "cafe_loop": {
+      "path": "godot-project/assets/audio/ambient/cafe_loop.wav",
+      "seconds": 8.0,
+      "bytes": 352844,
+      "sha256": "718b5c9eca1063042b5ab5628754ceb11e0e425effb169cf3b76b241653c451b",
+      "source": "CC0-1.0 程序合成（本仓库 tools/make_ambience.py，无第三方素材）",
+      "generator_sha256": "188aeed9f7b44681cfc662a796e43f5c5969ff96506fa07cf20ef6c841938105"
+    },
+    "cup_clink": {
+      "path": "godot-project/assets/audio/sfx/cup_clink.wav",
+      "seconds": 0.6,
+      "bytes": 26504,
+      "sha256": "fa5eec5e758a1a777d53944447e2450d3377a79a1bd4d13e69b970148c133a56",
+      "source": "CC0-1.0 程序合成（本仓库 tools/make_ambience.py，无第三方素材）",
+      "generator_sha256": "188aeed9f7b44681cfc662a796e43f5c5969ff96506fa07cf20ef6c841938105"
+    }
+  },
+  "audio_budgets": {
+    "max_audio_bytes": 614400,
+    "max_audio_sec": 12,
+    "min_audio_sec": 0.5
+  }
+}

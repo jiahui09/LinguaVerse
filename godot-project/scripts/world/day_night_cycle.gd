@@ -1,19 +1,48 @@
 extends DirectionalLight3D
 
 ## 昼夜循环系统
-## 游戏内时间与现实时间同步（决策 7）
-## @export fixed_hour >= 0 时锁定为固定小时（开发/演示模式，不受现实时间影响）
+## 游戏内时间与现实时间同步（决策 7「游戏内时间完全跟随现实时间」）
+##
+## 两种模式:
+##   模式 A（默认 = 决策 7）: 环境变量 LV_FIXED_HOUR 为空 → fixed_hour 保持 -1,
+##       游戏内时间完全跟随现实时间（+ time_offset），深夜就是深夜。
+##   模式 B（演示/调试开关）: 环境变量 LV_FIXED_HOUR 设为 0–23.99 的浮点数,
+##       _ready() 读到后写入 fixed_hour 锁定该时段并 print 一行提示。
+##       用法: LV_FIXED_HOUR=14.5 ./tools/Godot_v4.7.2-stable_linux.x86_64 --path godot-project
+##             LV_FIXED_HOUR=21.0 ./tools/Godot_v4.7.2-stable_linux.x86_64 --headless \
+##                 --path godot-project -s res://scripts/debug/xxx.gd
+##             （bash 里 export LV_FIXED_HOUR=21.0 亦可；非法/越界值会被忽略并提示）
+##
+## 接口约定: @export fixed_hour 保留, 场景文件不再写死数值(main.tscn 演示锁已删),
+##   代码直接赋值 `sun.fixed_hour = 21.0` 始终有效(debug 脚本依赖此接口)。
 
 @export var time_offset: float = 0.0  # 时区偏移（小时）
-@export var fixed_hour: float = -1.0  # -1 = 跟随现实时间；0-23.9 = 固定时段
+@export var fixed_hour: float = -1.0  # -1 = 跟随现实时间；0-23.99 = 固定时段
 
 var current_hour: float = 0.0
 
 func _ready():
+	_apply_demo_time_override()  # 环境变量演示开关（见头注释两种模式）
 	# 获取当前现实时间（或固定时间）
 	_update_time()
 	# 更新光照
 	_update_light()
+
+## 读环境变量 LV_FIXED_HOUR: 空 → 不设（跟随现实时间, 模式 A）
+## 有效浮点且在 0–23.99 → 锁定演示时段（模式 B）并打印提示
+func _apply_demo_time_override():
+	var env := OS.get_environment("LV_FIXED_HOUR")
+	if env.is_empty():
+		return  # 模式 A: 跟随现实时间（决策 7）
+	if not env.is_valid_float():
+		print("[DayNight] LV_FIXED_HOUR 非法(非浮点), 忽略: ", env)
+		return
+	var h := float(env)
+	if h < 0.0 or h > 23.99:
+		print("[DayNight] LV_FIXED_HOUR 超出 0-23.99, 忽略: ", env)
+		return
+	fixed_hour = h
+	print("[DayNight] 演示模式: LV_FIXED_HOUR=", env, " → fixed_hour=", fixed_hour)
 
 func _process(_delta: float):
 	# 实时更新

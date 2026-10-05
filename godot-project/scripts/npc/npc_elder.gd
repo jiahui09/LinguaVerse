@@ -8,6 +8,7 @@ extends "res://scripts/npc/npc_base.gd"
 func _ready():
 	npc_name = "Jean"
 	npc_job = "退休老人"
+	npc_job_fr = "Retraité"   # 名牌副标题（纯氛围信息）
 	npc_personality = "友善、健谈，喜欢讲玛黑区的故事"
 	speaks_french = true
 	super._ready()

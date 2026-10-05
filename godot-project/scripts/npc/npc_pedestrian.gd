@@ -12,6 +12,7 @@ var _walk_forward: bool = true
 func _ready():
 	npc_name = "Pierre"
 	npc_job = "路人"
+	npc_job_fr = "Passant"   # 名牌副标题（纯氛围信息）
 	npc_personality = "中性，匆忙赶路，不太爱闲聊"
 	speaks_french = true
 	super._ready()

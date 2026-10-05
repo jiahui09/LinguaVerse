@@ -50,15 +50,20 @@ func _unhandled_input(event: InputEvent):
 		_try_start_dialog()
 
 func _physics_process(delta: float):
+	# 对话中打字时禁止移动（WASD 是法语字母）；失焦后可走开（决策 9）
+	var typing := false
 	if is_in_dialog:
-		return
+		var dm = get_tree().get_first_node_in_group("dialog_manager")
+		typing = dm != null and dm.has_method("is_player_typing") and dm.is_player_typing()
 
 	# 重力
 	if not is_on_floor():
 		velocity.y -= gravity * delta
 
 	# 移动方向
-	var input_dir = Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
+	var input_dir := Vector2.ZERO
+	if not typing:
+		input_dir = Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
 	var direction = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 
 	if direction:

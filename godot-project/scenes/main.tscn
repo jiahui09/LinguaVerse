@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://main_scene"]
+[gd_scene load_steps=11 format=3 uid="uid://main_scene"]
 
 [ext_resource type="Script" path="res://scripts/autoload/game_manager.gd" id="1_gm"]
 [ext_resource type="Script" path="res://scripts/player/player_controller.gd" id="2_pc"]
@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" uid="uid://npc_pedestrian" path="res://scenes/npc/npc_pedestrian.tscn" id="10_ped"]
 [ext_resource type="PackedScene" uid="uid://npc_elder" path="res://scenes/npc/npc_elder.tscn" id="11_eld"]
 [ext_resource type="PackedScene" uid="uid://dialog_ui" path="res://scenes/ui/dialog_ui.tscn" id="8_ui"]
+[ext_resource type="Script" path="res://scripts/world/ambience_controller.gd" id="12_amb"]
 
 [sub_resource type="ProceduralSkyMaterial" id="SkyMat"]
 sky_top_color = Color(0.28, 0.48, 0.88, 1)
@@ -57,7 +58,6 @@ environment = SubResource("Env_main")
 transform = Transform3D(0.707, 0.707, 0, 0, 0.707, -0.707, -0.707, 0.707, 0, 0, 20, 0)
 light_energy = 1.4
 shadow_enabled = true
-fixed_hour = 14.5
 script = ExtResource("5_dn")
 
 [node name="StreetGenerator" type="Node3D" parent="." groups=["street_generator"]]
@@ -66,7 +66,7 @@ script = ExtResource("6_sg")
 [node name="Player" type="CharacterBody3D" parent="." groups=["player"]]
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, -22)
 collision_layer = 1
-collision_mask = 1
+collision_mask = 5
 script = ExtResource("2_pc")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Player"]
@@ -103,3 +103,6 @@ elder_scene = ExtResource("11_eld")
 script = ExtResource("4_dm")
 
 [node name="DialogUI" parent="." instance=ExtResource("8_ui")]
+
+[node name="Ambience" type="Node" parent="."]
+script = ExtResource("12_amb")

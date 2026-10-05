@@ -25,3 +25,7 @@ Thumbs.db
 
 # llvmpipe 软渲染缓存(仅沙箱验证用)
 .userdata/
+
+# 验证产物（可再生；截图等证据按需另存 docs/）
+artifacts/
+godot-project/debug_artifacts/
