@@ -1,31 +1,53 @@
-# 开发工具二进制文件（太大，不纳入版本控制）
+# ===== 开发工具二进制（体积过大，不入库；校验脚本按固定路径引用）=====
 tools/Godot_v4.7.2-stable_linux.x86_64
 tools/blender-4.2.8-linux-x64/
 
-# Godot 项目临时文件
+# ===== Godot 项目临时文件 =====
 godot-project/.godot/
 godot-project/*.translation
 godot-project/export_presets.cfg
+# 注：*.import 是 Godot 4 的资产元数据（与资产同目录），属受控文件，绝不忽略
 
-# 导出文件
+# ===== 导出产物 =====
 *.pck
 *.zip
 build/
 
-# Blender 临时文件
+# ===== 测试/截图脚本的临时文件（正常运行会自动清理；中断才残留）=====
+# 落在 res:// 根部即 godot-project/，见 dialog_check / playthrough_check / handbook_capture
+handbook_*_tmp.json
+handbook_bad_test.json
+
+# ===== Python（tools/ 下的管线与校验脚本）=====
+__pycache__/
+*.py[cod]
+
+# ===== Blender 临时文件 =====
 *.blend1
 *.blend2
 
-# 系统文件
+# ===== 运行日志（一律可再生；验证日志统一落 artifacts/*.log）=====
+*.log
+
+# ===== 编辑器与 IDE =====
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ===== 系统文件 =====
 .DS_Store
+._*
 Thumbs.db
 
-# Codex 技能库（本地辅助，不入库）
+# ===== 本地辅助目录（不入库）=====
 .codex/
 
-# llvmpipe 软渲染缓存(仅沙箱验证用)
+# ===== llvmpipe 软渲染缓存（仅沙箱验证用）=====
 .userdata/
 
-# 验证产物（可再生；截图等证据按需另存 docs/）
+# ===== 验证产物（可再生；截图等证据按需另存 docs/）=====
+# 屏幕截图位置抽查另见 godot-project/.gitignore 的「开发截图」段
 artifacts/
 godot-project/debug_artifacts/
