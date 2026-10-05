@@ -89,12 +89,20 @@ func start_dialog_with(npc: Node):
 	_pending_input = ""
 	_away_time = 0.0
 
+	# 二次招呼记忆（决策 14 升级）：先问"是否见过"，再让 start_dialog 打标记
+	var returning: bool = npc.has_method("has_met_player") and npc.has_met_player()
+
 	# 通知 NPC 开始对话
 	npc.start_dialog()
 
-	# 显示对话 UI，传入 NPC 名字和招呼语
+	# 手册·邻里：认识这邻居（幂等首见 + 会面计数，操作逻辑 §4.2）
 	var npc_info = npc.get_npc_info()
-	var greeting = _get_greeting(npc_info)
+	var gm := get_node_or_null("/root/GameManager")
+	if gm:
+		gm.record_npc_met(npc_info)
+
+	# 显示对话 UI，传入 NPC 名字和招呼语
+	var greeting = _get_greeting(npc_info, returning)
 	if dialog_ui:
 		dialog_ui.show_dialog(npc_info.name, greeting)
 	# 世界内台词气泡同步显示招呼语
@@ -108,9 +116,19 @@ func start_dialog_with(npc: Node):
 			"content": greeting
 		})
 
-## 获取 NPC 招呼语（V1 简单处理）
-func _get_greeting(npc_info: Dictionary) -> String:
+## 获取 NPC 招呼语（V1 简单处理；returning=true 为第二次见面起的记忆招呼）
+func _get_greeting(npc_info: Dictionary, returning: bool = false) -> String:
 	var job = npc_info.get("job", "")
+	var name = str(npc_info.get("name", ""))
+	if returning:
+		# 决策 14 升级：最近见过的邻居认得出你（世界反馈而非 UI 提示）
+		if "服务员" in job or "Marie" in name:
+			return "Ah, te revoilà ! Vous désirez?"
+		elif "路人" in job or "Pierre" in name:
+			return "Te revoilà, voisin !"
+		elif "老人" in job or "Jean" in name:
+			return "Te revoilà, jeune voisin !"
+		return "Ah, te revoilà !"
 	if "服务员" in job or "serveuse" in job:
 		return "Bonjour! Vous désirez?"
 	elif "路人" in job or "Pierre" in npc_info.get("name", ""):
@@ -219,6 +237,13 @@ func _on_http_response(result: int, response_code: int, _headers: PackedStringAr
 		"role": "assistant",
 		"content": npc_text
 	})
+
+	# 手册·语录：被世界接住的句子（200 成功回复 = acknowledge；幂等按句去重）
+	if npc_text.strip_edges() != "" and _pending_input.strip_edges() != "":
+		var gm := get_node_or_null("/root/GameManager")
+		if gm:
+			gm.record_phrase(_pending_input, str(current_npc.npc_name))
+
 	_pending_input = ""
 
 	# 保持历史长度

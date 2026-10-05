@@ -22,9 +22,14 @@ func _physics_process(_delta: float):
 		var collider = get_collider()
 		# 向上查找有 npc_base 脚本的父节点
 		var npc = _find_npc_parent(collider)
-		if npc and npc != current_target:
-			current_target = npc
-			target_found.emit(npc)
+		if npc:
+			if npc != current_target:
+				current_target = npc
+				target_found.emit(npc)
+		elif current_target:
+			# 撞到非 NPC（墙/道具）：清掉残留目标，防止隔墙误触发（操作逻辑 §2.2）
+			current_target = null
+			target_lost.emit()
 	elif current_target:
 		current_target = null
 		target_lost.emit()

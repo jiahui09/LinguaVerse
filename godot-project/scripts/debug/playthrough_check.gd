@@ -3,6 +3,7 @@ extends SceneTree
 ## 闭环回放 (P0-B4) — 真实输入链路端到端：
 ##   mock 后端 → 射线识别 NPC → E 键路径开对话 → 打字锁/失焦可走 → 多轮对话(历史契约)
 ##   → 错误路径友好文案 → 走开自然结束 → 第二个 NPC + ESC 两段式 → 昼夜联动
+##   → 新居民手册闭环：真实回放产生语录/邻里/足迹 + Tab 开合 + 存档白名单校验
 ##
 ## 用法: tools/verify.sh 自动运行；或手动：
 ##   godot --headless --path godot-project -s res://scripts/debug/playthrough_check.gd
@@ -231,6 +232,61 @@ func _run():
 		if b.get("is_cafe", false):
 			cafe_b += 1
 	_check(cafe_b == 1, "布局含且仅含 1 个咖啡馆")
+
+	# ── 9) 新居民手册闭环（操作逻辑 §4.2）：真实回放产生的记录 + Tab 开合 + 白名单 ──
+	var gm2: Node = root.get_node_or_null("GameManager")
+	if gm2 != null:
+		gm2.handbook_path = "res://handbook_test_tmp_pw.json"
+		var snap: Dictionary = gm2.get_handbook_snapshot()
+		_check(int(snap["phrases"].size()) == 3,
+			"真实回放产生 3 条语录，错误句不入账 (got: %d)" % int(snap["phrases"].size()))
+		var has_err := false
+		for p in snap["phrases"]:
+			if str(p.get("text", "")).find("thé aussi") >= 0:
+				has_err = true
+		_check(not has_err, "错误回复的句子不进语录（世界没接住就不算）")
+		_check(snap["npcs"].has("Marie") and snap["npcs"].has("Jean"), "真实对话记录两位邻居")
+		_check(not snap["zones"].is_empty(), "行走足迹已静默记录")
+
+		# Tab 开合（真实输入动作路径）
+		var hb: Node = main.get_node("Handbook")
+		var tab_ev := InputEventAction.new()
+		tab_ev.action = "handbook"
+		tab_ev.pressed = true
+		hb._unhandled_input(tab_ev)
+		_check(hb.visible and player.ui_blocked, "Tab 打开手册并冻结输入")
+		hb.open_tab(0)
+		var hc := str(hb.get_state()["content"])
+		_check(hc.find("Café") >= 0 or hc.find("Rue des Rosiers") >= 0, "足迹页显示真实走过的街段")
+		hb.open_tab(2)
+		_check(str(hb.get_state()["content"]).find("un caf") >= 0, "语录页含真实说过且被听懂的句子")
+		hb._unhandled_input(tab_ev)
+		_check(not hb.visible and not player.ui_blocked, "再按 Tab 关闭手册释放输入")
+
+		# 合法存档 → 落盘重载保留（先做，坏档测试会把内存重置）
+		gm2.handbook_path = "res://handbook_test_tmp_pw.json"
+		gm2._save_handbook()
+		gm2.load_handbook()
+		_check(not gm2.handbook.phrases.is_empty() and gm2.handbook.npcs.has("Marie"),
+			"合法存档重载保留语录与邻里记录")
+
+		# 白名单校验：坏存档回默认不崩溃（借 GTA_SZ save.ts validateSave 思想）
+		var bad_path := "res://handbook_bad_test.json"
+		var bf := FileAccess.open(bad_path, FileAccess.WRITE)
+		if bf:
+			bf.store_string("{\"phrases\": [{\"text\": 123}], \"zones\": {\"xx\": \"bad\"}, \"npcs\": 42, \"junk\": true}")
+			bf.close()
+			gm2.handbook_path = bad_path
+			gm2.load_handbook()
+			_check(gm2.handbook.phrases.is_empty() and gm2.handbook.zones.is_empty() and gm2.handbook.npcs.is_empty(),
+				"坏存档经白名单校验回默认（不崩溃、不带垃圾字段）")
+
+		# 清理测试临时文件
+		for f in ["res://handbook_test_tmp_pw.json", "res://handbook_bad_test.json"]:
+			if FileAccess.file_exists(f):
+				DirAccess.remove_absolute(ProjectSettings.globalize_path(f))
+	else:
+		print("SKIP: 未注册 GameManager，跳过手册闭环断言")
 
 	main.queue_free()
 	if failures > 0:

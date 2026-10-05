@@ -41,6 +41,7 @@ const NOD_DURATION := 0.45     # 点头动作时长
 const FADE_SPAN := 4.0         # 名牌淡出过渡距离
 
 var _state_before_talk: State = State.IDLE
+var _has_met_player: bool = false   # 决策 14：NPC 实例生命周期内记住是否聊过
 var _body: MeshInstance3D
 var _name_label: Label3D
 var _job_label: Label3D
@@ -242,7 +243,12 @@ func start_dialog():
 		_state_before_talk = current_state
 	is_in_conversation = true
 	current_state = State.TALKING
+	_has_met_player = true   # 二次招呼记忆（决策 14 升级）：下次见面认得出你
 	dialog_started.emit(npc_name)
+
+## 是否见过玩家（DialogManager 据此选择初次/记忆招呼语）
+func has_met_player() -> bool:
+	return _has_met_player
 
 ## 结束对话（唯一出口由 DialogManager 调用：走开 / ESC / 外部）
 func end_dialog():

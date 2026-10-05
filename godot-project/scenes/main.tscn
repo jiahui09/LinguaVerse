@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://main_scene"]
+[gd_scene load_steps=13 format=3 uid="uid://main_scene"]
 
 [ext_resource type="Script" path="res://scripts/autoload/game_manager.gd" id="1_gm"]
 [ext_resource type="Script" path="res://scripts/player/player_controller.gd" id="2_pc"]
@@ -12,6 +12,8 @@
 [ext_resource type="PackedScene" uid="uid://npc_elder" path="res://scenes/npc/npc_elder.tscn" id="11_eld"]
 [ext_resource type="PackedScene" uid="uid://dialog_ui" path="res://scenes/ui/dialog_ui.tscn" id="8_ui"]
 [ext_resource type="Script" path="res://scripts/world/ambience_controller.gd" id="12_amb"]
+[ext_resource type="Script" path="res://scripts/ui/hud_hints.gd" id="13_hud"]
+[ext_resource type="Script" path="res://scripts/ui/handbook_ui.gd" id="14_hb"]
 
 [sub_resource type="ProceduralSkyMaterial" id="SkyMat"]
 sky_top_color = Color(0.28, 0.48, 0.88, 1)
@@ -106,3 +108,9 @@ script = ExtResource("4_dm")
 
 [node name="Ambience" type="Node" parent="."]
 script = ExtResource("12_amb")
+
+[node name="HudHints" type="CanvasLayer" parent="."]
+script = ExtResource("13_hud")
+
+[node name="Handbook" type="CanvasLayer" parent="."]
+script = ExtResource("14_hb")
