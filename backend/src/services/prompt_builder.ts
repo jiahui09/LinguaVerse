@@ -62,9 +62,16 @@ export function buildPrompt(input: PromptInput): string {
     { role: 'system', content: systemPrompt },
   ];
 
-  // 添加历史对话（最多保留最近 10 轮）
-  const recentHistory = input.conversation_history.slice(-10);
-  for (const msg of recentHistory) {
+  // 契约：conversation_history 是"已发生的历史"，player_input 是当前句，只拼一次。
+  // 兜底：客户端若把当前句也塞进了历史（旧版行为），去掉，避免同一句 user 出现两遍。
+  const history = [...input.conversation_history];
+  const last = history[history.length - 1];
+  if (last && (last.role === 'player' || last.role === 'user') && last.content === input.player_input) {
+    history.pop();
+  }
+
+  // 添加历史对话（最多保留最近 10 条）
+  for (const msg of history.slice(-10)) {
     messages.push({
       role: msg.role === 'player' ? 'user' : 'assistant',
       content: msg.content,
