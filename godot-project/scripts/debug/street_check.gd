@@ -2,6 +2,10 @@ extends SceneTree
 
 ## 结构自检脚本 (headless) — 验证街景 + 咖啡馆 + NPC 与布局一致
 ## 用法: godot --headless --path godot-project -s res://scripts/debug/street_check.gd
+## P2-A: 断言按子系统分组 — 每子系统"产物存在 + 面数 + 位置不越界" + basis 分级
+##        + 街区清单三方核对 (manifest == 磁盘 == 运行时重算)。
+
+const Planting := preload("res://scripts/world/street/planting.gd")
 
 var failures: int = 0
 
@@ -159,6 +163,244 @@ func _run():
 		mask_v = pc.collision_mask
 	_check(mask_v >= 0 and (mask_v & 5) == 5, "Player collision_mask & 5 == 5 (实际 %d)" % mask_v)
 
+	# ── P2-A (预拆分): 路面/人行道 产物 + 位置边界 ──
+	var sw := float(layout.get("street", {}).get("width", 9.0))
+	var bo := float(layout.get("street", {}).get("backoff", 6.0))
+	var road_node: Node = gen.get_node_or_null("Road")
+	_check(road_node != null, "路面 Road 节点存在")
+	if road_node is StaticBody3D:
+		var rb := road_node as StaticBody3D
+		_check(rb.collision_layer == 1, "Road collision_layer == 1")
+		var r_col := false
+		var r_mesh_w := -1.0
+		for c in rb.get_children():
+			if c is CollisionShape3D:
+				r_col = true
+			elif c is MeshInstance3D and (c as MeshInstance3D).mesh is BoxMesh:
+				r_mesh_w = ((c as MeshInstance3D).mesh as BoxMesh).size.x
+		_check(r_col, "Road 有碰撞体")
+		_check(absf(r_mesh_w - sw) < 0.01, "路面宽度 == layout.street.width (%.1f, 实际 %.2f)" % [sw, r_mesh_w])
+	else:
+		_check(false, "Road 类型为 StaticBody3D")
+		_check(false, "Road 有碰撞体")
+		_check(false, "路面宽度 == layout.street.width")
+	var sw_nodes: Array = []
+	for nm in ["Sidewalk", "SidewalkM"]:
+		var n: Node = gen.get_node_or_null(nm)
+		_check(n != null, "人行道 %s 存在" % nm)
+		if n:
+			sw_nodes.append(n)
+	var sw_bounds_ok := sw_nodes.size() == 2
+	for n in sw_nodes:
+		for c in (n as Node3D).get_children():
+			if c is MeshInstance3D and (c as MeshInstance3D).mesh is BoxMesh:
+				var bsz: Vector3 = ((c as MeshInstance3D).mesh as BoxMesh).size
+				var cx: float = (c as MeshInstance3D).position.x
+				if absf(cx) - bsz.x / 2.0 < sw / 2.0 - 0.01 or absf(cx) + bsz.x / 2.0 > bo + 0.01:
+					sw_bounds_ok = false
+	_check(sw_bounds_ok, "人行道 x ∈ [路宽/2, backoff] 不越界")
+
+	# ── P2-A (预拆分): 道具位置边界 (算术见 street_generator 头注释) ──
+	var tree_x_ok := true
+	var lamp_x_ok := true
+	var bench_ok := true
+	var decor_on_road := 0
+	var n_trees_exact := 0
+	var n_lamps_exact := 0
+	if props:
+		for child in props.get_children():
+			var nm := String(child.name)
+			var px: float = 1e9
+			if child is Node3D:
+				px = (child as Node3D).position.x
+			if nm.begins_with("Tree_"):
+				n_trees_exact += 1
+				if absf(absf(px) - 4.78) > 0.01:
+					tree_x_ok = false
+			elif nm.begins_with("Lamp_"):
+				n_lamps_exact += 1
+				if absf(absf(px) - 4.78) > 0.01:
+					lamp_x_ok = false
+			elif nm.begins_with("Bench_"):
+				if absf(px) > bo + 0.01:
+					bench_ok = false
+			if child is StaticBody3D and (child as StaticBody3D).collision_layer == 4 \
+					and absf(px) < sw / 2.0 + 0.05:
+				decor_on_road += 1
+	_check(n_trees_exact == 11, "行道树精确 11 (12 槽 − 门口缓冲 1, 实际 %d)" % n_trees_exact)
+	_check(tree_x_ok, "所有行道树 |x| == 4.78 (路面/巡游带边界)")
+	_check(n_lamps_exact == 10, "路灯精确 10 (无避让触发, 实际 %d)" % n_lamps_exact)
+	_check(lamp_x_ok, "所有路灯 |x| == 4.78 (路面/巡游带边界)")
+	_check(bench_ok, "长椅 |x| ≤ backoff 不越界")
+	_check(decor_on_road == 0, "路面区 (|x| < 4.55) 无装饰道具 (实际 %d)" % decor_on_road)
+
+	# 围栏位置: 布局端点 s0-1 / s1+1 (与生成端同式, 防硬编码漂移)
+	var s0_min := 1e9
+	var s1_max := -1e9
+	for b in layout_buildings:
+		s0_min = min(s0_min, float(b["s0"]))
+		s1_max = max(s1_max, float(b["s1"]))
+	var bar_zs: Array = []
+	for bk in barriers:
+		if bk is Node3D:
+			bar_zs.append((bk as Node3D).position.z)
+	bar_zs.sort()
+	var ends_ok := bar_zs.size() == 2
+	if ends_ok:
+		ends_ok = absf(float(bar_zs[0]) - (s0_min - 1.0)) < 0.01 \
+			and absf(float(bar_zs[1]) - (s1_max + 1.0)) < 0.01
+	_check(ends_ok, "围栏 z == 布局端点 (s0−1=%.1f, s1+1=%.1f)" % [s0_min - 1.0, s1_max + 1.0])
+
+	# ── P2-A: 子系统模块文件 (所有权契约: scripts/world/street/ 五模块各一写入者) ──
+	for fpath in [
+		"res://scripts/world/street/road_surface.gd",
+		"res://scripts/world/street/planting.gd",
+		"res://scripts/world/street/street_furniture.gd",
+		"res://scripts/world/street/building_signs.gd",
+		"res://scripts/world/street/road_names.gd",
+	]:
+		_check(FileAccess.file_exists(fpath), "子系统文件存在: %s" % String(fpath).get_file())
+
+	# ── P2-A: planting 预算制计划 (纯函数: 槽位守恒/原因闭集/可覆盖参数) ──
+	var plan: Dictionary = Planting.new().plan()
+	var planted := int(plan["planted"])
+	var rejected: Array = plan["rejected"]
+	_check(planted + rejected.size() == 12,
+		"planting 槽位守恒 planted+rejected==12 (实际 %d+%d)" % [planted, rejected.size()])
+	_check(planted == 11, "planting 默认计划 11 (12 槽 − 门口缓冲 1, 实际 %d)" % planted)
+	var reasons_ok := rejected.size() > 0
+	var door_hit := false
+	for rj in rejected:
+		var rsn := String((rj as Dictionary)["reason"])
+		if not Planting.REASONS.has(rsn):
+			reasons_ok = false
+		if rsn == "cafe_door_buffer" and float((rj as Dictionary)["side"]) > 0.0:
+			door_hit = true
+	_check(reasons_ok, "拒绝原因全部 ∈ REASONS 闭集")
+	_check(door_hit, "门口缓冲拒绝存在 (side=+1)")
+	var low: Dictionary = Planting.plan_with(Planting.PARAMS, {"budget_total": 3})
+	var exhausted := false
+	for rj in low["rejected"]:
+		if String((rj as Dictionary)["reason"]) == "budget_exhausted":
+			exhausted = true
+	_check(int(low["planted"]) == 3 and exhausted,
+		"覆盖预算 budget=3 → planted==3 且出现 budget_exhausted (实际 %d)" % int(low["planted"]))
+	var door_sync := absf(float(Planting.PARAMS["cafe_door_z"])
+		- float(layout.get("cafe_anchor", {}).get("s", -999.0))) < 0.001
+	_check(door_sync, "planting.cafe_door_z == layout.cafe_anchor.s (双源同步)")
+
+	# ── P2-A: building_signs 铭牌 (产物/内容/basis/位置) ──
+	var signs_root: Node = null
+	if bld_root:
+		signs_root = bld_root.get_node_or_null("BuildingSigns")
+	_check(signs_root != null, "BuildingSigns 容器存在")
+	var sign_nodes: Array = []
+	if signs_root:
+		for c in signs_root.get_children():
+			sign_nodes.append(c)
+	_check(sign_nodes.size() == 1,
+		"铭牌数 == OSM 相邻同名合并段 (实际 %d, 期望 1)" % sign_nodes.size())
+	var layout_names: Dictionary = {}
+	var nmin := 1e9
+	var nmax := -1e9
+	for b in layout_buildings:
+		var bn := String(b.get("name", "")).strip_edges()
+		if bn != "":
+			layout_names[bn] = true
+			nmin = min(nmin, float(b["s0"]))
+			nmax = max(nmax, float(b["s1"]))
+	var sign_lbl: Label3D = null
+	if sign_nodes.size() == 1:
+		sign_lbl = _first_label(sign_nodes[0] as Node)
+	_check(sign_lbl != null and layout_names.has(sign_lbl.text),
+		"铭牌文字 ∈ 布局 OSM 名集合 (实际 %s)" % (sign_lbl.text if sign_lbl else "<无Label>"))
+	_check(sign_lbl != null and String(sign_lbl.get_meta("basis", "")) == "reported",
+		"铭牌 basis == reported (OSM name)")
+	var sign_pos_ok := false
+	if sign_nodes.size() == 1 and sign_nodes[0] is Node3D:
+		var sn := sign_nodes[0] as Node3D
+		sign_pos_ok = absf(absf(sn.position.x) - bo) < 0.5 \
+			and absf(sn.position.y - 3.2) < 0.01 \
+			and sn.position.z >= nmin - 0.01 and sn.position.z <= nmax + 0.01
+	_check(sign_pos_ok, "铭牌贴立面前伸不越界 (|x|<backoff, y=3.2, z∈命名楼段)")
+
+	# ── P2-A: road_names 路名牌 (产物/端点/文字分级/朝向) ──
+	var rn_root: Node = null
+	if bld_root:
+		rn_root = bld_root.get_node_or_null("RoadNames")
+	_check(rn_root != null, "RoadNames 容器存在")
+	var plates: Array = []
+	if rn_root:
+		for c in rn_root.get_children():
+			plates.append(c)
+	_check(plates.size() == 2, "路名牌 2 块 (南/北端, 实际 %d)" % plates.size())
+	if plates.size() == 2:
+		plates.sort_custom(func(a, b): return (a as Node3D).position.z < (b as Node3D).position.z)
+		var ps := plates[0] as Node3D
+		var pn := plates[1] as Node3D
+		_check(absf(ps.position.z - (s0_min - 1.0 + 2.0)) < 0.01 \
+			and absf(pn.position.z - (s1_max + 1.0 - 2.0)) < 0.01,
+			"路名牌 z == 布局端点内缩 2m (南 %.2f, 北 %.2f)" % [ps.position.z, pn.position.z])
+		_check(absf(absf(ps.position.x) - 4.9) < 0.01 and absf(absf(pn.position.x) - 4.9) < 0.01,
+			"路名牌 x == 4.9 (人行道内侧不越界)")
+		var street_nm := String(layout.get("street", {}).get("name", ""))
+		var name_ok := true
+		var dir_ok := true
+		var orient_ok := true
+		for plate_info in [[ps, 0.0], [pn, 180.0]]:
+			var pl := (plate_info[0] as Node3D).get_node_or_null("StreetName") as Label3D
+			var dl := (plate_info[0] as Node3D).get_node_or_null("DirHint") as Label3D
+			if pl == null or pl.text != street_nm or String(pl.get_meta("basis", "")) != "reported":
+				name_ok = false
+			if dl == null or String(dl.get_meta("basis", "")) != "ai-drafted" \
+					or not ["vers le Nord", "vers le Sud"].has(dl.text):
+				dir_ok = false
+			if pl == null or absf(pl.rotation_degrees.y - float(plate_info[1])) > 0.01:
+				orient_ok = false
+		_check(name_ok, "路名主行 == 布局街名且 basis == reported (\"%s\")" % street_nm)
+		_check(dir_ok, "方位词 basis == ai-drafted 且 ∈ {Nord, Sud}")
+		_check(orient_ok, "路名行朝向街内 (南 0° / 北 180°)")
+
+	# ── P2-A: 文字 basis 分级 (围栏施工文案 / 咖啡馆店名) ──
+	var bar_basis := false
+	for bk in barriers:
+		for lab in _collect_labels(bk as Node):
+			if String((lab as Label3D).get_meta("basis", "")) == "ai-drafted":
+				bar_basis = true
+	_check(bar_basis, "围栏施工文案 basis == ai-drafted")
+	_check(cafe_site != null and String(cafe_site.get_meta("basis", "")) == "reported",
+		"咖啡馆店名 basis == reported (OSM name)")
+
+	# ── P2-A: 街区清单三方核对 (manifest == 磁盘 == 运行时重算) ──
+	var block: Dictionary = {}
+	var mf := FileAccess.open("res://data/assets_manifest.json", FileAccess.READ)
+	if mf:
+		var mjson = JSON.parse_string(mf.get_as_text())
+		if typeof(mjson) == TYPE_DICTIONARY:
+			block = ((mjson as Dictionary).get("blocks", {}) as Dictionary).get("rosiers", {})
+	_check(not block.is_empty(), "assets_manifest.blocks.rosiers 街区 entry 存在")
+	var runtime: Dictionary = gen.get_block_manifest()
+	if OS.get_environment("LV_DUMP_BLOCK_MANIFEST") != "":
+		print("BLOCK_MANIFEST_JSON: ", JSON.stringify(runtime))
+	if not block.is_empty():
+		var rlayout: Dictionary = runtime["layout"]
+		var mlayout: Dictionary = block.get("layout", {})
+		_check(String(mlayout.get("sha256", "")) == String(rlayout["sha256"]) \
+			and int(mlayout.get("bytes", -1)) == int(rlayout["bytes"]),
+			"layout sha256/bytes 三方一致 (清单==磁盘)")
+		var msub: Dictionary = block.get("subsystems", {})
+		var rsub: Dictionary = runtime["subsystems"]
+		var drift := ""
+		for k in rsub:
+			if String(msub.get(k, "")) != String(rsub[k]):
+				drift += String(k) + " "
+		if msub.size() != rsub.size():
+			drift += "(数量 %d≠%d)" % [msub.size(), rsub.size()]
+		_check(drift == "", "5 子系统 param_hash 与运行时一致 (漂移: %s)" % (drift if drift != "" else "无"))
+	else:
+		_check(false, "layout sha256/bytes 三方一致 (清单==磁盘)")
+		_check(false, "5 子系统 param_hash 与运行时一致")
+
 	# ── 昼夜去锁 (决策 7): LV_FIXED_HOUR 为空 → 跟随现实时间 ──
 	var sun := main.get_node_or_null("Sun")
 	var env_hour := OS.get_environment("LV_FIXED_HOUR")
@@ -194,6 +436,21 @@ func _collect_mesh(node: Node, acc: Array = []) -> Array:
 	for c in node.get_children():
 		_collect_mesh(c, acc)
 	return acc
+
+## 收集 Label3D (basis 分级断言用)
+func _collect_labels(node: Node, acc: Array = []) -> Array:
+	if node is Label3D:
+		acc.append(node)
+	for c in node.get_children():
+		_collect_labels(c, acc)
+	return acc
+
+## 取第一个 Label3D (铭牌文字断言用)
+func _first_label(node: Node) -> Label3D:
+	var found := _collect_labels(node)
+	if found.size() == 0:
+		return null
+	return found[0] as Label3D
 
 func _mesh_faces(mi: MeshInstance3D) -> int:
 	var m: Mesh = mi.mesh

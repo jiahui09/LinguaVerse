@@ -28,7 +28,7 @@
 
 > **V1 平台：** Godot Desktop（Linux/Windows/macOS）。Web 导出在 V2 实现。
 
-**最近更新：** 2026-10-05 操作逻辑 P2 + 巴黎扩展规划落地：移动加减速与设置接线、`E · Parler à <名字>` 目标提示、单行键位条（用过即淡出）、新居民手册（Tab 三分页：足迹/邻里/语录，幂等入账 + 白名单存档，无分数无等级）、NPC 二次招呼记忆（`Ah, te revoilà !`）；新增 `巴黎扩展-实施方案`（P2-A/B/C 分阶段 + V3 路线图）与 `操作逻辑-设计与实施` 两份方案；`verify.sh` 10 步全绿（dialog 75 / playthrough 46）——**不能据此声称**手感舒服、手册好看、法语地道、真机帧率（本机无 GPU，llvmpipe 截图仅位置抽查）
+**最近更新：** 2026-10-07 巴黎扩展 P2-A 街区加固：`street_generator.gd`（655 行）拆为装配器 + `scripts/world/street/` 五子系统（路面/预算制种植/街道家具/建筑铭牌/路名牌，每模块一个写入者）、Label3D 文字 basis 分级（OSM 源 = `reported`、生成文案 = `ai-drafted`、无源 = 不显示）、`assets_manifest.json` 新增 `blocks.rosiers` 街区级条目（layout 哈希 + 5 子系统参数哈希三方核对）；`street_check` **69 项 0 失败**、面数 9880 ≤ 50k、`verify.sh` 10 步全绿、拆分前后同机位截图无缺件（位置抽查）——**不能据此声称**画面好看、法语地道、方位词是真实罗盘方位、真机帧率（本机无 GPU）
 
 ## 快速开始
 
@@ -58,7 +58,8 @@ LinguaVerse/
 │   │   ├── npc/            # NPC 系统
 │   │   ├── dialog/         # 对话系统
 │   │   ├── ui/             # HUD 提示层 + 新居民手册
-│   │   ├── world/          # 世界系统（昼夜循环）
+│   │   ├── world/          # 世界系统（昼夜循环 + 街景装配器 street_generator）
+│   │   │   └── street/     # 街区子系统：路面/种植/家具/铭牌/路名（每模块一个写入者）
 │   │   └── autoload/       # 全局单例
 │   └── assets/             # 3D 资产
 ├── backend/                # Node.js AI 网关（LLM 统一接口）

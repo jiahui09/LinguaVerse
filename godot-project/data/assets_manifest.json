@@ -16,6 +16,22 @@
       "gltf_version": 2
     }
   },
+  "blocks": {
+    "rosiers": {
+      "layout": {
+        "path": "godot-project/data/layouts/rosiers_layout.json",
+        "bytes": 5701,
+        "sha256": "d5bacc4d4e9dca33cd299c66f4c7c8af9a713bb93e3e6dcd6d9e453b2e4921d5"
+      },
+      "subsystems": {
+        "road_surface": "339697f9cb5a3c3468cec74ae2b103281ac6ad716992942d93c78e81e2439828",
+        "street_furniture": "0dec49df5cba079af92555d38099f1393b06d8b2bf76809f20e24907eddcd83f",
+        "planting": "9263b6357e70e81d655ebbe136c6259946f4c5c1857323141538743c0dc02538",
+        "building_signs": "05f956696c016ecf2c8a4ef5ca400241fc4872ef36985f37ccffda2c9439a5a0",
+        "road_names": "64d6dec8307aa7d68aa97def157f3dd8c11d9340aa1ad4679156abcfce95a1e9"
+      }
+    }
+  },
   "updated_at": "2026-10-05T06:33:46+00:00",
   "audio": {
     "street_loop": {

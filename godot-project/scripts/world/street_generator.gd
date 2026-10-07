@@ -1,6 +1,18 @@
 extends Node3D
 
-## 巴黎街景生成器 — 读取布局 JSON, 程序化生成完整街道
+## 巴黎街景生成器 — 装配器 (P2-A 拆分后: 集成者独占)
+##
+## 职责: 读布局 JSON → 建共享材质 → 串行装配 scripts/world/street/ 子系统
+##       → 生成建筑与咖啡馆 → 对外暴露布局/门面 API。
+##
+## 子系统 (每模块一个写入者; 跨界改动经本装配器串行接入):
+##   road_surface.gd     路面 / 人行道
+##   planting.gd         预算制种植计划 (纯函数, 避让策略唯一写入者)
+##   street_furniture.gd 树/灯/椅/围栏几何 + 夜灯半场 (消费 planting 计划)
+##   building_signs.gd   建筑铭牌 + Label3D 文字 basis 分级
+##   road_names.gd       路名牌 + 方位词
+## 共享几何工具 (_box_mesh/_add_mesh/_add_box_shape/_add_cyl_shape) 与资产清单
+## 留在本装配器 — 工具的单一写入者 = 集成者; 子系统跨界调用 gen._add_*。
 ##
 ## 坐标约定:
 ##   - 街道沿 Z 轴延伸(s 里程 → z), 咖啡馆在 z≈0
@@ -17,16 +29,19 @@ extends Node3D
 ## 碰撞层约定 (collision_layer 位值):
 ##   layer 1 (值 1) = 世界: 路面 / 人行道 / 建筑 / 咖啡馆 / 施工围栏 — 玩家与 NPC 都撞
 ##   layer 2 (值 2) = NPC
-##   layer 3 (值 4) = 装饰道具 (行道树 / 路灯 / 长椅) — 玩家撞
+##   layer 3 (值 4) = 装饰道具 (行道树 / 路灯 / 长椅 / 路名牌柱) — 玩家撞
 ##                    (main.tscn 里 Player 的 collision_mask = 5 = 1|4),
 ##                    NPC 不撞 (NPC 场景 collision_mask 恒为 1, 否则 Pierre 每帧
 ##                    强制 position.x = walk_x 会被装饰物卡住抖动)
 ##
-## 街道道具 (_build_street_props, 决策 11 自然边界 + 街道家具):
-##   全部代码建节点(MeshInstance3D + StaticBody3D + CollisionShape3D + StandardMaterial3D),
-##   低多边形、不加载外部资源; 统一挂在 buildings_root 下的 "StreetProps" 节点
-##   (面数预算统计遍历 buildings_root 全部子节点 → 道具被覆盖;
-##    建筑计数与碰撞检查只看 Building_* 开头子节点 → 不受影响)
+## 面数预算: 统计遍历 buildings_root 全部子节点 → 子系统容器 (StreetProps /
+##   BuildingSigns / RoadNames) 挂在其下被自动覆盖; 建筑计数只看 Building_* 前缀。
+
+const RoadSurface := preload("res://scripts/world/street/road_surface.gd")
+const StreetPlanting := preload("res://scripts/world/street/planting.gd")
+const StreetFurniture := preload("res://scripts/world/street/street_furniture.gd")
+const BuildingSigns := preload("res://scripts/world/street/building_signs.gd")
+const RoadNames := preload("res://scripts/world/street/road_names.gd")
 
 @export var layout_path: String = "res://data/layouts/rosiers_layout.json"
 
@@ -44,15 +59,17 @@ var cafe_site: Node3D = null
 var buildings_root: Node3D
 var street_length_m: float = 160.0
 
-# 街道道具状态 (见头注释"碰撞层约定")
-var _prop_mats: Dictionary = {}          # 道具共享材质 (按 key 复用)
-var _lamp_head_mat: StandardMaterial3D   # 灯头自发光材质 (set_night_glow 驱动)
-var _lamp_lights: Array = []             # 带 OmniLight3D 的路灯 (交替侧, 约一半)
+# 子系统实例 (装配后持有; 夜光联动与街区清单走这里)
+var _road_surface = null
+var _planting = null
+var _furniture = null
+var _building_signs = null
+var _road_names = null
 
 func _ready():
 	load_layout()
 	build_all()
-	# 建筑计数只看 Building_* 开头的子节点 (StreetProps/CafeSite 不计入)
+	# 建筑计数只看 Building_* 开头的子节点 (子系统容器与 CafeSite 不计入)
 	var n_buildings := 0
 	if buildings_root:
 		for c in buildings_root.get_children():
@@ -89,11 +106,48 @@ func build_all():
 	buildings_root.name = "Buildings"
 	add_child(buildings_root)
 
-	_build_road(min_s, max_s)
-	_build_sidewalks(min_s, max_s)
-	_build_street_props(min_s, max_s)  # 行道树/路灯/长椅/施工围栏 (决策 11)
+	# ── P2-A 子系统装配 (scripts/world/street/, 每模块一个写入者, 串行接入) ──
+	_road_surface = RoadSurface.new()
+	_road_surface.build(self, min_s, max_s)
+	_planting = StreetPlanting.new()
+	_furniture = StreetFurniture.new()
+	_furniture.build(self, _planting.plan(), min_s, max_s)
+	_building_signs = BuildingSigns.new()
+	_building_signs.build(self)
+	_road_names = RoadNames.new()
+	_road_names.build(self, min_s, max_s)
+
 	_build_all_buildings()
 	_build_cafe_site()
+
+## ---------- 街区清单 (assets_manifest.json 街区级 entry) ----------
+
+## 三方核对口径: 清单记录 == 磁盘文件 == 运行时重算 (street_check 断言)。
+## layout sha256 对文件字节 (sha256_text = UTF-8 字节 == 磁盘字节);
+## 子系统 param_hash = str(PARAMS).sha256_text(), 参数变 → 哈希变 → 断言报失,
+## 须由集成者有意更新清单 (哈希绑定失效纪律)。
+func get_block_manifest() -> Dictionary:
+	var f := FileAccess.open(layout_path, FileAccess.READ)
+	var layout_bytes := 0
+	var layout_sha := ""
+	if f:
+		layout_bytes = f.get_length()
+		layout_sha = f.get_as_text().sha256_text()
+	return {
+		"layout": {"path": layout_path, "bytes": layout_bytes, "sha256": layout_sha},
+		"subsystems": {
+			"road_surface": _param_hash_of(_road_surface),
+			"street_furniture": _param_hash_of(_furniture),
+			"planting": _param_hash_of(_planting),
+			"building_signs": _param_hash_of(_building_signs),
+			"road_names": _param_hash_of(_road_names),
+		},
+	}
+
+func _param_hash_of(mod) -> String:
+	if mod == null or not mod.has_method("param_hash"):
+		return ""
+	return String(mod.param_hash())
 
 ## ---------- 材质 ----------
 
@@ -127,121 +181,7 @@ func _get_facade_material(levels: int, wpf: int, shop: bool, seed_f: float) -> S
 	_facade_mats[key] = m
 	return m
 
-## ---------- 路面/人行道 ----------
-
-func _build_road(min_s: float, max_s: float):
-	var width = float(layout["street"].get("width", 9.0))
-	var road := StaticBody3D.new()
-	road.name = "Road"
-	road.collision_layer = 1
-	var mi := MeshInstance3D.new()
-	var box := BoxMesh.new()
-	box.size = Vector3(width, 0.12, max_s - min_s)
-	mi.mesh = box
-	mi.material_override = _road_mat
-	mi.position = Vector3(0, -0.06, (min_s + max_s) / 2.0)
-	road.add_child(mi)
-	var col := CollisionShape3D.new()
-	var shape := BoxShape3D.new()
-	shape.size = Vector3(width, 0.5, max_s - min_s)
-	col.shape = shape
-	col.position = Vector3(0, -0.25, (min_s + max_s) / 2.0)
-	road.add_child(col)
-	add_child(road)
-
-func _build_sidewalks(min_s: float, max_s: float):
-	var width = float(layout["street"].get("width", 9.0))
-	var backoff = float(layout["street"].get("backoff", 6.0))
-	var sw_w = backoff - width / 2.0
-	if sw_w <= 0.0:
-		return
-	for side in [1.0, -1.0]:
-		var sw := StaticBody3D.new()
-		sw.name = "Sidewalk" if side > 0 else "SidewalkM"
-		sw.collision_layer = 1
-		var cx = side * (width / 2.0 + sw_w / 2.0)
-		var mi := MeshInstance3D.new()
-		var box := BoxMesh.new()
-		box.size = Vector3(sw_w, 0.14, max_s - min_s)
-		mi.mesh = box
-		mi.material_override = _sidewalk_mat
-		mi.position = Vector3(cx, -0.07, (min_s + max_s) / 2.0)
-		sw.add_child(mi)
-		var col := CollisionShape3D.new()
-		var shape := BoxShape3D.new()
-		shape.size = Vector3(sw_w, 0.6, max_s - min_s)
-		col.shape = shape
-		col.position = Vector3(cx, -0.3, (min_s + max_s) / 2.0)
-		sw.add_child(col)
-		add_child(sw)
-
-## ---------- 街道道具 (行道树 / 路灯 / 长椅 / 施工围栏) ----------
-##
-## 现场几何 (与 rosiers_layout.json 核对):
-##   street.width=9.0 → 路面 x∈[-4.5,4.5]; street.backoff=6.0 → 人行道 x∈[4.5,6]
-##   建筑前脸 |x|=6 (facade 薄盒中心 5.91 → x∈[5.85,5.97], 无碰撞)
-##   cafe_anchor side=+1 s=4.34 → 咖啡馆门口世界坐标 (5.4, 0, 4.34)
-##   Pierre 沿 x=-5.2 来回 (胶囊半径 0.25 → 占位 x∈[-5.45,-4.95], z∈[-18,18])
-##   Jean 站 (5.5, 0, -3.66); 玩家出生 (0,0,-22), 已验证路径: 沿街到咖啡馆门口
-##
-## 核心 x 边界算术 (树/灯统一用 x=±4.78):
-##   树干半径 0.11 → 外缘 4.78+0.11 = 4.89 < 4.95 (Pierre 占位内缘, -X 侧 -4.89 > -4.95)
-##   树干内缘 4.78-0.11 = 4.67 > 4.5 (路缘) → 路面 |x|<4.5 全空, 出生点→门口路径不被堵
-##   灯杆半径 0.07 → 外缘 4.85 < 4.95, 同样不侵入 Pierre 巡游带
-##   长椅 x=5.75 座面进深 0.45 → 5.525..5.975 < 6 (人行道外缘/建筑前脸)
-
-const LAYER_WORLD := 1    # layer 1 值 1: 世界 (施工围栏用, 玩家与 NPC 都撞)
-const LAYER_DECOR := 4    # layer 3 值 4: 装饰道具 (树/路灯/长椅, 只有玩家撞)
-
-const PROP_X := 4.78              # 树/灯 x (算术见上)
-const TREE_Z_FROM := -30.0        # 树 z 起点
-const TREE_Z_STEP := 12.0         # 树间距
-const TREE_Z_COUNT := 6           # -30, -18, -6, 6, 18, 30
-const LAMP_Z: Array = [-28.0, -14.0, 0.0, 14.0, 28.0]
-const CAFE_DOOR_Z := 4.34         # 咖啡馆门口 z (= cafe_anchor.s, side=+1)
-const DOOR_CLEAR_M := 3.5         # 门口缓冲半径
-const JEAN_X := 5.5
-const JEAN_Z := -3.66
-const PROP_CLEAR_M := 1.6         # 道具与 Jean 的最小距离
-
-## 生成全部街道道具 (幂等: 已存在 StreetProps 则直接返回)
-func _build_street_props(min_s: float, max_s: float):
-	if buildings_root == null:
-		return
-	if buildings_root.get_node_or_null("StreetProps") != null:
-		return  # 幂等保护: 重复调用不重复生成
-	var props := Node3D.new()
-	props.name = "StreetProps"
-	buildings_root.add_child(props)  # 挂在 buildings_root 下 → 面数预算统计覆盖道具
-	_build_prop_trees(props)
-	_build_prop_lamps(props)
-	_build_prop_benches(props)
-	_build_prop_barriers(props, min_s, max_s)
-	print("[StreetGenerator] 街道道具完成: ", props.get_child_count(), " 个节点")
-
-## ---------- 道具小工具 ----------
-
-func _prop_mat(key: String, color: Color, rough: float) -> StandardMaterial3D:
-	if _prop_mats.has(key):
-		return _prop_mats[key] as StandardMaterial3D
-	var m := StandardMaterial3D.new()
-	m.albedo_color = color
-	m.roughness = rough
-	_prop_mats[key] = m
-	return m
-
-## 灯头自发光材质 (白天 emission=0, set_night_glow 驱动)
-func _lamp_head_material() -> StandardMaterial3D:
-	if _lamp_head_mat != null:
-		return _lamp_head_mat
-	var m := StandardMaterial3D.new()
-	m.albedo_color = Color(0.92, 0.86, 0.68)
-	m.roughness = 0.4
-	m.emission_enabled = true
-	m.emission = Color(1.0, 0.85, 0.6)
-	m.emission_energy_multiplier = 0.0
-	_lamp_head_mat = m
-	return m
+## ---------- 共享几何工具 (子系统跨界调用 gen._add_*) ----------
 
 func _box_mesh(w: float, h: float, d: float) -> BoxMesh:
 	var b := BoxMesh.new()
@@ -273,201 +213,6 @@ func _add_cyl_shape(parent: Node3D, radius: float, height: float, pos: Vector3):
 	col.shape = shape
 	col.position = pos
 	parent.add_child(col)
-
-## +X 侧道具避让: 咖啡馆门口 3.5m 缓冲 + 距 Jean 1.6m
-func _avoid_cafe_side(side: float, z: float) -> bool:
-	if side <= 0.0:
-		return false  # 咖啡馆与 Jean 都在 +X 侧
-	if absf(z - CAFE_DOOR_Z) < DOOR_CLEAR_M:
-		return true
-	if Vector2(side * PROP_X, z).distance_to(Vector2(JEAN_X, JEAN_Z)) < PROP_CLEAR_M:
-		return true
-	return false
-
-## ---------- a) 行道树 ----------
-
-func _build_prop_trees(props: Node3D):
-	var bark := _prop_mat("bark", Color(0.33, 0.25, 0.19), 0.95)
-	var leaf := _prop_mat("leaf", Color(0.37, 0.44, 0.35), 0.85)  # 灰绿
-	var n := 0
-	for i in TREE_Z_COUNT:
-		var z := TREE_Z_FROM + float(i) * TREE_Z_STEP
-		for side_v in [1.0, -1.0]:
-			var side := float(side_v)
-			if _avoid_cafe_side(side, z):
-				continue
-			_spawn_tree(props, side * PROP_X, z, n, bark, leaf)
-			n += 1
-
-func _spawn_tree(props: Node3D, x: float, z: float, idx: int, bark: Material, leaf: Material):
-	var tree := StaticBody3D.new()
-	tree.name = "Tree_%d" % idx
-	tree.collision_layer = LAYER_DECOR  # 装饰层: 玩家撞, NPC 不撞
-	tree.collision_mask = 0
-	# 树干: 低模圆柱 (radius 0.11, height 2.6, radial 8)
-	var trunk := CylinderMesh.new()
-	trunk.top_radius = 0.11
-	trunk.bottom_radius = 0.11
-	trunk.height = 2.6
-	trunk.radial_segments = 8
-	_add_mesh(tree, trunk, bark, Vector3(0, 1.3, 0))
-	# 树冠: 3 个低模球 (radial 10 ≤12, ring 5 ≤6, 半径 0.75-0.95)
-	# 冠层向街心略探出 (local x 负方向) 是自然树形; 碰撞只有树干 → 路面 |x|<4.5 仍全空
-	var crown_pos: Array = [Vector3(0.0, 3.2, 0.0), Vector3(-0.45, 3.0, 0.3), Vector3(0.4, 3.5, -0.2)]
-	var crown_r: Array = [0.95, 0.75, 0.8]
-	for ci in crown_pos.size():
-		var s := SphereMesh.new()
-		s.radius = float(crown_r[ci])
-		s.height = float(crown_r[ci]) * 2.0
-		s.radial_segments = 10
-		s.rings = 5
-		_add_mesh(tree, s, leaf, crown_pos[ci] as Vector3)
-	# 碰撞: 树干圆柱 (半径 0.11 → 外缘 4.89 < Pierre 内缘 4.95, 内缘 4.67 > 路缘 4.5)
-	_add_cyl_shape(tree, 0.11, 2.6, Vector3(0, 1.3, 0))
-	tree.position = Vector3(x, 0, z)
-	props.add_child(tree)
-
-## ---------- b) 路灯 ----------
-
-func _build_prop_lamps(props: Node3D):
-	var metal := _prop_mat("lamp_metal", Color(0.20, 0.21, 0.23), 0.6)
-	var head := _lamp_head_material()
-	var n := 0
-	for i in LAMP_Z.size():
-		var z: float = LAMP_Z[i]
-		for side_v in [1.0, -1.0]:
-			var side := float(side_v)
-			if _avoid_cafe_side(side, z):
-				continue
-			# 核对门口缓冲: 5 个 z 里离 4.34 最近的是 z=0 → |0-4.34| = 4.34 > 3.5 → 一个都不用跳过
-			# 距 Jean: 最近的 z=0 → sqrt(0.72^2 + 3.66^2) = 3.73 > 1.6 → 也不跳过 → 共 10 盏
-			# 只给约一半装真光源 (5 盏, 交替侧): i 偶数 → -X 侧, i 奇数 → +X 侧
-			var with_light: bool = (i % 2 == 0 and side < 0.0) or (i % 2 == 1 and side > 0.0)
-			_spawn_lamp(props, side * PROP_X, z, n, with_light, metal, head)
-			n += 1
-
-func _spawn_lamp(props: Node3D, x: float, z: float, idx: int, with_light: bool, metal: Material, head: Material):
-	var lamp := StaticBody3D.new()
-	lamp.name = "Lamp_%d" % idx
-	lamp.collision_layer = LAYER_DECOR  # 装饰层: 玩家撞, NPC 不撞
-	lamp.collision_mask = 0
-	# 灯杆 (radius 0.07, height 4.2, radial 8)
-	var pole := CylinderMesh.new()
-	pole.top_radius = 0.07
-	pole.bottom_radius = 0.07
-	pole.height = 4.2
-	pole.radial_segments = 8
-	_add_mesh(lamp, pole, metal, Vector3(0, 2.1, 0))
-	# 灯头小盒 (自发光材质, set_night_glow 驱动 emission)
-	_add_mesh(lamp, _box_mesh(0.24, 0.16, 0.24), head, Vector3(0, 4.28, 0))
-	# 碰撞: 杆体圆柱 (外缘 4.85 < Pierre 内缘 4.95)
-	_add_cyl_shape(lamp, 0.07, 4.2, Vector3(0, 2.1, 0))
-	if with_light:
-		var ol := OmniLight3D.new()
-		ol.light_color = Color(1.0, 0.85, 0.6)
-		ol.light_energy = 0.0   # 白天 0; set_night_glow(factor>0) → 0.9*clamp(factor+0.4,0,1)
-		ol.omni_range = 14.0
-		ol.shadow_enabled = false
-		ol.position = Vector3(0, 4.1, 0)
-		lamp.add_child(ol)
-		_lamp_lights.append(ol)
-	lamp.position = Vector3(x, 0, z)
-	props.add_child(lamp)
-
-## ---------- c) 长椅 ----------
-
-func _build_prop_benches(props: Node3D):
-	var wood := _prop_mat("bench_wood", Color(0.44, 0.30, 0.17), 0.85)  # 木棕色
-	# 三个位置的核对:
-	#  (5.75, 14): 座面 x∈[5.525,5.975], 靠背外沿 5.975 < 6 (人行道外缘); 与 +X 路灯(4.78,14)
-	#      同 z 但灯杆外缘 4.85 → 通道 5.525-4.85 = 0.675 > 玩家直径 0.6, 可通行不重叠
-	#  (5.75,-16): 距 Jean(5.5,-3.66) = 12.3m > 1.6; 座面 z∈[-16.8,-15.2] 与 +X 树(z=-18) 不重叠
-	#  (-5.75, 6): Pierre 占位 x∈[-5.45,-4.95] vs 座面 x∈[-5.975,-5.525] → 间隙 0.075 不接触
-	#      且 Pierre 的 mask=1 不感知 layer 4; 与 -X 树(-4.78,6) 间隙 5.525-4.89 = 0.635 不重叠
-	var seats: Array = [Vector2(5.75, 14.0), Vector2(5.75, -16.0), Vector2(-5.75, 6.0)]
-	for i in seats.size():
-		var p := seats[i] as Vector2
-		_spawn_bench(props, p.x, p.y, i, wood)
-
-func _spawn_bench(props: Node3D, x: float, z: float, idx: int, wood: Material):
-	var bench := StaticBody3D.new()
-	bench.name = "Bench_%d" % idx
-	bench.collision_layer = LAYER_DECOR  # 装饰层: 玩家撞, NPC 不撞
-	bench.collision_mask = 0
-	bench.position = Vector3(x, 0, z)
-	if x < 0.0:
-		bench.rotation_degrees = Vector3(0, 180.0, 0)  # -X 椅翻面, 靠背朝建筑
-	# 座面 1.6(沿街 z) × 0.08(厚) × 0.45(进深 x)
-	_add_mesh(bench, _box_mesh(0.45, 0.08, 1.6), wood, Vector3(0, 0.45, 0))
-	# 靠背 (局部 +x = 朝建筑一侧; 外沿 0.225 → 世界 5.975 < 6)
-	_add_mesh(bench, _box_mesh(0.08, 0.4, 1.6), wood, Vector3(0.185, 0.65, 0))
-	# 两条腿
-	for d_v in [1.0, -1.0]:
-		var d := float(d_v)
-		_add_mesh(bench, _box_mesh(0.45, 0.45, 0.08), wood, Vector3(0, 0.225, d * 0.7))
-	# 碰撞: 座面+靠背整体一盒 (0.45 × 0.85 × 1.6)
-	_add_box_shape(bench, Vector3(0.45, 0.85, 1.6), Vector3(0, 0.425, 0))
-	props.add_child(bench)
-
-## ---------- d) 施工围栏 (决策 11 自然边界) ----------
-
-func _build_prop_barriers(props: Node3D, min_s: float, max_s: float):
-	# 端点取自 layout: z_end1 = min(s0)-1, z_end2 = max(s1)+1 (不硬编码)
-	var s0_min := 1e9
-	var s1_max := -1e9
-	for b in layout.get("buildings", []):
-		s0_min = min(s0_min, float(b["s0"]))
-		s1_max = max(s1_max, float(b["s1"]))
-	var ends: Array = [s0_min - 1.0, s1_max + 1.0]
-	for i in ends.size():
-		# 防御: 夹回已生成路面范围 (min_s/max_s 含 ±14 外扩)
-		var z := clampf(float(ends[i]), min_s + 1.0, max_s - 1.0)
-		_spawn_barrier(props, z, i)
-
-func _spawn_barrier(props: Node3D, z: float, idx: int):
-	var red := _prop_mat("barrier_red", Color(0.80, 0.14, 0.11), 0.7)
-	var white := _prop_mat("barrier_white", Color(0.93, 0.93, 0.90), 0.7)
-	var frame := _prop_mat("barrier_frame", Color(0.74, 0.71, 0.65), 0.8)
-
-	var bar := StaticBody3D.new()
-	bar.name = "Barrier_%d" % idx
-	bar.collision_layer = LAYER_WORLD  # 层 1: 世界, 玩家与 NPC 都撞
-	bar.collision_mask = 1
-	bar.position = Vector3(0, 0, z)
-
-	# 3 根横杆: 全宽 13.0 → x∈[-6.5,6.5], 与 |x|=6 建筑前脸搭接 0.5 → 堵死同层绕行
-	for yy in [0.30, 0.70, 1.05]:
-		_add_mesh(bar, _box_mesh(13.0, 0.10, 0.08), frame, Vector3(0, float(yy), 0.0))
-	# 红白相间分段条纹: 13 段 × 1.0m = 全宽 13.0, 两种材质交替小盒
-	for i in 13:
-		var sx := -6.0 + float(i)
-		var mat: Material = red if i % 2 == 0 else white
-		_add_mesh(bar, _box_mesh(1.0, 0.28, 0.05), mat, Vector3(sx, 0.50, 0.0))
-	# A 形支腿: 两组 (x=±5.2), 每组前后各一腿, 顶点汇合于 y≈1.11, 落点 z=±0.41
-	for lx_v in [5.2, -5.2]:
-		var lx := float(lx_v)
-		for d_v in [1.0, -1.0]:
-			var d := float(d_v)
-			_add_mesh(bar, _box_mesh(0.09, 1.2, 0.09), frame,
-				Vector3(lx, 0.55, d * 0.205), Vector3(-20.0 * d, 0.0, 0.0))
-	# 标牌 1.2 × 0.8 (挂在围栏上沿, 中心 y=1.05 → 0.65..1.45, 围栏本体高 ≈1.1)
-	# 红/白配色: 白底标牌盒 + Label3D 红字白描边
-	_add_mesh(bar, _box_mesh(1.2, 0.8, 0.06), white, Vector3(0, 1.05, 0.0))
-	var label := Label3D.new()
-	label.text = "Travaux — Détour"
-	label.font_size = 48
-	label.outline_size = 8
-	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	label.modulate = Color(0.80, 0.14, 0.11)      # 红字
-	label.outline_modulate = Color(0.96, 0.96, 0.94)  # 白描边
-	# pixel_size 0.003 → 字高 ≈0.14m, 16 字符宽 ≈1.1m, 落在 1.2m 标牌内
-	label.pixel_size = 0.003
-	label.no_depth_test = true  # 避免被自己的标牌盒挡住 (billboard 会转到盒内)
-	label.position = Vector3(0, 1.05, 0.0)
-	bar.add_child(label)
-	# 整宽碰撞一盒: x∈[-6.5,6.5], y∈[0,1.1], 层 1
-	_add_box_shape(bar, Vector3(13.0, 1.1, 0.35), Vector3(0, 0.55, 0.0))
-	props.add_child(bar)
 
 ## ---------- 建筑 ----------
 
@@ -568,6 +313,9 @@ func _build_cafe_site():
 
 	cafe_site = Node3D.new()
 	cafe_site.name = "CafeSite"
+	# 文字 basis 分级 (P2-A): 店名来自 OSM name 标签 (data/osm/rosiers_full.json)
+	cafe_site.set_meta("basis", "reported")
+	cafe_site.set_meta("text_source", "osm_name")
 	# 旋转: 门面(局部+z)转到街中(-x) → yaw=-90°(局部+z→世界-x)
 	cafe_site.rotation_degrees = Vector3(0, -90.0 * side, 0)
 	cafe_site.position = Vector3(side * backoff, 0, s)
@@ -617,22 +365,15 @@ func _add_box(body: StaticBody3D, size: Vector3, pos: Vector3):
 ##   factor > 0  → 窗户夜光 + 路灯亮 (energy = 0.9*clamp(factor+0.4, 0, 1), 灯头 emission 同步)
 ##   factor == 0 → 窗户夜光灭 + 路灯 energy = 0 (白天)
 ##   日落时昼夜循环把 factor 提到 0.35/0.75 → 路灯自动亮起
+## 窗户部分在本装配器 (材质缓存 _facade_mats); 路灯部分委托 street_furniture。
 func set_night_glow(factor: float):
 	var v := clampf(factor, 0.0, 1.0)
 	for key in _facade_mats:
 		var m := _facade_mats[key] as ShaderMaterial
 		if m:
 			m.set_shader_parameter("night_glow", v)
-	# 路灯: 灯头 emission + OmniLight 能量
-	var energy := 0.0
-	if v > 0.0:
-		energy = 0.9 * clampf(v + 0.4, 0.0, 1.0)
-	if _lamp_head_mat:
-		_lamp_head_mat.emission_energy_multiplier = energy
-	for entry in _lamp_lights:
-		var ol := entry as OmniLight3D
-		if ol and is_instance_valid(ol):
-			ol.light_energy = energy
+	if _furniture != null:
+		_furniture.set_night_glow(v)
 
 ## 供外部查询: 咖啡馆门面朝向(玩家走进门位置, 世界坐标)
 func get_cafe_door_pos() -> Vector3:
