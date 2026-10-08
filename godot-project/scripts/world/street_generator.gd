@@ -111,7 +111,15 @@ func build_all():
 	_road_surface.build(self, min_s, max_s)
 	_planting = StreetPlanting.new()
 	_furniture = StreetFurniture.new()
-	_furniture.build(self, _planting.plan(), min_s, max_s)
+	# 槽位参数化 (P3 批次1): layout.street.slots.planting 覆盖种植网格;
+	# 无该字段 (Rosiers) → plan_with 只吃 PARAMS, 历史行为逐字节不变
+	var plant_over: Dictionary = {}
+	var st_raw = layout.get("street")
+	if st_raw is Dictionary and (st_raw as Dictionary).has("slots"):
+		var sl_raw = (st_raw as Dictionary).get("slots")
+		if sl_raw is Dictionary and (sl_raw as Dictionary).has("planting"):
+			plant_over = (sl_raw as Dictionary)["planting"]
+	_furniture.build(self, StreetPlanting.plan_with(StreetPlanting.PARAMS, plant_over), min_s, max_s)
 	_building_signs = BuildingSigns.new()
 	_building_signs.build(self)
 	_road_names = RoadNames.new()

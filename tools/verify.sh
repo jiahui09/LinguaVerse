@@ -72,7 +72,9 @@ run_step_tolerant() { # name skip_code cmd...
 }
 
 # ── 1/2/3 Godot headless 断言：结构 / 对话状态机 / 闭环回放 ───────────
-run_step street_check "$GODOT" --headless --path godot-project -s res://scripts/debug/street_check.gd
+# P3 批次1: street_check 后串 check_layout.py（清单==磁盘==目录 三方核对）,
+# 并入本步骤不新增入口 — verify.sh 保持十步。
+run_step street_check bash -c "$GODOT --headless --path godot-project -s res://scripts/debug/street_check.gd && python3 $ROOT/tools/check_layout.py"
 run_step dialog_check "$GODOT" --headless --path godot-project -s res://scripts/debug/dialog_check.gd
 run_step_tolerant playthrough_check 77 "$GODOT" --headless --path godot-project -s res://scripts/debug/playthrough_check.gd
 

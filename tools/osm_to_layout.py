@@ -126,6 +126,47 @@ def polygon_area(pts):
     return abs(s) / 2.0
 
 
+def make_slots(keep):
+    """P3 批次1 槽位参数化: 按保留建筑 s 跨度均布灯具/长椅/种植网格。
+
+    消费方 (godot-project/scripts/world/street/):
+      street_furniture: slots.lamp_z (两侧生成, 交替装灯), slots.bench_seats [[x,z],..]
+      planting.plan_with: slots.planting 覆盖 z 网格与预算
+    默认 (Rosiers, 无 slots 字段) 走模块 PARAMS 绝对槽位 → 历史行为逐字节不变。
+    """
+    if not keep:
+        return None
+    s_min = min(b["s0"] for b in keep)
+    s_max = max(b["s1"] for b in keep)
+    span = s_max - s_min
+    if span < 40.0:
+        return None
+    # 路灯: 14m 步长 (与现街设计密度一致), 边缘留 7m
+    lamp_z = []
+    z = s_min + 7.0
+    while z <= s_max - 7.0:
+        lamp_z.append(round(z, 1))
+        z += 14.0
+    # 长椅: ~110m 一处、交替侧 (|x|=5.75 与人行道宽核算一致)
+    n_b = max(2, min(6, int(span / 110.0) + 2))
+    benches = []
+    for i in range(n_b):
+        bz = s_min + span * (i + 0.5) / n_b
+        benches.append([5.75 if i % 2 == 0 else -5.75, round(bz, 1)])
+    # 种植: 42m 网格 (= 3×14) 双侧, z_from 偏移 ≡7 (mod 14) → 树与灯恒距 ≥7m
+    # (步长与路灯 14 互质会导致网格渐进逼近出现 1m 贴脸, 已实测)
+    p_step = 42.0
+    p_count = max(1, int((span - 12.0) / p_step) + 1)
+    planting = {
+        "z_from": round(s_min + 14.0, 1),
+        "z_step": p_step,
+        "z_count": p_count,
+        "budget_total": p_count * 2,
+        "cafe_door_z": -9999.0,             # 无咖啡馆街区: 关闭幻影门口缓冲
+    }
+    return {"lamp_z": lamp_z, "bench_seats": benches, "planting": planting}
+
+
 def main():
     ap = argparse.ArgumentParser(description="OSM Overpass JSON → 街道布局 JSON")
     ap.add_argument("--input", default=str(RAW_PATH), help="Overpass 结果 JSON")
@@ -149,6 +190,9 @@ def main():
                     help="摆楼模型: backoff=V1 舞台布景(默认, 输出字节中性); "
                          "by_v=盒心按 OSM 真实投影 |v|, depth 用真实占地进深, "
                          "并写入 street.placement 字段 (装配器 get_facade_face 消费)")
+    ap.add_argument("--emit-slots", action="store_true",
+                    help="写入 street.slots 槽位参数 (灯具/长椅/种植网格); "
+                         "placement=by_v 时自动开启, 默认字节中性不受影响")
     args = ap.parse_args()
     raw_path = Path(args.input)
     out_path = Path(args.output)
@@ -299,6 +343,12 @@ def main():
     }
     if args.placement == "by_v":
         layout["street"]["placement"] = "by_v"
+    if args.placement == "by_v" or args.emit_slots:
+        slots = make_slots(keep)
+        if slots:
+            layout["street"]["slots"] = slots
+            print(f"槽位: 路灯 {len(slots['lamp_z'])} 点 / 长椅 {len(slots['bench_seats'])} 处 / "
+                  f"种植 {slots['planting']['z_count']} 格×双侧")
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with open(out_path, "w", encoding="utf-8") as f:

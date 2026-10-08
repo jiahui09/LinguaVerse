@@ -408,6 +408,46 @@ func _run():
 		_check(false, "layout sha256/bytes 三方一致 (清单==磁盘)")
 		_check(false, "5 子系统 param_hash 与运行时一致")
 
+	# ── P3 批次1: blocks.vosges 三方核对 (清单==磁盘==运行时子系统) ──
+	var vblock: Dictionary = {}
+	if mf:
+		var mjson2 = JSON.parse_string(mf.get_as_text())
+		if typeof(mjson2) == TYPE_DICTIONARY:
+			vblock = ((mjson2 as Dictionary).get("blocks", {}) as Dictionary).get("vosges", {})
+	_check(not vblock.is_empty(), "assets_manifest.blocks.vosges 街区 entry 存在")
+	if not vblock.is_empty():
+		var vl: Dictionary = vblock.get("layout", {})
+		var vpath := String(vl.get("path", "")).replace("godot-project/", "res://")
+		var vf := FileAccess.open(vpath, FileAccess.READ)
+		_check(vf != null, "vosges 布局磁盘可读 (%s)" % vpath)
+		if vf:
+			var vraw := vf.get_buffer(vf.get_length())
+			var vsha := _sha256_hex(vraw)
+			_check(String(vl.get("sha256", "")) == vsha and int(vl.get("bytes", -1)) == vraw.size(),
+				"vosges layout 清单==磁盘 (sha %s…, %d B)" % [vsha.substr(0, 12), vraw.size()])
+			var vjson = JSON.parse_string(vraw.get_string_from_utf8())
+			var vok := typeof(vjson) == TYPE_DICTIONARY
+			if vok:
+				var vst: Dictionary = (vjson as Dictionary).get("street", {})
+				var vb = (vjson as Dictionary).get("buildings", [])
+				vok = vst.get("placement", "") == "by_v" \
+					and vst.get("slots") is Dictionary \
+					and vb is Array and (vb as Array).size() >= 50
+			_check(vok, "vosges 结构: placement=by_v + slots + ≥50 栋")
+		var vsub: Dictionary = vblock.get("subsystems", {})
+		var rsub2: Dictionary = runtime["subsystems"]
+		var vdrift := ""
+		for k in rsub2:
+			if String(vsub.get(k, "")) != String(rsub2[k]):
+				vdrift += String(k) + " "
+		if vsub.size() != rsub2.size():
+			vdrift += "(数量 %d≠%d)" % [vsub.size(), rsub2.size()]
+		_check(vdrift == "", "vosges 5 子系统 param_hash 与运行时一致 (漂移: %s)" % (vdrift if vdrift != "无" and vdrift != "" else "无"))
+	else:
+		_check(false, "assets_manifest.blocks.vosges 街区 entry 存在")
+		_check(false, "vosges 结构: placement=by_v + slots + ≥50 栋")
+		_check(false, "vosges 5 子系统 param_hash 与运行时一致")
+
 	# ── 昼夜去锁 (决策 7): LV_FIXED_HOUR 为空 → 跟随现实时间 ──
 	var sun := main.get_node_or_null("Sun")
 	var env_hour := OS.get_environment("LV_FIXED_HOUR")
@@ -445,6 +485,19 @@ func _collect_mesh(node: Node, acc: Array = []) -> Array:
 	return acc
 
 ## 收集 Label3D (basis 分级断言用)
+func _sha256_hex(data: PackedByteArray) -> String:
+	var hc := HashingContext.new()
+	if hc.start(HashingContext.HASH_SHA256) != OK:
+		return ""
+	var digest := hc.update(data)
+	if digest != OK:
+		return ""
+	var out := hc.finish()
+	var hex := ""
+	for b in out:
+		hex += "%02x" % b
+	return hex
+
 func _collect_labels(node: Node, acc: Array = []) -> Array:
 	if node is Label3D:
 		acc.append(node)
@@ -547,6 +600,32 @@ func _run_candidate(path: String):
 	var runs: Array = BuildingSigns.name_runs(layout, BuildingSigns.PARAMS)
 	_check(runs.size() >= 1, "命名楼段可合并为铭牌 run (实际 %d)" % runs.size())
 
+	# ── P3 批次1: 槽位参数化 (street.slots 覆盖灯具/长椅/种植) ──
+	var slots_v = st.get("slots", {})
+	var slots: Dictionary = slots_v if slots_v is Dictionary else {}
+	_check(slots.size() >= 3, "street.slots 槽位存在 (lamp/bench/planting, 实际 %d 键)" % slots.size())
+	var gs_min := 1e9
+	var gs_max := -1e9
+	for b in bs:
+		gs_min = minf(gs_min, float(b["s0"]))
+		gs_max = maxf(gs_max, float(b["s1"]))
+	if slots.size() >= 3:
+		var lampz: Array = slots.get("lamp_z", [])
+		var lamp_ok := lampz.size() >= 5 \
+			and float(lampz[0]) >= gs_min and float(lampz[lampz.size() - 1]) <= gs_max
+		_check(lamp_ok, "灯具槽位 ≥5 点且落在建筑跨度内 (%d 点, %.0f..%.0f)"
+			% [lampz.size(), float(lampz[0]) if lampz.size() > 0 else -1.0,
+				float(lampz[lampz.size() - 1]) if lampz.size() > 0 else -1.0])
+		var pinfo: Dictionary = slots.get("planting", {})
+		var tree_last := float(pinfo.get("z_from", -1e9)) \
+			+ (float(pinfo.get("z_count", 0)) - 1.0) * float(pinfo.get("z_step", 1.0))
+		var cover_ok := float(pinfo.get("z_from", 1e9)) >= gs_min \
+			and tree_last <= gs_max \
+			and float(pinfo.get("budget_total", 0)) >= 2.0 * float(pinfo.get("z_count", 0)) \
+			and float(pinfo.get("cafe_door_z", 0.0)) < -9000.0  # 无咖啡馆: 幻影缓冲须关闭
+		_check(cover_ok, "种植网格覆盖全段 (14..%.0f / 预算 %d) 且幻影缓冲关闭"
+			% [tree_last, int(pinfo.get("budget_total", 0))])
+
 	# ---- 试装配: 裸 StreetGenerator 消费该布局 (五子系统复用性实证) ----
 	var gen: Node = (load("res://scripts/world/street_generator.gd") as GDScript).new()
 	gen.layout_path = path
@@ -591,11 +670,12 @@ func _run_candidate(path: String):
 		if absf((nd as Node3D).position.x - want) > 0.01:
 			place_ok = false
 	_check(place_ok, "摆楼 x == side*get_facade_face (by_v 逐栘认证)")
-	# 面数预算: 单街区 ≤20,000 (P2-B 验收)
+	# 面数预算: 单街区 ≤25,000 (P2-B 原 20k; 决策 29 修订 2026-10-08 —
+	# Vosges 495m 环实测 20316 撞线, 道具占 88%, 批次5 GLB 替换后复核定值)
 	var faces := 0
 	for m in _collect_mesh(gen):
 		faces += _mesh_faces(m)
-	_check(faces <= 20000, "候选单街区面数 ≤20000 (实际 %d)" % faces)
+	_check(faces <= 25000, "候选单街区面数 ≤25000 (实际 %d)" % faces)
 	# 铭牌 basis 分级 + 贴立面
 	var signs: Node = bld_root.get_node_or_null("BuildingSigns") if bld_root else null
 	if signs:

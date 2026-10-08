@@ -45,12 +45,20 @@ func build(gen, plan: Dictionary, min_s: float, max_s: float) -> void:
 		return
 	if gen.buildings_root.get_node_or_null("StreetProps") != null:
 		return  # 幂等保护: 重复调用不重复生成
+	# 槽位参数化 (P3 批次1): layout.street.slots 覆盖灯具/长椅槽位;
+	# 无该字段 (Rosiers) → 全部走 PARAMS, 历史行为逐字节不变
+	var slots: Dictionary = {}
+	var st_raw = gen.layout.get("street")
+	if st_raw is Dictionary:
+		var sl_raw = (st_raw as Dictionary).get("slots")
+		if sl_raw is Dictionary:
+			slots = sl_raw
 	var props := Node3D.new()
 	props.name = "StreetProps"
 	gen.buildings_root.add_child(props)  # 挂 buildings_root 下 → 面数预算统计覆盖
 	_build_trees(gen, props, plan)
-	_build_lamps(gen, props)
-	_build_benches(gen, props)
+	_build_lamps(gen, props, slots)
+	_build_benches(gen, props, slots)
 	_build_barriers(gen, props, min_s, max_s)
 	print("[StreetFurniture] 街道道具完成: ", props.get_child_count(), " 个节点")
 
@@ -131,17 +139,22 @@ func _spawn_tree(gen, props: Node3D, x: float, z: float, idx: int, bark: Materia
 
 ## ---------- b) 路灯 ----------
 
-func _build_lamps(gen, props: Node3D) -> void:
+func _build_lamps(gen, props: Node3D, slots: Dictionary) -> void:
 	var metal := _mat("lamp_metal", Color(0.20, 0.21, 0.23), 0.6)
 	var head := _head_mat()
 	var n := 0
-	var lamp_z: Array = PARAMS["lamp_z"]
+	var lamp_z: Array = slots.get("lamp_z", PARAMS["lamp_z"])
+	# 避让参数与种植计划同源 (slots.planting 覆盖 → 无咖啡馆街区关闭幻影缓冲)
+	var pp: Dictionary = Planting.PARAMS.duplicate(true)
+	var pover: Dictionary = slots.get("planting", {})
+	for k in pover:
+		pp[k] = pover[k]
 	var px := float(Planting.PARAMS["prop_x"])
 	for i in lamp_z.size():
 		var z: float = float(lamp_z[i])
 		for side_v in [1.0, -1.0]:
 			var side := float(side_v)
-			if Planting.blocked(side, z, Planting.PARAMS) != "":
+			if Planting.blocked(side, z, pp) != "":
 				continue
 			# 交替半数装真光源: i 偶 → -X 侧, i 奇 → +X 侧
 			var with_light: bool = (i % 2 == 0 and side < 0.0) or (i % 2 == 1 and side > 0.0)
@@ -150,13 +163,13 @@ func _build_lamps(gen, props: Node3D) -> void:
 
 ## ---------- c) 长椅 ----------
 
-func _build_benches(gen, props: Node3D) -> void:
+func _build_benches(gen, props: Node3D, slots: Dictionary) -> void:
 	var wood := _mat("bench_wood", Color(0.44, 0.30, 0.17), 0.85)  # 木棕色
-	# 三个位置的核对 (迁移前头注释保留):
+	# 三个位置的核对 (迁移前头注释保留, 对应默认槽位):
 	#  (5.75, 14): 座面 5.525..5.975 < 6; 与 +X 路灯(4.78,14) 通道 0.675 > 玩家直径 0.6
 	#  (5.75,-16): 距 Jean 12.3m > 1.6; 座面与 -X 树不重叠
 	#  (-5.75, 6): Pierre 占位 vs 座面间隙 0.075 不接触
-	var seats: Array = PARAMS["bench_seats"]
+	var seats: Array = slots.get("bench_seats", PARAMS["bench_seats"])
 	for i in seats.size():
 		var s: Array = seats[i]
 		_spawn_bench(gen, props, float(s[0]), float(s[1]), i, wood)
