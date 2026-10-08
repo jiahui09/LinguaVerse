@@ -11,7 +11,9 @@
   "name": "Rue des Rosiers",
   "width": 9.0,
   "backoff": 6.0,
-  "total_len": 315.2
+  "total_len": 315.2,
+  "ends": ["open", "natural"],
+  "road_limits": [-143.65, 171.59]
  },
  "cafe_anchor": {
   "building_id": 56003288,

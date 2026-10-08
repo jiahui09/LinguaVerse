@@ -65,6 +65,14 @@ script = ExtResource("5_dn")
 [node name="StreetGenerator" type="Node3D" parent="." groups=["street_generator"]]
 script = ExtResource("6_sg")
 
+[node name="StreetGeneratorVosges" type="Node3D" parent="." groups=["street_generator"]]
+script = ExtResource("6_sg")
+layout_path = "res://data/layouts/vosges_layout.json"
+
+[node name="StreetGeneratorCorridor" type="Node3D" parent="." groups=["street_generator"]]
+script = ExtResource("6_sg")
+layout_path = "res://data/layouts/corridor_layout.json"
+
 [node name="Player" type="CharacterBody3D" parent="." groups=["player"]]
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, -22)
 collision_layer = 1

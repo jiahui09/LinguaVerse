@@ -106,6 +106,8 @@ func _run():
 	var n_benches := 0
 	var n_barriers := 0
 	var barriers: Array = []
+	var n_natural := 0
+	var naturals: Array = []
 	var decor_layer_ok := false
 	var lamp_light: OmniLight3D = null
 	if props:
@@ -125,6 +127,9 @@ func _run():
 			elif nm.begins_with("Barrier_"):
 				n_barriers += 1
 				barriers.append(child)
+			elif nm.begins_with("NaturalEnd_"):
+				n_natural += 1
+				naturals.append(child)
 			# 装饰层抽样: 任取一个装饰道具(树/灯/椅)须在 layer 3(值 4)
 			if not decor_layer_ok and child is StaticBody3D \
 					and (child as StaticBody3D).collision_layer == 4:
@@ -132,10 +137,23 @@ func _run():
 	_check(n_trees >= 6, "行道树 ≥ 6 (实际 %d)" % n_trees)
 	_check(n_lamps >= 6, "路灯 ≥ 6 (实际 %d)" % n_lamps)
 	_check(n_benches >= 2, "长椅 ≥ 2 (实际 %d)" % n_benches)
-	_check(n_barriers == 2, "施工围栏 Barrier_* == 2 (实际 %d)" % n_barriers)
+	# 端头语义 (决策 11/30): street.ends → open 无封 / natural 花坛护柱 / construction 施工围栏
+	var st_ends: Array = layout.get("street", {}).get("ends", ["construction", "construction"])
+	var want_bar := 0
+	var want_nat := 0
+	for k in st_ends:
+		match String(k):
+			"natural":
+				want_nat += 1
+			"construction":
+				want_bar += 1
+	_check(n_barriers == want_bar,
+		"施工围栏 Barrier_* == ends 中 construction 端 (期望 %d, 实际 %d)" % [want_bar, n_barriers])
+	_check(n_natural == want_nat,
+		"自然端 NaturalEnd_* == ends 中 natural 端 (期望 %d, 实际 %d)" % [want_nat, n_natural])
 
-	# 围栏须在世界层(1)且带碰撞体
-	var barrier_ok := n_barriers == 2
+	# 围栏/自然端须在世界层(1)且带碰撞体; 自然端不带文字 (非文字构件)
+	var barrier_ok := n_barriers == want_bar
 	for bk in barriers:
 		var bar := bk as StaticBody3D
 		if bar == null or bar.collision_layer != 1:
@@ -148,6 +166,23 @@ func _run():
 		if not has_shape:
 			barrier_ok = false
 	_check(barrier_ok, "每道围栏 collision_layer==1 且有 CollisionShape3D")
+	var nat_struct_ok := n_natural == want_nat
+	var nat_label_free := true
+	for nk in naturals:
+		var natb := nk as StaticBody3D
+		if natb == null or natb.collision_layer != 1:
+			nat_struct_ok = false
+			continue
+		var nat_shape := false
+		for c in natb.get_children():
+			if c is CollisionShape3D:
+				nat_shape = true
+		if not nat_shape:
+			nat_struct_ok = false
+		if _collect_labels(nk as Node).size() != 0:
+			nat_label_free = false
+	_check(nat_struct_ok, "自然端 collision_layer==1 且有碰撞体")
+	_check(nat_label_free, "自然端无 Label3D (决策11 非文字构件)")
 
 	# 路灯夜光: set_night_glow 驱动 OmniLight 能量 (测完恢复 0)
 	_check(lamp_light != null, "至少一盏路灯带 OmniLight3D")
@@ -241,22 +276,33 @@ func _run():
 	_check(bench_ok, "长椅 |x| ≤ backoff 不越界")
 	_check(decor_on_road == 0, "路面区 (|x| < 4.55) 无装饰道具 (实际 %d)" % decor_on_road)
 
-	# 围栏位置: 布局端点 s0-1 / s1+1 (与生成端同式, 防硬编码漂移)
+	# 端头构件位置: 布局端点 s0-1 / s1+1 (与生成端同式, 防硬编码漂移);
+	# open 端无构件, natural/construction 端各恰 1 个 (决策 11/30)
 	var s0_min := 1e9
 	var s1_max := -1e9
 	for b in layout_buildings:
 		s0_min = min(s0_min, float(b["s0"]))
 		s1_max = max(s1_max, float(b["s1"]))
-	var bar_zs: Array = []
-	for bk in barriers:
-		if bk is Node3D:
-			bar_zs.append((bk as Node3D).position.z)
-	bar_zs.sort()
-	var ends_ok := bar_zs.size() == 2
-	if ends_ok:
-		ends_ok = absf(float(bar_zs[0]) - (s0_min - 1.0)) < 0.01 \
-			and absf(float(bar_zs[1]) - (s1_max + 1.0)) < 0.01
-	_check(ends_ok, "围栏 z == 布局端点 (s0−1=%.1f, s1+1=%.1f)" % [s0_min - 1.0, s1_max + 1.0])
+	var cap_s0 := 0
+	var cap_s1 := 0
+	var caps_z_ok := true
+	for caps_src in [barriers, naturals]:
+		for ck in caps_src:
+			if not (ck is Node3D):
+				caps_z_ok = false
+				continue
+			var zv := (ck as Node3D).position.z
+			if absf(zv - (s0_min - 1.0)) < 0.01:
+				cap_s0 += 1
+			elif absf(zv - (s1_max + 1.0)) < 0.01:
+				cap_s1 += 1
+			else:
+				caps_z_ok = false
+	var want_cap_s0 := 0 if String(st_ends[0]) == "open" else 1
+	var want_cap_s1 := 0 if String(st_ends[1]) == "open" else 1
+	_check(caps_z_ok and cap_s0 == want_cap_s0 and cap_s1 == want_cap_s1,
+		"端头构件 z 对位且 open 端无封 (s0端 %d/%d, s1端 %d/%d, 期望 s0−1=%.1f / s1+1=%.1f)"
+			% [cap_s0, want_cap_s0, cap_s1, want_cap_s1, s0_min - 1.0, s1_max + 1.0])
 
 	# ── P2-A: 子系统模块文件 (所有权契约: scripts/world/street/ 五模块各一写入者) ──
 	for fpath in [
@@ -369,12 +415,16 @@ func _run():
 		_check(orient_ok, "路名行朝向街内 (南 0° / 北 180°)")
 
 	# ── P2-A: 文字 basis 分级 (围栏施工文案 / 咖啡馆店名) ──
-	var bar_basis := false
+	# 围栏存在时必带文案且全部 ai-drafted (rosiers ends=open,natural → 0 围栏, 空真)
+	var bar_basis := true
 	for bk in barriers:
-		for lab in _collect_labels(bk as Node):
-			if String((lab as Label3D).get_meta("basis", "")) == "ai-drafted":
-				bar_basis = true
-	_check(bar_basis, "围栏施工文案 basis == ai-drafted")
+		var blabs: Array = _collect_labels(bk as Node)
+		if blabs.is_empty():
+			bar_basis = false  # 施工围栏必带标牌文案
+		for lab in blabs:
+			if String((lab as Label3D).get_meta("basis", "")) != "ai-drafted":
+				bar_basis = false
+	_check(bar_basis, "围栏施工文案 basis == ai-drafted (围栏 %d 道)" % n_barriers)
 	_check(cafe_site != null and String(cafe_site.get_meta("basis", "")) == "reported",
 		"咖啡馆店名 basis == reported (OSM name)")
 
@@ -448,6 +498,93 @@ func _run():
 		_check(false, "vosges 结构: placement=by_v + slots + ≥50 栋")
 		_check(false, "vosges 5 子系统 param_hash 与运行时一致")
 
+	# ═══════ P3 批次2: 两街同场景 + 接缝 (决策 30 方案A — 接缝在游戏空间直链) ═══════
+	var gens: Array = get_nodes_in_group("street_generator")
+	_check(gens.size() == 3, "3 个 StreetGenerator 同场景 (rosiers/vosges/corridor, 实际 %d)" % gens.size())
+	var vgen: Node = main.get_node_or_null("StreetGeneratorVosges")
+	var cgen: Node = main.get_node_or_null("StreetGeneratorCorridor")
+	_check(vgen != null, "StreetGeneratorVosges 存在")
+	_check(cgen != null, "StreetGeneratorCorridor 存在")
+
+	# ── blocks.corridor 三方核对 (清单==磁盘==运行时子系统) ──
+	var cblock: Dictionary = {}
+	if mf:
+		var mjson3 = JSON.parse_string(mf.get_as_text())
+		if typeof(mjson3) == TYPE_DICTIONARY:
+			cblock = ((mjson3 as Dictionary).get("blocks", {}) as Dictionary).get("corridor", {})
+	_check(not cblock.is_empty(), "assets_manifest.blocks.corridor 街区 entry 存在")
+	if not cblock.is_empty():
+		var cl: Dictionary = cblock.get("layout", {})
+		var cpath := String(cl.get("path", "")).replace("godot-project/", "res://")
+		var cf := FileAccess.open(cpath, FileAccess.READ)
+		_check(cf != null, "corridor 布局磁盘可读 (%s)" % cpath)
+		if cf:
+			var craw := cf.get_buffer(cf.get_length())
+			var csha := _sha256_hex(craw)
+			_check(String(cl.get("sha256", "")) == csha and int(cl.get("bytes", -1)) == craw.size(),
+				"corridor layout 清单==磁盘 (sha %s…, %d B)" % [csha.substr(0, 12), craw.size()])
+		if cgen != null:
+			var cruntime: Dictionary = (cgen as Node).call("get_block_manifest")
+			var csub: Dictionary = cblock.get("subsystems", {})
+			var crr: Dictionary = cruntime.get("subsystems", {})
+			var cdrift := ""
+			for k in crr:
+				if String(csub.get(k, "")) != String(crr[k]):
+					cdrift += String(k) + " "
+			if csub.size() != crr.size():
+				cdrift += "(数量 %d≠%d)" % [csub.size(), crr.size()]
+			_check(cdrift == "", "corridor 5 子系统 param_hash 与运行时一致 (漂移: %s)" % (cdrift if cdrift != "" else "无"))
+	else:
+		_check(false, "corridor layout 清单==磁盘")
+
+	# ── 每街结构核验 (决策 29 单街 ≤25k + ends 语义 + road_limits 运行时口径) ──
+	_check_street(vgen, "vosges")
+	_check_street(cgen, "corridor")
+
+	# ── 接缝闭环: meta.placement ↔ 节点变换 ↔ 路面端世界几何 (Δ<0.5m) ──
+	var ident_ok := (gen as Node3D).position == Vector3.ZERO \
+		and absf((gen as Node3D).rotation.y) < 1e-6
+	_check(ident_ok, "接缝0 rosiers 恒等变换 (ref 街, pos=%s rot=%.4f°)"
+		% [(gen as Node3D).position, rad_to_deg((gen as Node3D).rotation.y)])
+	for gpair in [["corridor", cgen], ["vosges", vgen]]:
+		var g2: Node = gpair[1]
+		if g2 == null:
+			_check(false, "接缝(%s): 生成器缺失" % gpair[0])
+			continue
+		var m2: Dictionary = (g2.layout as Dictionary).get("meta", {})
+		var p2: Dictionary = m2.get("placement", {})
+		var pos_want := Vector3(float(p2.get("x", 0.0)), 0.0, float(p2.get("z", 0.0)))
+		var rot_want := deg_to_rad(
+			float(m2.get("street_axis_deg", 0.0)) - float(p2.get("ref_axis", 0.0)))
+		var pgot := (g2 as Node3D).position
+		var rgot := (g2 as Node3D).rotation.y
+		_check(String(p2.get("ref", "")) == "rosiers" \
+			and absf(pgot.x - pos_want.x) < 0.02 and absf(pgot.z - pos_want.z) < 0.02,
+			"接缝(%s): position == meta.placement (%.2f, %.2f)" % [gpair[0], pgot.x, pgot.z])
+		_check(_ang_diff(rgot, rot_want) < deg_to_rad(0.15),
+			"接缝(%s): rotation.y == my_axis − ref_axis (%.3f°)"
+				% [gpair[0], rad_to_deg(rgot)])
+	# 接缝1: 罗斯路面 min 端世界 == 走廊路面 min 端世界 (joint, 方案A 构造性)
+	var seam1 := 1e9
+	if cgen != null:
+		seam1 = _road_end_world(gen, false).distance_to(_road_end_world(cgen, false))
+	_check(seam1 < 0.5, "接缝1 罗斯→走廊 路面端世界 Δ = %.3fm (<0.5)" % seam1)
+	# 接缝2: 走廊路面 max 端世界 == Vosges 锚 (local (0,0,anchor_s)) 世界
+	var seam2 := 1e9
+	if cgen != null and vgen != null:
+		var vpl: Dictionary = ((vgen.layout as Dictionary).get("meta", {}) as Dictionary) \
+			.get("placement", {})
+		var anch: Array = vpl.get("anchor", [0.0, 0.0])
+		var anchor_world := (vgen as Node3D).global_transform * Vector3(0.0, 0.0, float(anch[1]))
+		seam2 = _road_end_world(cgen, true).distance_to(anchor_world)
+	_check(seam2 < 0.5, "接缝2 走廊→Vosges 锚世界 Δ = %.3fm (<0.5)" % seam2)
+	# 接缝数据链: 走廊链终点 == FB×环触点 → total_len == z_fb (离线断言的运行时回读)
+	if cgen != null:
+		var cst: Dictionary = (cgen.layout as Dictionary).get("street", {})
+		_check(float(cst.get("total_len", 0.0)) > 300.0 \
+			and cst.get("ends", []) is Array and (cst.get("ends", []) as Array) == ["open", "open"],
+			"接缝数据: corridor total_len=%.0f 且 ends==[open,open]" % float(cst.get("total_len", 0.0)))
+
 	# ── 昼夜去锁 (决策 7): LV_FIXED_HOUR 为空 → 跟随现实时间 ──
 	var sun := main.get_node_or_null("Sun")
 	var env_hour := OS.get_environment("LV_FIXED_HOUR")
@@ -459,20 +596,32 @@ func _run():
 	else:
 		print("[SKIP] LV_FIXED_HOUR=", env_hour, " 已设置 → 跳过 fixed_hour 断言")
 
-	# 面数估算 (buildings_root 全部子节点, 含 StreetProps 道具)
+	# 面数估算 (决策 29): 单街 ≤25,000 + 三街总门禁 —
+	# 遍历全部 generator 的 buildings_root (含 StreetProps 道具)
 	var total_faces := 0
-	if bld_root:
-		for child in bld_root.get_children():
-			for mesh_node in _collect_mesh(child):
-				total_faces += _mesh_faces(mesh_node)
+	var per_gen_faces: Dictionary = {}
+	var under_single := true
+	for g3 in gens:
+		var gf := 0
+		var gbr: Node = (g3 as Node).get("buildings_root")
+		if gbr:
+			for child in gbr.get_children():
+				for mesh_node in _collect_mesh(child):
+					gf += _mesh_faces(mesh_node)
+		per_gen_faces[String((g3 as Node).name)] = gf
+		total_faces += gf
+		if gf > 25000:
+			under_single = false
+	_check(under_single, "单街面数 ≤25000 (%s)" % JSON.stringify(per_gen_faces))
 	var prop_faces := 0
 	if props:
 		for child in props.get_children():
 			for mesh_node in _collect_mesh(child):
 				prop_faces += _mesh_faces(mesh_node)
-	print("[StreetCheck] 建筑估算面数: ", total_faces - prop_faces)
-	print("[StreetCheck] 道具估算面数: ", prop_faces)
-	_check(total_faces < 50000, "建筑+道具总面数预算(实际 %d)" % total_faces)
+	print("[StreetCheck] 各生成器面数: ", JSON.stringify(per_gen_faces))
+	print("[StreetCheck] 建筑估算面数(rosiers): ", total_faces - prop_faces)
+	print("[StreetCheck] 道具估算面数(rosiers): ", prop_faces)
+	_check(total_faces < 50000, "三街建筑+道具总面数预算(实际 %d < 50000)" % total_faces)
 
 	main.queue_free()
 	_quit()
@@ -723,6 +872,255 @@ func _run_candidate(path: String):
 	print("[StreetCheck] 候选统计: 建筑 %d / 生成 %d / 面数 %d / 主侧覆盖 %.0fm"
 		% [bs.size(), n_gen, faces, side_span[main_side]])
 	_quit()
+
+
+## 角度差 (弧度, 折回 ±π)
+func _ang_diff(a: float, b: float) -> float:
+	return absf(fmod(a - b + PI, TAU) - PI)
+
+## 路面端世界坐标: at_max=false → z 最小端; true → z 最大端 (mesh 中心 ± 半长)
+func _road_end_world(g: Node, at_max: bool) -> Vector3:
+	if g == null:
+		return Vector3(1e9, 1e9, 1e9)
+	var road: Node = g.get_node_or_null("Road")
+	if road == null:
+		return Vector3(1e9, 1e9, 1e9)
+	var zmid := 0.0
+	var half := 0.0
+	for c in (road as Node3D).get_children():
+		if c is MeshInstance3D and (c as MeshInstance3D).mesh is BoxMesh:
+			zmid = (c as Node3D).position.z
+			half = ((c as MeshInstance3D).mesh as BoxMesh).size.z / 2.0
+	var z := (zmid + half) if at_max else (zmid - half)
+	return (g as Node3D).global_transform * Vector3(0.0, 0.0, z)
+
+## P3 批次2: 每街结构核验 (≈34 断言/街 — vosges+corridor 共 ~68, P2-B 两街 ≥50 硬验收)
+## 覆盖: 布局载入/建筑/碰撞/单街面数/路面(宽+范围公式+drop)/人行道/道具/
+##       端头语义(ends)/路名牌(basis)/铭牌容器。
+func _check_street(g: Node, label: String) -> void:
+	_check(g != null, label + ": 生成器存在")
+	if g == null:
+		return
+	var lay: Dictionary = g.layout
+	_check(lay.size() > 0, label + ": 布局已载入")
+	if lay.is_empty():
+		return
+	var st: Dictionary = lay.get("street", {})
+	var bs: Array = lay.get("buildings", [])
+	_check(bs.size() >= 20, "%s: 布局建筑 ≥20 (实际 %d)" % [label, bs.size()])
+	var sw := float(st.get("width", 9.0))
+	var bo := float(st.get("backoff", 6.0))
+	_check(sw > 0.0 and bo > sw / 2.0, "%s: width>0 且 backoff>半路宽 (%.1f/%.1f)" % [label, sw, bo])
+
+	# 建筑: 生成数 ∈ (0, 布局数] + 全碰撞 + 单街面数 ≤25000 (决策 29)
+	var br: Node = g.get("buildings_root")
+	_check(br != null, label + ": Buildings 根存在")
+	var n_gen := 0
+	var no_col := 0
+	var faces := 0
+	if br:
+		for c in br.get_children():
+			for mn in _collect_mesh(c):
+				faces += _mesh_faces(mn)
+			if String(c.name).begins_with("Building_"):
+				n_gen += 1
+				var has := false
+				for cc in c.get_children():
+					if cc is CollisionShape3D:
+						has = true
+				if not has:
+					no_col += 1
+	_check(n_gen > 0 and n_gen <= bs.size(), "%s: 生成建筑 %d ∈ (0,%d]" % [label, n_gen, bs.size()])
+	_check(no_col == 0, "%s: 建筑全有碰撞体 (缺 %d)" % [label, no_col])
+	_check(faces <= 25000, "%s: 单街面数 ≤25000 (实际 %d)" % [label, faces])
+
+	# 路面: 存在/layer1/碰撞/宽 + 范围 == ends·road_limits 公式 + surface_drop 生效
+	var s0m := 1e9
+	var s1m := -1e9
+	for b in bs:
+		s0m = minf(s0m, float(b["s0"]))
+		s1m = maxf(s1m, float(b["s1"]))
+	var want_min := s0m - 14.0
+	var want_max := s1m + 14.0
+	var ek: Array = st.get("ends", [])
+	var rl: Array = st.get("road_limits", [])
+	if ek.size() >= 2 and rl.size() >= 2:
+		if String(ek[0]) == "open":
+			want_min = maxf(want_min, float(rl[0]))
+		if String(ek[1]) == "open":
+			want_max = float(rl[1])
+	var road: Node = g.get_node_or_null("Road")
+	_check(road is StaticBody3D, label + ": Road 存在且为 StaticBody3D")
+	if road is StaticBody3D:
+		_check((road as StaticBody3D).collision_layer == 1, label + ": Road collision_layer==1")
+		var r_w := -1.0
+		var r_zmid := 0.0
+		var r_half := 0.0
+		var r_y := 0.0
+		var r_h := 0.0
+		var r_drop_ok := false
+		var r_col := false
+		for c in (road as Node3D).get_children():
+			if c is CollisionShape3D:
+				r_col = true
+			elif c is MeshInstance3D and (c as MeshInstance3D).mesh is BoxMesh:
+				var bsz: Vector3 = ((c as MeshInstance3D).mesh as BoxMesh).size
+				r_w = bsz.x
+				r_h = bsz.y
+				r_half = bsz.z / 2.0
+				r_zmid = (c as Node3D).position.z
+				r_y = (c as Node3D).position.y
+				var drop := float(st.get("surface_drop", 0.0))
+				r_drop_ok = absf(r_y - (-bsz.y / 2.0 - drop)) < 0.002
+		_check(r_col, label + ": Road 有碰撞体")
+		_check(absf(r_w - sw) < 0.01, "%s: 路面宽 %.2f == street.width %.1f" % [label, r_w, sw])
+		_check(absf((r_zmid - r_half) - want_min) < 0.02 and absf((r_zmid + r_half) - want_max) < 0.02,
+			"%s: 路面范围 == ends/road_limits 公式 [%.1f, %.1f] (实 [%.1f, %.1f])"
+				% [label, want_min, want_max, r_zmid - r_half, r_zmid + r_half])
+		_check(r_drop_ok, "%s: surface_drop 口径 (y=%.4f, 期望 %.4f)"
+			% [label, r_y, -r_h / 2.0 - float(st.get("surface_drop", 0.0))])
+
+	# 人行道: 双侧存在 + x ∈ [半路宽, backoff]
+	var sw_nodes: Array = []
+	for nm3 in ["Sidewalk", "SidewalkM"]:
+		var n3: Node = g.get_node_or_null(nm3)
+		if n3 != null:
+			sw_nodes.append(n3)
+	_check(sw_nodes.size() == 2, label + ": 双侧人行道存在 (%d/2)" % sw_nodes.size())
+	var swb_ok := sw_nodes.size() == 2
+	for n3 in sw_nodes:
+		for c in (n3 as Node3D).get_children():
+			if c is MeshInstance3D and (c as MeshInstance3D).mesh is BoxMesh:
+				var bsz2: Vector3 = ((c as MeshInstance3D).mesh as BoxMesh).size
+				var cx: float = (c as Node3D).position.x
+				if absf(cx) - bsz2.x / 2.0 < sw / 2.0 - 0.01 or absf(cx) + bsz2.x / 2.0 > bo + 0.01:
+					swb_ok = false
+	_check(swb_ok, label + ": 人行道 x ∈ [半路宽, backoff] 不越界")
+
+	# 道具: 容器 + 树/灯/椅 + x 口径 + 路面区无装饰
+	var propsn: Node = null
+	if br:
+		propsn = br.get_node_or_null("StreetProps")
+	_check(propsn != null, label + ": StreetProps 存在")
+	var n_tr := 0
+	var n_lp := 0
+	var n_bn := 0
+	var x_ok := true
+	var decor_road := 0
+	if propsn:
+		for c in propsn.get_children():
+			var nm4 := String(c.name)
+			var px := 1e9
+			if c is Node3D:
+				px = (c as Node3D).position.x
+			if nm4.begins_with("Tree_"):
+				n_tr += 1
+				if absf(absf(px) - 4.78) > 0.01:
+					x_ok = false
+			elif nm4.begins_with("Lamp_"):
+				n_lp += 1
+				if absf(absf(px) - 4.78) > 0.01:
+					x_ok = false
+			elif nm4.begins_with("Bench_"):
+				n_bn += 1
+				if absf(px) > bo + 0.01:
+					x_ok = false
+			if c is StaticBody3D and (c as StaticBody3D).collision_layer == 4 \
+					and absf(px) < sw / 2.0 + 0.05:
+				decor_road += 1
+	_check(n_tr >= 4, "%s: 行道树 ≥4 (实际 %d)" % [label, n_tr])
+	_check(n_lp >= 6, "%s: 路灯 ≥6 (实际 %d)" % [label, n_lp])
+	_check(n_bn >= 2, "%s: 长椅 ≥2 (实际 %d)" % [label, n_bn])
+	_check(x_ok, "%s: 树/灯 |x|==4.78, 椅 ≤backoff" % label)
+	_check(decor_road == 0, "%s: 路面区无装饰道具 (实际 %d)" % [label, decor_road])
+
+	# 端头语义: 构件计数/结构/文字缺席/z 对位 (决策 11/30)
+	var expect: Array = ek if ek.size() >= 2 else ["construction", "construction"]
+	var n_nat := 0
+	var n_bar := 0
+	var nat_label_free := true
+	var nat_col_ok := true
+	var caps_z_ok := true
+	var cap_s0 := 0
+	var cap_s1 := 0
+	if propsn:
+		for c in propsn.get_children():
+			var nm5 := String(c.name)
+			var is_cap := nm5.begins_with("Barrier_") or nm5.begins_with("NaturalEnd_")
+			if nm5.begins_with("Barrier_"):
+				n_bar += 1
+				if not (c is StaticBody3D) or (c as StaticBody3D).collision_layer != 1:
+					nat_col_ok = false
+			elif nm5.begins_with("NaturalEnd_"):
+				n_nat += 1
+				if _collect_labels(c).size() != 0:
+					nat_label_free = false
+				if not (c is StaticBody3D) or (c as StaticBody3D).collision_layer != 1:
+					nat_col_ok = false
+			if is_cap:
+				var zv := (c as Node3D).position.z
+				if absf(zv - (s0m - 1.0)) < 0.01:
+					cap_s0 += 1
+				elif absf(zv - (s1m + 1.0)) < 0.01:
+					cap_s1 += 1
+				else:
+					caps_z_ok = false
+	var want_nat := 0
+	var want_bar2 := 0
+	for k in expect:
+		if String(k) == "natural":
+			want_nat += 1
+		elif String(k) == "construction":
+			want_bar2 += 1
+	_check(n_nat == want_nat and n_bar == want_bar2,
+		"%s: 端头构件 == ends (natural %d/%d, construction %d/%d)"
+			% [label, n_nat, want_nat, n_bar, want_bar2])
+	_check(nat_col_ok, label + ": 端头构件 layer1 + 实体碰撞")
+	_check(nat_label_free, label + ": 自然端无 Label3D (非文字构件)")
+	var want_cap_s0 := 0 if String(expect[0]) == "open" else 1
+	var want_cap_s1 := 0 if String(expect[1]) == "open" else 1
+	_check(caps_z_ok and cap_s0 == want_cap_s0 and cap_s1 == want_cap_s1,
+		"%s: 端头 z 对位且 open 端无封 (s0端 %d/%d, s1端 %d/%d)"
+			% [label, cap_s0, want_cap_s0, cap_s1, want_cap_s1])
+
+	# 路名牌: 2 块 + 主行 == street.name (reported) + 方位词 (ai-drafted) + z 夹路面
+	var rn2: Node = null
+	if br:
+		rn2 = br.get_node_or_null("RoadNames")
+	_check(rn2 != null, label + ": RoadNames 容器存在")
+	if rn2 != null:
+		_check(rn2.get_child_count() == 2, "%s: 路名牌 2 块 (实际 %d)" % [label, rn2.get_child_count()])
+		if rn2.get_child_count() == 2:
+			var name_ok2 := true
+			var dir_ok2 := true
+			var plates2: Array = []
+			for plate in rn2.get_children():
+				plates2.append(plate)
+				var pl2: Label3D = plate.get_node_or_null("StreetName")
+				var dl2: Label3D = plate.get_node_or_null("DirHint")
+				if pl2 == null or pl2.text != String(st.get("name", "")) \
+						or String(pl2.get_meta("basis", "")) != "reported":
+					name_ok2 = false
+				if dl2 == null or String(dl2.get_meta("basis", "")) != "ai-drafted" \
+						or not ["vers le Nord", "vers le Sud"].has(dl2.text):
+					dir_ok2 = false
+			_check(name_ok2, "%s: 路名主行 == street.name 且 basis reported (\"%s\")"
+				% [label, String(st.get("name", ""))])
+			_check(dir_ok2, "%s: 方位词 basis ai-drafted ∈ {Nord, Sud}" % label)
+			plates2.sort_custom(func(a, b): return (a as Node3D).position.z < (b as Node3D).position.z)
+			var z_s_want := clampf(s0m - 1.0 + 2.0, want_min + 1.0, want_max - 1.0)
+			var z_n_want := clampf(s1m + 1.0 - 2.0, want_min + 1.0, want_max - 1.0)
+			_check(absf((plates2[0] as Node3D).position.z - z_s_want) < 0.02 \
+				and absf((plates2[1] as Node3D).position.z - z_n_want) < 0.02,
+				"%s: 路名牌 z == 端点内缩并夹路面 [%.1f, %.1f] (实 [%.1f, %.1f])"
+					% [label, z_s_want, z_n_want,
+						(plates2[0] as Node3D).position.z, (plates2[1] as Node3D).position.z])
+
+	# 铭牌容器 (内容 basis 由 rosiers 段与候选模式断言)
+	var bsn: Node = null
+	if br:
+		bsn = br.get_node_or_null("BuildingSigns")
+	_check(bsn != null, label + ": BuildingSigns 容器存在")
 
 
 func _check(cond: bool, msg: String):

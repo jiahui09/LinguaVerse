@@ -233,10 +233,25 @@ func _build_barriers(gen, props: Node3D, min_s: float, max_s: float) -> void:
 		s0_min = min(s0_min, float(b["s0"]))
 		s1_max = max(s1_max, float(b["s1"]))
 	var ends: Array = [s0_min - 1.0, s1_max + 1.0]
+	# P3 批次2 (决策 11/30): street.ends 分派 — open 端不封 (跨街走通),
+	# natural 端 → 花坛+护柱自然边界 (无文字), construction/缺省 → 施工围栏 (历史行为)
+	var kinds: Array = ["construction", "construction"]
+	var st_end = gen.layout.get("street")
+	if st_end is Dictionary and (st_end as Dictionary).get("ends") is Array:
+		var ek: Array = (st_end as Dictionary)["ends"]
+		for i in 2:
+			if i < ek.size():
+				kinds[i] = String(ek[i])
 	for i in ends.size():
 		# 防御: 夹回已生成路面范围 (min_s/max_s 含 ±14 外扩)
 		var z := clampf(float(ends[i]), min_s + 1.0, max_s - 1.0)
-		_spawn_barrier(gen, props, z, i)
+		match String(kinds[i]):
+			"open":
+				pass  # 开放端: 街道在此延续, 不设封阻
+			"natural":
+				_spawn_natural_end(gen, props, z, i)
+			_:
+				_spawn_barrier(gen, props, z, i)
 
 func _spawn_barrier(gen, props: Node3D, z: float, idx: int):
 	var red := _mat("barrier_red", Color(0.80, 0.14, 0.11), 0.7)
@@ -286,3 +301,28 @@ func _spawn_barrier(gen, props: Node3D, z: float, idx: int):
 	# 整宽碰撞一盒: x∈[-6.5,6.5], y∈[0,1.1], 层 1
 	gen._add_box_shape(bar, Vector3(span, 1.1, 0.35), Vector3(0, 0.55, 0.0))
 	props.add_child(bar)
+
+## 自然端 (决策 11): 花坛带 + 护柱, 封堵但不带文字 (basis 规则 = 无 Label3D)
+## 3 段花坛 4.3 宽连续铺满 x∈[-6.45,6.45] (与建筑前脸 |x|=6 搭接 → 堵死绕行),
+## 灌木绿箱 + 石质护柱点缀; 碰撞整宽一盒 (层 1, 玩家与 NPC 都撞)。
+func _spawn_natural_end(gen, props: Node3D, z: float, idx: int):
+	var stone := _mat("natural_stone", Color(0.78, 0.75, 0.69), 0.85)
+	var leaf := _mat("natural_leaf", Color(0.33, 0.47, 0.28), 0.9)
+	var end := StaticBody3D.new()
+	end.name = "NaturalEnd_%d" % idx
+	end.collision_layer = LAYER_WORLD
+	end.collision_mask = 1
+	end.position = Vector3(0, 0, z)
+	for px_v in [-4.3, 0.0, 4.3]:
+		var px := float(px_v)
+		# 花坛石槽 4.3 × 0.55 高 × 0.9 深
+		gen._add_mesh(end, gen._box_mesh(4.3, 0.55, 0.9), stone, Vector3(px, 0.275, 0.0))
+		# 灌木冠 4.0 × 0.45 (顶 y≈1.0)
+		gen._add_mesh(end, gen._box_mesh(4.0, 0.45, 0.7), leaf, Vector3(px, 0.775, 0.0))
+	# 石质护柱 ×4 (花坛接缝与两端)
+	for px_v in [-6.3, -2.15, 2.15, 6.3]:
+		gen._add_mesh(end, gen._box_mesh(0.18, 1.05, 0.18), stone,
+			Vector3(float(px_v), 0.525, 0.0))
+	# 无文字: 自然边界不挂 Label3D (street_check 断言 Label3D 缺席)
+	gen._add_box_shape(end, Vector3(13.0, 1.2, 0.9), Vector3(0, 0.6, 0.0))
+	props.add_child(end)

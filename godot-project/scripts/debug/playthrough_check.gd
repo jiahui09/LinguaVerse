@@ -288,6 +288,65 @@ func _run():
 	else:
 		print("SKIP: 未注册 GameManager，跳过手册闭环断言")
 
+	# ── 10) 跨街走通 (P3 批次2 接缝实走: 决策 30 方案A 的物理验证) ──
+	# 接缝两侧须无隐形墙/断面可物理走通; 自然端花坛须挡人 (决策 11)。
+	var walk_y: float = player.global_position.y
+	var aim1 := Node3D.new()
+	main.add_child(aim1)
+
+	# 10a) 接缝1: 罗斯 → 走廊 (joint 世界 z=-89.01, 走廊沿 -Z)
+	player.global_position = Vector3(0.0, walk_y, -84.0)
+	aim1.global_position = Vector3(0.0, walk_y, -100.0)
+	_aim_at(player, aim1)
+	await physics_frame
+	var z_before1: float = player.global_position.z
+	Input.action_press("move_forward")
+	var crossed1 := false
+	for i in 150:
+		await physics_frame
+		if player.global_position.z < -91.0:
+			crossed1 = true
+			break
+	Input.action_release("move_forward")
+	_check(crossed1, "接缝1 走通: 罗斯→走廊 跨过 joint (z %.1f → %.1f)"
+		% [z_before1, player.global_position.z])
+	_check(absf(player.global_position.y - walk_y) < 0.5,
+		"接缝1 地面连续无坠落 (y=%.2f, 起点 %.2f)"
+			% [player.global_position.y, walk_y])
+
+	# 10b) 自然端花坛挡人 (rosiers NW 端 NaturalEnd @ z≈90.5, 整宽 13m)
+	player.global_position = Vector3(0.0, walk_y, 80.0)
+	aim1.global_position = Vector3(0.0, walk_y, 95.0)
+	_aim_at(player, aim1)
+	await physics_frame
+	Input.action_press("move_forward")
+	for i in 150:
+		await physics_frame
+	Input.action_release("move_forward")
+	var z_end_nat: float = player.global_position.z
+	_check(z_end_nat > 84.0 and z_end_nat < 90.5,
+		"自然端花坛挡人: 直行止于花坛前 (z 80 → %.1f, 花坛 90.5)" % z_end_nat)
+
+	# 10c) 接缝2: 走廊 → Vosges (锚世界 z≈-524.0, 走廊末端世界 -523.93)
+	player.global_position = Vector3(0.0, walk_y, -517.0)
+	aim1.global_position = Vector3(0.0, walk_y, -533.0)
+	_aim_at(player, aim1)
+	await physics_frame
+	var z_before2: float = player.global_position.z
+	Input.action_press("move_forward")
+	var crossed2 := false
+	for i in 150:
+		await physics_frame
+		if player.global_position.z < -527.0:
+			crossed2 = true
+			break
+	Input.action_release("move_forward")
+	_check(crossed2, "接缝2 走通: 走廊→Vosges 跨过锚世界 (z %.1f → %.1f)"
+		% [z_before2, player.global_position.z])
+	_check(absf(player.global_position.y - walk_y) < 0.5,
+		"接缝2 地面连续无坠落 (y=%.2f)" % player.global_position.y)
+	aim1.queue_free()
+
 	main.queue_free()
 	if failures > 0:
 		print("PLAYTHROUGH_FAIL: %d 项失败" % failures)

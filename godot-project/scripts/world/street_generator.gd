@@ -68,6 +68,7 @@ var _road_names = null
 
 func _ready():
 	load_layout()
+	_apply_placement()
 	build_all()
 	# 建筑计数只看 Building_* 开头的子节点 (子系统容器与 CafeSite 不计入)
 	var n_buildings := 0
@@ -88,6 +89,25 @@ func load_layout():
 		return
 	layout = parsed
 
+## P3 批次2 (决策 30): 多街同场景世界接缝 — meta.placement {ref, ref_axis, x, z}
+## 在**参考街的游戏空间**里直链接缝 (装配为直线展开模型, ENU 不作位移源):
+##   position = (x, 0, z); rotation.y = my_axis − ref_axis (轴角差定朝向)。
+## 无 placement (Rosiers 等单街/参考街) → 恒等变换, 历史行为不变。
+func _apply_placement():
+	var meta = layout.get("meta", {})
+	if not (meta is Dictionary):
+		return
+	var pl = (meta as Dictionary).get("placement", {})
+	if not (pl is Dictionary) or (pl as Dictionary).is_empty():
+		return
+	var ref_axis := float((pl as Dictionary).get("ref_axis", 0.0))
+	var my_axis := float((meta as Dictionary).get("street_axis_deg", 0.0))
+	position = Vector3(float((pl as Dictionary).get("x", 0.0)), 0.0,
+		float((pl as Dictionary).get("z", 0.0)))
+	rotation.y = deg_to_rad(my_axis - ref_axis)
+	print("[StreetGenerator] 世界接缝: pos=", position,
+		" rot_y=", rad_to_deg(rotation.y), "° ref=", (pl as Dictionary).get("ref", "?"))
+
 func build_all():
 	if layout.is_empty():
 		return
@@ -100,6 +120,17 @@ func build_all():
 		max_s = max(max_s, float(b["s1"]))
 	min_s -= 14.0
 	max_s += 14.0
+	# P3 批次2: street.ends — open 端吃 road_limits (s0 端夹至链起, s1 端止于链止);
+	# legacy (无 ends) → 行为逐字节不变 (±14 外扩)
+	var st_raw_road = layout.get("street")
+	if st_raw_road is Dictionary:
+		var ends_raw = (st_raw_road as Dictionary).get("ends", [])
+		var rl_raw = (st_raw_road as Dictionary).get("road_limits", [])
+		if ends_raw is Array and rl_raw is Array and rl_raw.size() >= 2:
+			if String(ends_raw[0]) == "open":
+				min_s = maxf(min_s, float(rl_raw[0]))
+			if String(ends_raw[1]) == "open":
+				max_s = float(rl_raw[1])  # 止于链止 (投影钳制保证链止 ≥ s1, 不再 +14 外扩)
 	street_length_m = max_s - min_s
 
 	buildings_root = Node3D.new()

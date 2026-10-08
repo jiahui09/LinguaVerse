@@ -157,6 +157,9 @@ def make_slots(keep):
     # (步长与路灯 14 互质会导致网格渐进逼近出现 1m 贴脸, 已实测)
     p_step = 42.0
     p_count = max(1, int((span - 12.0) / p_step) + 1)
+    # 网格末位不得越过 s_max (候选检查"种植网格覆盖全段"的生成端口径;
+    # 对历史输出 min 不收紧 → 字节中性)
+    p_count = min(p_count, max(1, int((s_max - (s_min + 14.0)) / p_step) + 1))
     planting = {
         "z_from": round(s_min + 14.0, 1),
         "z_step": p_step,
@@ -167,9 +170,30 @@ def make_slots(keep):
     return {"lamp_z": lamp_z, "bench_seats": benches, "planting": planting}
 
 
+def _cut_poly(poly, s_cut: float):
+    """丢弃折线 s_cut 之前的前缀, 在切割点插值起始点 (arc 空间长度参数)。"""
+    out = []
+    acc = 0.0
+    for i in range(len(poly) - 1):
+        ax, ay = poly[i]
+        bx, by = poly[i + 1]
+        L = math.hypot(bx - ax, by - ay)
+        seg_start = acc
+        acc += L
+        if acc <= s_cut:
+            continue
+        if not out:
+            t = (s_cut - seg_start) / L if L > 0 else 0.0
+            out.append((ax + (bx - ax) * t, ay + (by - ay) * t))
+        out.append((bx, by))
+    return out if out else poly[-1:]
+
+
 def main():
     ap = argparse.ArgumentParser(description="OSM Overpass JSON → 街道布局 JSON")
-    ap.add_argument("--input", default=str(RAW_PATH), help="Overpass 结果 JSON")
+    ap.add_argument("--input", action="append", dest="inputs", default=None,
+                    help="Overpass 结果 JSON (可重复: 合并读取并按 (type,id) 去重; "
+                         "走廊跨多拉取时用)")
     ap.add_argument("--output", default=str(OUT_PATH), help="布局 JSON 输出路径")
     ap.add_argument("--street-name", default="Rue des Rosiers", help="街道名 (meta/street)")
     ap.add_argument("--street-filter", default="",
@@ -193,15 +217,45 @@ def main():
     ap.add_argument("--emit-slots", action="store_true",
                     help="写入 street.slots 槽位参数 (灯具/长椅/种植网格); "
                          "placement=by_v 时自动开启, 默认字节中性不受影响")
+    ap.add_argument("--chain-ways", default="",
+                    help="参与中线拼接的 way id, 逗号分隔 (顺序=种子顺序, 首个为种子; "
+                         "只按名单不按名筛选, 走廊可含无名 footway)")
+    ap.add_argument("--chain-from", default="",
+                    help="'lat,lon' — 链定向+锚点: 距该点投影过半则整链反向; "
+                         "origin 取该点 (不配 café/bbox)")
+    ap.add_argument("--chain-cut", action="store_true",
+                    help="配合 --chain-from: 丢弃投影点之前的链前缀 (走廊接头: 只留向前段)")
+    ap.add_argument("--ends", default="",
+                    help="街两端处理 'a,b' (a=s0_min 端, b=s1_max 端) ∈ "
+                         "open/natural/construction → street.ends (默认不写=legacy 全 construction)")
+    ap.add_argument("--no-cafe", action="store_true",
+                    help="禁用咖啡馆锚点 (合并拉取里邻街有 café 节点时必开, 否则会错锚)")
+    ap.add_argument("--axis-deg", type=float, default=None,
+                    help="覆盖 meta.street_axis_deg (接缝共轴: 走廊=参考街轴±180 使接缝零夹角; "
+                         "缺省仍为链方位长度加权)")
+    ap.add_argument("--surface-drop", type=float, default=0.0,
+                    help="路面/人行道整体下沉 (米) — 转角与邻街路面共面相交时消 z-fighting")
+    ap.add_argument("--span-max", type=float, default=None,
+                    help="单栋投影跨度上限(米): 弯折链折返处投影翻车会产超长假楼, 超限整栋丢弃 "
+                         "(缺省 None=不过滤, 历史输出字节中性)")
+    ap.add_argument("--max-proj-dist", type=float, default=None,
+                    help="顶点离链投影距离上限(米): 链未覆盖的远段建筑整栋丢弃 "
+                         "(缺省 None=不过滤, 历史输出字节中性)")
     args = ap.parse_args()
-    raw_path = Path(args.input)
     out_path = Path(args.output)
     street_width = args.width
     street_backoff = street_width / 2 + 1.5
 
-    with open(raw_path, encoding="utf-8") as f:
-        raw = json.load(f)
-    elems = raw.get("elements", [])
+    elems = []
+    _seen: set = set()
+    for p in (args.inputs or [str(RAW_PATH)]):
+        with open(p, encoding="utf-8") as f:
+            for e in json.load(f).get("elements", []):
+                key = (e["type"], e["id"])
+                if key in _seen:
+                    continue
+                _seen.add(key)
+                elems.append(e)
 
     buildings = [e for e in elems if e["type"] == "way" and "building" in e.get("tags", {})]
     streets = [e for e in elems if e["type"] == "way" and "highway" in e.get("tags", {})]
@@ -210,11 +264,27 @@ def main():
     if args.highway_types:
         allow = {t.strip() for t in args.highway_types.split(",") if t.strip()}
         streets = [s for s in streets if s.get("tags", {}).get("highway") in allow]
+    if args.chain_ways:
+        order = [int(x) for x in args.chain_ways.split(",") if x.strip()]
+        by_id = {s["id"]: s for s in streets if s["id"] in set(order)}
+        missing = [i for i in order if i not in by_id]
+        if missing:
+            print(f"--chain-ways 引用输入里不存在的 way id: {missing}", file=sys.stderr)
+            return 1
+        streets = [by_id[i] for i in order]
     cafes = [e for e in elems if e["type"] == "node" and e.get("tags", {}).get("amenity") == "cafe"]
 
-    cafe_osm = next((c for c in cafes if args.cafe_name in c.get("tags", {}).get("name", "")),
-                    (cafes[0] if cafes else None))
-    if cafe_osm:
+    cafe_osm = None
+    if not args.no_cafe:
+        cafe_osm = next((c for c in cafes if args.cafe_name in c.get("tags", {}).get("name", "")),
+                        (cafes[0] if cafes else None))
+    chain_from_pt = None
+    if args.chain_from:
+        _cf = [float(x) for x in args.chain_from.split(",")]
+        chain_from_pt = (_cf[0], _cf[1])
+    if chain_from_pt is not None:
+        origin = chain_from_pt
+    elif cafe_osm:
         origin = (cafe_osm["lat"], cafe_osm["lon"])
     else:
         # 无咖啡馆锚点 (如 Place des Vosges 拉取): 取几何包围盒中心, 元素不依赖 bounds 字段
@@ -234,6 +304,26 @@ def main():
     if not segs:
         print("街道无有效线段", file=sys.stderr)
         return 1
+
+    # 链定向 + 裁剪 (--chain-from): 距锚点投影过半 → 反向让锚点落在链首侧;
+    # --chain-cut 再丢掉锚点之前前缀, 使锚点成为 s=0 (走廊从接口点起算)
+    if chain_from_pt is not None:
+        cf_local = to_local(chain_from_pt[0], chain_from_pt[1], lat0, lon0)
+        s_cf, _, _ = project_to_segments(cf_local, segs)
+        w_cf = sum(sg["L"] for sg in segs)
+        if s_cf > w_cf / 2.0:
+            poly = poly[::-1]
+            segs = polyline_segments(poly)
+            s_cf = w_cf - s_cf
+            print(f"链反向: 锚点投影 {s_cf:.1f}m (原 {w_cf - s_cf:.1f}m)")
+        if args.chain_cut:
+            poly = _cut_poly(poly, s_cf)
+            segs = polyline_segments(poly)
+            if not segs:
+                print("链裁剪后无有效线段", file=sys.stderr)
+                return 1
+            print(f"链裁剪: 丢弃前缀 {s_cf:.1f}m, 余 "
+                  f"{sum(sg['L'] for sg in segs):.1f}m")
 
     # 主街方向角（长度加权平均）
     wsum = sum(sg["L"] for sg in segs)
@@ -260,6 +350,11 @@ def main():
         s0, s1 = min(s_vals), max(s_vals)
         if s1 - s0 < 2.0:
             continue  # 退化投影 (链起点转角建筑全部顶点钳到 s=0, 零宽 sliver)
+        if args.span_max is not None and (s1 - s0) > args.span_max:
+            continue  # 投影翻车: 弯折链折返处同一建筑顶点分投影到千里之外 → 超长假楼
+        if args.max_proj_dist is not None and any(
+                abs(pr[1]) > args.max_proj_dist for pr in proj):
+            continue  # 顶点离链超限: 链未覆盖的远段建筑 (投影到段端钳制点)
         v_mean = sum(v_vals) / len(v_vals)
         if abs(v_mean) > args.across_max:
             continue
@@ -343,6 +438,24 @@ def main():
     }
     if args.placement == "by_v":
         layout["street"]["placement"] = "by_v"
+    if args.axis_deg is not None:
+        layout["meta"]["street_axis_deg"] = round(args.axis_deg, 1)
+        print(f"轴覆盖: street_axis_deg = {round(args.axis_deg, 1)} (链方位原值 "
+              f"{round(main_ang, 1)})")
+    if args.surface_drop > 0.0:
+        layout["street"]["surface_drop"] = round(args.surface_drop, 3)
+    if args.ends:
+        kinds = [v.strip() for v in args.ends.split(",")]
+        allowed = ("open", "natural", "construction")
+        if len(kinds) != 2 or any(k not in allowed for k in kinds):
+            print(f"--ends 需 'open|natural|construction,同上' 两项 (收到 {args.ends!r})",
+                  file=sys.stderr)
+            return 1
+        layout["street"]["ends"] = kinds
+        # open 端: 路面端点夹/伸至链起止 (assembler road_limits 消费;
+        # 锚点=咖啡馆时链起止 z = -anchor_s / total-anchor_s)
+        if "open" in kinds:
+            layout["street"]["road_limits"] = [round(-anchor_s, 2), round(wsum - anchor_s, 2)]
     if args.placement == "by_v" or args.emit_slots:
         slots = make_slots(keep)
         if slots:

@@ -20,8 +20,8 @@
     "rosiers": {
       "layout": {
         "path": "godot-project/data/layouts/rosiers_layout.json",
-        "bytes": 5701,
-        "sha256": "d5bacc4d4e9dca33cd299c66f4c7c8af9a713bb93e3e6dcd6d9e453b2e4921d5"
+        "bytes": 5768,
+        "sha256": "85c4193f9a037725ff716529fce47bacc91261b5c3855687d00840019b2035f0"
       },
       "subsystems": {
         "road_surface": "339697f9cb5a3c3468cec74ae2b103281ac6ad716992942d93c78e81e2439828",
@@ -34,8 +34,8 @@
     "vosges": {
       "layout": {
         "path": "godot-project/data/layouts/vosges_layout.json",
-        "bytes": 11838,
-        "sha256": "77d154f65f4397d26b51410e30c6af49fb05ada55d9a82183c9a203e13518123"
+        "bytes": 12055,
+        "sha256": "a8735b511e5ff965fe6f909ab9c27225b4b9c5f7828c74a069987a4ede0a8bff"
       },
       "subsystems": {
         "road_surface": "339697f9cb5a3c3468cec74ae2b103281ac6ad716992942d93c78e81e2439828",
@@ -44,9 +44,24 @@
         "building_signs": "05f956696c016ecf2c8a4ef5ca400241fc4872ef36985f37ccffda2c9439a5a0",
         "road_names": "64d6dec8307aa7d68aa97def157f3dd8c11d9340aa1ad4679156abcfce95a1e9"
       }
+    },
+    "corridor": {
+      "layout": {
+        "path": "godot-project/data/layouts/corridor_layout.json",
+        "bytes": 8706,
+        "sha256": "12446ac9c070e3fb93ece79052e9ec5a2e41c74a620f8557b84e2ef3d52da5ed"
+      },
+      "subsystems": {
+        "road_surface": "339697f9cb5a3c3468cec74ae2b103281ac6ad716992942d93c78e81e2439828",
+        "street_furniture": "0dec49df5cba079af92555d38099f1393b06d8b2bf76809f20e24907eddcd83f",
+        "planting": "9263b6357e70e81d655ebbe136c6259946f4c5c1857323141538743c0dc02538",
+        "building_signs": "05f956696c016ecf2c8a4ef5ca400241fc4872ef36985f37ccffda2c9439a5a0",
+        "road_names": "64d6dec8307aa7d68aa97def157f3dd8c11d9340aa1ad4679156abcfce95a1e9"
+      },
+      "updated_at": "2026-10-08"
     }
   },
-  "updated_at": "2026-10-08T09:46:22+00:00",
+  "updated_at": "2026-10-08",
   "audio": {
     "street_loop": {
       "path": "godot-project/assets/audio/ambient/street_loop.wav",

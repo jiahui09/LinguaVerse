@@ -30,6 +30,8 @@ func _road(gen, min_s: float, max_s: float) -> void:
 	var width = float(gen.layout["street"].get("width", 9.0))
 	var thick := float(PARAMS["road_thickness"])
 	var col_h := float(PARAMS["road_collision_h"])
+	# 批次2: surface_drop — 转角与邻街路面共面相交时整体下沉消 z-fighting
+	var drop := float(gen.layout["street"].get("surface_drop", 0.0))
 	var road := StaticBody3D.new()
 	road.name = "Road"
 	road.collision_layer = 1
@@ -38,13 +40,13 @@ func _road(gen, min_s: float, max_s: float) -> void:
 	box.size = Vector3(width, thick, max_s - min_s)
 	mi.mesh = box
 	mi.material_override = gen._road_mat
-	mi.position = Vector3(0, -thick / 2.0, (min_s + max_s) / 2.0)
+	mi.position = Vector3(0, -thick / 2.0 - drop, (min_s + max_s) / 2.0)
 	road.add_child(mi)
 	var col := CollisionShape3D.new()
 	var shape := BoxShape3D.new()
 	shape.size = Vector3(width, col_h, max_s - min_s)
 	col.shape = shape
-	col.position = Vector3(0, -col_h / 2.0, (min_s + max_s) / 2.0)
+	col.position = Vector3(0, -col_h / 2.0 - drop, (min_s + max_s) / 2.0)
 	road.add_child(col)
 	gen.add_child(road)
 
@@ -56,6 +58,7 @@ func _sidewalks(gen, min_s: float, max_s: float) -> void:
 		return
 	var thick := float(PARAMS["sidewalk_thickness"])
 	var col_h := float(PARAMS["sidewalk_collision_h"])
+	var drop := float(gen.layout["street"].get("surface_drop", 0.0))
 	for side in [1.0, -1.0]:
 		var sw := StaticBody3D.new()
 		sw.name = "Sidewalk" if side > 0 else "SidewalkM"
@@ -66,12 +69,12 @@ func _sidewalks(gen, min_s: float, max_s: float) -> void:
 		box.size = Vector3(sw_w, thick, max_s - min_s)
 		mi.mesh = box
 		mi.material_override = gen._sidewalk_mat
-		mi.position = Vector3(cx, -thick / 2.0, (min_s + max_s) / 2.0)
+		mi.position = Vector3(cx, -thick / 2.0 - drop, (min_s + max_s) / 2.0)
 		sw.add_child(mi)
 		var col := CollisionShape3D.new()
 		var shape := BoxShape3D.new()
 		shape.size = Vector3(sw_w, col_h, max_s - min_s)
 		col.shape = shape
-		col.position = Vector3(cx, -col_h / 2.0, (min_s + max_s) / 2.0)
+		col.position = Vector3(cx, -col_h / 2.0 - drop, (min_s + max_s) / 2.0)
 		sw.add_child(col)
 		gen.add_child(sw)

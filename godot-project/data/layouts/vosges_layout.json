@@ -5,7 +5,17 @@
   "origin_lat": 48.85602,
   "origin_lon": 2.368252,
   "unit": "meters",
-  "street_axis_deg": 151.6
+  "street_axis_deg": 151.6,
+  "placement": {
+   "ref": "rosiers",
+   "ref_axis": 306.6,
+   "x": 158.23,
+   "z": -184.6,
+   "anchor": [
+    0.0,
+    374.41
+   ]
+  }
  },
  "street": {
   "name": "Place des Vosges",
@@ -82,7 +92,15 @@
     "budget_total": 22,
     "cafe_door_z": -9999.0
    }
-  }
+  },
+  "ends": [
+   "open",
+   "open"
+  ],
+  "road_limits": [
+   0.0,
+   494.82
+  ]
  },
  "cafe_anchor": null,
  "buildings": [
