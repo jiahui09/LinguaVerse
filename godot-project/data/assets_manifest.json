@@ -69,7 +69,7 @@
       "bytes": 352844,
       "sha256": "f72a6b7fa69da6c13c536a91d793f5b2939c9e8b1e4f9b272b52729852ebe041",
       "source": "CC0-1.0 程序合成（本仓库 tools/make_ambience.py，无第三方素材）",
-      "generator_sha256": "188aeed9f7b44681cfc662a796e43f5c5969ff96506fa07cf20ef6c841938105"
+      "generator_sha256": "a75007460eeee27de7822a195483f95fe9335e60afecc006afffe07daaa21928"
     },
     "cafe_loop": {
       "path": "godot-project/assets/audio/ambient/cafe_loop.wav",
@@ -77,7 +77,7 @@
       "bytes": 352844,
       "sha256": "718b5c9eca1063042b5ab5628754ceb11e0e425effb169cf3b76b241653c451b",
       "source": "CC0-1.0 程序合成（本仓库 tools/make_ambience.py，无第三方素材）",
-      "generator_sha256": "188aeed9f7b44681cfc662a796e43f5c5969ff96506fa07cf20ef6c841938105"
+      "generator_sha256": "a75007460eeee27de7822a195483f95fe9335e60afecc006afffe07daaa21928"
     },
     "cup_clink": {
       "path": "godot-project/assets/audio/sfx/cup_clink.wav",
@@ -85,7 +85,15 @@
       "bytes": 26504,
       "sha256": "fa5eec5e758a1a777d53944447e2450d3377a79a1bd4d13e69b970148c133a56",
       "source": "CC0-1.0 程序合成（本仓库 tools/make_ambience.py，无第三方素材）",
-      "generator_sha256": "188aeed9f7b44681cfc662a796e43f5c5969ff96506fa07cf20ef6c841938105"
+      "generator_sha256": "a75007460eeee27de7822a195483f95fe9335e60afecc006afffe07daaa21928"
+    },
+    "footstep": {
+      "path": "godot-project/assets/audio/sfx/footstep.wav",
+      "seconds": 0.18,
+      "bytes": 7982,
+      "sha256": "15b8be69cf4220270a1fa0a41f0c977d51127cd027f71f191b93a7f091f65ce2",
+      "source": "CC0-1.0 程序合成（本仓库 tools/make_ambience.py，无第三方素材）",
+      "generator_sha256": "a75007460eeee27de7822a195483f95fe9335e60afecc006afffe07daaa21928"
     }
   },
   "audio_budgets": {

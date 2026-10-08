@@ -14,6 +14,7 @@
 [ext_resource type="Script" path="res://scripts/world/ambience_controller.gd" id="12_amb"]
 [ext_resource type="Script" path="res://scripts/ui/hud_hints.gd" id="13_hud"]
 [ext_resource type="Script" path="res://scripts/ui/handbook_ui.gd" id="14_hb"]
+[ext_resource type="Script" path="res://scripts/ui/settings_panel.gd" id="15_sp"]
 
 [sub_resource type="ProceduralSkyMaterial" id="SkyMat"]
 sky_top_color = Color(0.28, 0.48, 0.88, 1)
@@ -122,3 +123,6 @@ script = ExtResource("13_hud")
 
 [node name="Handbook" type="CanvasLayer" parent="."]
 script = ExtResource("14_hb")
+
+[node name="SettingsPanel" type="CanvasLayer" parent="."]
+script = ExtResource("15_sp")

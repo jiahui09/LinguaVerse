@@ -17,6 +17,7 @@ build/
 # 落在 res:// 根部即 godot-project/，见 dialog_check / playthrough_check / handbook_capture
 handbook_*_tmp.json
 handbook_bad_test.json
+settings_test_tmp.json
 
 # ===== Python（tools/ 下的管线与校验脚本）=====
 __pycache__/

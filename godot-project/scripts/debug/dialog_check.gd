@@ -301,6 +301,108 @@ func _run():
 		gm.set_setting("volume", 0.8)
 		gm.set_setting("mouse_sensitivity", 0.002)
 
+		# 8g) P3 批次3：设置面板/暂停浮层/全屏落地/持久化/失焦暂停/准星/头摆脚步
+		var sp = main.get_node_or_null("SettingsPanel")
+		_check(sp != null and sp.is_in_group("settings_panel"), "设置面板节点在场")
+		if sp != null:
+			await process_frame
+			var cam: Camera3D = player.camera
+			var hud2: Node = main.get_node("HudHints")
+			_check(not bool(sp.visible), "设置面板初始隐藏")
+			_check(bool(hud2.get_state()["crosshair"]), "游玩态准星可见")
+
+			# 暂停浮层：面板显形 + 树暂停 + 鼠标释放 + 准星隐
+			gm.toggle_pause()
+			await process_frame
+			_check(bool(sp.visible) and paused, "暂停后设置面板显形且树已暂停")
+			_check(not bool(hud2.get_state()["crosshair"]), "暂停中准星隐去")
+			gm.toggle_pause()
+			await process_frame
+			_check(not bool(sp.visible) and not paused, "恢复后面板隐藏、树运行")
+			_check(bool(hud2.get_state()["crosshair"]), "恢复后准星回来")
+			if gm.display_supports_window_mode():
+				_check(Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED,
+					"恢复重新捕获鼠标（headless get 恒 0，仅真机可断言）")
+			else:
+				print("SKIP: headless 无鼠标捕获语义——鼠标显隐留真机清单（批次9）")
+
+			# 滑条直连 gm（唯一数据源）→ 即刻生效
+			sp.sliders["mouse_sensitivity"].value = 0.005
+			_check(is_equal_approx(float(gm.get_setting("mouse_sensitivity")), 0.005), "灵敏度滑条写入 gm")
+			_check(is_equal_approx(player.mouse_sensitivity, 0.005), "灵敏度滑条即刻生效于玩家")
+			sp.sliders["volume"].value = 0.3
+			_check(absf(AudioServer.get_bus_volume_db(0) - linear_to_db(0.3)) < 0.05, "音量滑条接到 Master 总线")
+			sp.sliders["fov"].value = 80.0
+			_check(is_equal_approx(cam.fov, 80.0), "FOV 即刻生效于相机 (fov=%.1f)" % cam.fov)
+
+			# 全屏真实生效：设置落地（dummy 显示驱动不改窗口模式 → SKIP，真机显示列批次9 验收清单）
+			sp.fullscreen_check.button_pressed = true
+			_check(bool(gm.get_setting("fullscreen")), "全屏开关写入 gm")
+			if gm.display_supports_window_mode():
+				_check(DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN,
+					"全屏窗口模式实际生效")
+			else:
+				print("SKIP: headless 显示驱动——全屏显示真机验证留批次9 验收清单")
+			sp.fullscreen_check.button_pressed = false
+			_check(not bool(gm.get_setting("fullscreen")), "全屏开关可关回")
+
+			# 持久化 user://settings.json（注入临时路径；白名单 + 钳制 + 坏档回默认不崩溃）
+			var saved_path: String = gm.settings_path
+			gm.settings_path = "res://settings_test_tmp.json"
+			gm.set_setting("volume", 0.42)
+			_check(FileAccess.file_exists("res://settings_test_tmp.json"), "设置落盘到可注入路径")
+			var parsed = JSON.parse_string(FileAccess.get_file_as_string("res://settings_test_tmp.json"))
+			_check(parsed is Dictionary and parsed.size() == 4
+				and is_equal_approx(float(parsed.get("volume", -1.0)), 0.42),
+				"落盘 JSON 含最新音量且仅白名单四键 (keys=%s)"
+					% (str((parsed as Dictionary).keys()) if parsed is Dictionary else "n/a"))
+			gm.load_settings()
+			_check(is_equal_approx(float(gm.get_setting("volume")), 0.42), "load_settings 恢复落盘值")
+			var bf2 := FileAccess.open("res://settings_test_tmp.json", FileAccess.WRITE)
+			bf2.store_string("{\"volume\": \"loud\", \"fov\": 9999, \"junk\": true}")
+			bf2.close()
+			gm.load_settings()   # 坏档：音量类型拒收回默认、FOV 钳到上限、未知键丢弃、不崩溃
+			_check(is_equal_approx(float(gm.get_setting("volume")), 0.8),
+				"坏档音量回默认 (got %s)" % str(gm.get_setting("volume")))
+			_check(is_equal_approx(float(gm.get_setting("fov")), 100.0), "坏档 FOV 钳到白名单上限 100")
+			gm.settings_path = saved_path
+			gm.set_setting("volume", 0.8)
+			gm.set_setting("mouse_sensitivity", 0.002)
+			gm.set_setting("fov", 75.0)
+			gm.set_setting("fullscreen", false)
+			DirAccess.remove_absolute(ProjectSettings.globalize_path("res://settings_test_tmp.json"))
+			_check(is_equal_approx(cam.fov, 75.0), "FOV 复位回默认 75")
+
+			# 失焦自动暂停（信号入口同名直调；对话/手册打开时由 gm 内部判据不叠加）
+			gm.handle_focus_lost()
+			_check(bool(gm.is_game_paused) and bool(sp.visible), "窗口失焦 → 自动暂停并显示面板")
+			gm.toggle_pause()
+			_check(not bool(gm.is_game_paused), "失焦暂停可恢复（无软锁）")
+
+			# 头摆 + 同步脚步（自由态实测：走动时相机微幅位移 + 脚步触发；停步回中）
+			var rest_pos: Vector3 = cam.position
+			var steps0: int = player._step_count
+			player.global_position = Vector3(0.0, player.global_position.y, -10.0)
+			Input.action_press("move_forward")
+			var bob_seen := false
+			var step_seen := false
+			for i in 60:
+				await physics_frame
+				if cam.position.distance_to(rest_pos) > 0.005:
+					bob_seen = true
+				if player._step_count > steps0:
+					step_seen = true
+			Input.action_release("move_forward")
+			_check(bob_seen, "走动时相机微幅头摆 (rest=%s)" % [rest_pos])
+			_check(step_seen and player._step_count > steps0,
+				"脚步随步频触发 (steps=%d)" % player._step_count)
+			_check(player._foot_player != null and player._foot_player.stream != null,
+				"脚步音频流已加载 (footstep.wav)")
+			for i in 40:
+				await physics_frame
+			_check(cam.position.distance_to(rest_pos) < 0.01,
+				"停步后相机回中 (Δ=%.4f)" % cam.position.distance_to(rest_pos))
+
 		# 清理本节测试存档
 		if FileAccess.file_exists("res://handbook_test_tmp.json"):
 			DirAccess.remove_absolute(ProjectSettings.globalize_path("res://handbook_test_tmp.json"))

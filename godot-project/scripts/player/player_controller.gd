@@ -17,23 +17,50 @@ var ui_blocked: bool = false   # 手册等全屏 UI 打开时冻结移动与视�
 @onready var camera: Camera3D = $Camera3D
 @onready var interaction_ray: RayCast3D = $Camera3D/InteractionRay
 
+# ── P3 批次3：微幅头摆 + 同步脚步（docs/操作逻辑 决策26；幅度小到不致眩晕）──
+const BOB_STRIDE := 1.4        # 步幅(米)：水平速度/步幅 = 步频(Hz)
+const BOB_AMP_Y := 0.028       # 纵向沉浮(米)，恒 ≤0 不顶天花板
+const BOB_AMP_X := 0.014       # 横向摇摆(米)
+const BOB_RETURN_SPEED := 10.0 # 停步回中速率（帧率无关 lerp 系数 1/s）
+var _bob_phase: float = 0.0
+var _bob_rest: Vector3 = Vector3.ZERO
+var _last_step_index: int = 0
+var _step_count: int = 0       # 累计脚步（测试断言钩子）
+var _foot_player: AudioStreamPlayer
+
 func _ready():
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	# 连接交互信号
 	interaction_ray.target_found.connect(_on_target_found)
 	interaction_ray.target_lost.connect(_on_target_lost)
-	# 设置接线：灵敏度读全局设置并随设置变更更新（此前存了从不读）
+	_bob_rest = camera.position
+	_setup_footsteps()
+	# 设置接线：灵敏度/FOV 读全局设置并随设置变更更新（此前存了从不读）
 	# GameManager 用节点解析（-s headless 模式下自动加载不注册全局标识，沿用代码库约定）
 	var gm := get_node_or_null("/root/GameManager")
 	if gm:
-		mouse_sensitivity = float(gm.get_setting("mouse_sensitivity"))
+		_apply_view_settings(gm)
 		gm.settings_changed.connect(_on_settings_changed)
 
+func _setup_footsteps() -> void:
+	_foot_player = AudioStreamPlayer.new()
+	_foot_player.name = "FootstepPlayer"
+	_foot_player.bus = "Master"
+	_foot_player.volume_db = -4.0
+	var stream = load("res://assets/audio/sfx/footstep.wav")
+	if stream is AudioStream:
+		_foot_player.stream = stream
+	add_child(_foot_player)
+
+func _apply_view_settings(gm: Node) -> void:
+	mouse_sensitivity = float(gm.get_setting("mouse_sensitivity"))
+	camera.fov = float(gm.get_setting("fov"))
+
 func _on_settings_changed(key: String, _value: Variant):
-	if key == "mouse_sensitivity":
+	if key == "mouse_sensitivity" or key == "fov":
 		var gm := get_node_or_null("/root/GameManager")
 		if gm:
-			mouse_sensitivity = float(gm.get_setting("mouse_sensitivity"))
+			_apply_view_settings(gm)
 
 func _unhandled_input(event: InputEvent):
 	# 手册等全屏 UI 打开：移动/视角/ESC/点击全部让路（手册自己负责关闭与鼠标）
@@ -52,12 +79,8 @@ func _unhandled_input(event: InputEvent):
 		rotation.y = yaw
 		camera.rotation.x = pitch
 
-	# ESC 释放/捕获鼠标
-	if event.is_action_pressed("ui_cancel"):
-		if Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
-			Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
-		else:
-			Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	# ESC 归暂停面板（GameManager）：开合暂停 + 鼠标显隐统一由 toggle_pause 管，
+	# 本控制器不再抢 ESC（此前两处同时消费同一事件，鼠标状态互相打架）
 
 	# 点击重新捕获鼠标
 	if event is InputEventMouseButton and event.pressed:
@@ -94,6 +117,35 @@ func _physics_process(delta: float):
 		velocity.z = move_toward(velocity.z, 0.0, decel * delta)
 
 	move_and_slide()
+	_update_bob(delta)
+
+## 微幅头摆 + 同步脚步：走动时相机在基线位做沉浮/摇摆，半周期（左右脚）触发一次脚步声；
+## 停步/腾空/冻结输入时平滑回中（不改变相机朝向，调试相机直控不受影响——只动 position）
+func _update_bob(delta: float) -> void:
+	var speed := Vector2(velocity.x, velocity.z).length()
+	var moving := speed > 0.5 and is_on_floor() and not ui_blocked and not is_in_dialog
+	if moving:
+		_bob_phase += delta * speed * TAU / BOB_STRIDE
+		var step_index := int(floor(_bob_phase / PI))
+		if step_index != _last_step_index:
+			_last_step_index = step_index
+			_step_count += 1
+			_play_footstep()
+		camera.position = _bob_rest + Vector3(
+			sin(_bob_phase) * BOB_AMP_X,
+			-absf(sin(_bob_phase)) * BOB_AMP_Y,
+			0.0)
+	else:
+		camera.position = camera.position.lerp(_bob_rest, minf(1.0, delta * BOB_RETURN_SPEED))
+		if speed <= 0.5:
+			_bob_phase = 0.0
+
+func _play_footstep() -> void:
+	if _foot_player == null or _foot_player.stream == null:
+		return
+	# 左右脚轻微音高差（确定性交替，不引入随机源）
+	_foot_player.pitch_scale = 0.97 if _step_count % 2 == 1 else 1.04
+	_foot_player.play()
 
 ## 尝试开始对话
 func _try_start_dialog():

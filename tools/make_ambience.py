@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """LinguaVerse 环境音/音效程序合成器（CC0，零下载、纯标准库）。
 
-生成三个 16-bit mono 22050Hz WAV：
+生成 16-bit mono 22050Hz WAV：
   godot-project/assets/audio/ambient/street_loop.wav   街道环境音（循环）
   godot-project/assets/audio/ambient/cafe_loop.wav     咖啡馆室内音（循环）
   godot-project/assets/audio/sfx/cup_clink.wav         点单杯碟轻碰（0.6s 单次）
+  godot-project/assets/audio/sfx/footstep.wav          脚步触地（0.18s 单次，P3 批次3 头摆同步）
 
 设计要点：
   * 确定性：固定种子 + 固定迭代顺序，重复运行字节一致
@@ -36,9 +37,12 @@ SEED = 20260601
 XFADE_SEC = 0.5
 AMBIENT_SECONDS = 8.0
 CLINK_SECONDS = 0.6
+FOOTSTEP_SECONDS = 0.18
 PEAK_TARGET = 0.5            # 归一化峰值（≈ -6 dBFS）
 CLINK_PEAK = 0.5012          # -6.0 dBFS
+FOOTSTEP_PEAK = 0.5012       # -6.0 dBFS（与 cup_clink 同族响度）
 CLINK_PAD_ZEROS = 32         # 首尾置零采样数
+FOOTSTEP_PAD_ZEROS = 32
 
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_OUT_AMBIENT = ROOT / "godot-project/assets/audio/ambient"
@@ -236,6 +240,40 @@ def synth_clink():
     return normalize(out, CLINK_PEAK)
 
 
+# ────────────────────────── 脚步触地音效 ──────────────────────────
+
+def synth_footstep():
+    """0.18s 单次脚步：闷触地 + 粗砂层 + 62Hz 跟步低频（P3 批次3 头摆同步播放）。"""
+    n = int(FOOTSTEP_SECONDS * SR)
+    rng = random.Random(SEED + 3)
+    out = [0.0] * n
+
+    # 1) 触地噪声：白噪分两路——闷层（两级低通，鞋底/路面）+ 粗砂层（单级，留一点"沙"）
+    noise = [rng.gauss(0.0, 1.0) for _ in range(n)]
+    thud = one_pole_lp(one_pole_lp(noise, 0.08), 0.08)
+    grit = one_pole_lp(noise, 0.5)
+
+    # 2) 包络：3ms 起音（无 click）+ 指数衰减（触地瞬态）
+    for k in range(n):
+        t = k / SR
+        attack = min(1.0, t / 0.003)
+        out[k] = thud[k] * 5.0 * attack * math.exp(-t / 0.055) \
+            + grit[k] * 0.6 * attack * math.exp(-t / 0.02)
+
+    # 3) 跟步低频（62Hz 快衰）：踏实感，非工频
+    w = 2 * math.pi * 62.0 / SR
+    for k in range(n):
+        out[k] += 0.35 * math.sin(w * k) * math.exp(-(k / SR) / 0.03)
+
+    # 去直流 → 首尾置零（防 click）→ 归一化 -6 dBFS（置零处保持为 0）
+    mean = sum(out) / n
+    out = [x - mean for x in out]
+    for k in range(FOOTSTEP_PAD_ZEROS):
+        out[k] = 0.0
+        out[-1 - k] = 0.0
+    return normalize(out, FOOTSTEP_PEAK)
+
+
 # ────────────────────────── manifest 增量 ──────────────────────────
 
 def update_manifest(entries):
@@ -270,30 +308,36 @@ def main():
     street = synth_street()
     cafe = synth_cafe()
     clink = synth_clink()
+    footstep = synth_footstep()
 
     if args.out is not None:
         write_wav(args.out / "street_loop.wav", street)
         write_wav(args.out / "cafe_loop.wav", cafe)
         write_wav(args.out / "cup_clink.wav", clink)
+        write_wav(args.out / "footstep.wav", footstep)
         print("[make_ambience] 仅写 WAV → %s（不改 manifest）" % args.out)
         return 0
 
     p_street = DEFAULT_OUT_AMBIENT / "street_loop.wav"
     p_cafe = DEFAULT_OUT_AMBIENT / "cafe_loop.wav"
     p_clink = DEFAULT_OUT_SFX / "cup_clink.wav"
+    p_footstep = DEFAULT_OUT_SFX / "footstep.wav"
     write_wav(p_street, street)
     write_wav(p_cafe, cafe)
     write_wav(p_clink, clink)
+    write_wav(p_footstep, footstep)
 
     for p, sec in ((p_street, len(street) / SR),
                    (p_cafe, len(cafe) / SR),
-                   (p_clink, len(clink) / SR)):
+                   (p_clink, len(clink) / SR),
+                   (p_footstep, len(footstep) / SR)):
         print("[make_ambience] %s  %.2fs  %d bytes" % (p.name, sec, p.stat().st_size))
 
     update_manifest({
         "street_loop": (p_street, len(street) / SR),
         "cafe_loop": (p_cafe, len(cafe) / SR),
         "cup_clink": (p_clink, len(clink) / SR),
+        "footstep": (p_footstep, len(footstep) / SR),
     })
     print("[make_ambience] manifest audio 段已更新: %s" % MANIFEST)
     return 0
