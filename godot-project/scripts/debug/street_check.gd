@@ -152,6 +152,50 @@ func _run():
 	_check(n_natural == want_nat,
 		"自然端 NaturalEnd_* == ends 中 natural 端 (期望 %d, 实际 %d)" % [want_nat, n_natural])
 
+	# ── P3 批次5: 道具 GLB 换装 (meta source_glb) + 新增点缀 + 灯罩自发光 ──
+	var glb_n := {"tree": 0, "grate": 0, "lamp": 0, "bench": 0, "barrier": 0,
+		"planter": 0, "bollard": 0, "bin": 0, "hydrant": 0, "bistro": 0}
+	var x_bin := 0
+	var x_hy := 0
+	var x_bi := 0
+	var glow5 := false
+	if props:
+		for furn in props.get_children():
+			var f5 := String(furn.name)
+			if f5.begins_with("Bin_"):
+				x_bin += 1
+			elif f5.begins_with("Hydrant_"):
+				x_hy += 1
+			elif f5.begins_with("Bistro_"):
+				x_bi += 1
+			for sub5 in furn.get_children():
+				var src5 := String(sub5.get_meta("source_glb", ""))
+				if src5.is_empty():
+					continue
+				var kind5 := _glb_kind(src5)
+				if glb_n.has(kind5):
+					glb_n[kind5] = int(glb_n[kind5]) + 1
+				if kind5 == "lamp" and not glow5:
+					glow5 = _find_glow(sub5)
+	_check(int(glb_n["tree"]) == n_trees and int(glb_n["grate"]) == n_trees,
+		"行道树 GLB 换装 + 树池篦 (树 %d / 篦 %d, 期望各 %d)" % [n_trees, int(glb_n["grate"]), n_trees])
+	_check(int(glb_n["lamp"]) == n_lamps,
+		"路灯 GLB 换装 (期望 %d, 实际 %d)" % [n_lamps, int(glb_n["lamp"])])
+	_check(int(glb_n["bench"]) == n_benches,
+		"长椅 GLB 换装 (期望 %d, 实际 %d)" % [n_benches, int(glb_n["bench"])])
+	_check(int(glb_n["barrier"]) == n_barriers,
+		"围栏 GLB 换装 (期望 %d, 实际 %d)" % [n_barriers, int(glb_n["barrier"])])
+	_check(int(glb_n["planter"]) == 3 * want_nat and int(glb_n["bollard"]) == 4 * want_nat,
+		"自然端花坛/护柱 GLB (实 %d/%d, 期望 %d/%d)" % [int(glb_n["planter"]), int(glb_n["bollard"]), 3 * want_nat, 4 * want_nat])
+	_check(x_hy == 2, "消防栓 街道两端各一 (实际 %d)" % x_hy)
+	_check(x_bin >= 1, "垃圾桶 ≥ 1 (实际 %d)" % x_bin)
+	var cafe5_raw = layout.get("cafe_anchor")
+	var cafe5: Dictionary = cafe5_raw if cafe5_raw is Dictionary else {}
+	_check(x_bi == (2 if not cafe5.is_empty() else 0),
+		"咖啡外摆 == (有 cafe_anchor → 2) (实际 %d)" % x_bi)
+	_check(glow5 or n_lamps == 0,
+		"灯罩 lamp_glow 自发光材质在场可驱动 (灯 %d)" % n_lamps)
+
 	# 围栏/自然端须在世界层(1)且带碰撞体; 自然端不带文字 (非文字构件)
 	var barrier_ok := n_barriers == want_bar
 	for bk in barriers:
@@ -1082,6 +1126,37 @@ func _check_street(g: Node, label: String) -> void:
 	_check(x_ok, "%s: 树/灯 |x|==4.78, 椅 ≤backoff" % label)
 	_check(decor_road == 0, "%s: 路面区无装饰道具 (实际 %d)" % [label, decor_road])
 
+	# ── P3 批次5: 道具 GLB 换装 (meta source_glb) + 新增点缀 + 灯罩自发光 ──
+	var glb_p := {"tree": 0, "grate": 0, "lamp": 0, "bench": 0, "barrier": 0,
+		"planter": 0, "bollard": 0, "bin": 0, "hydrant": 0, "bistro": 0}
+	var x_bin5 := 0
+	var x_hy5 := 0
+	var glow_p := false
+	if propsn:
+		for c6 in propsn.get_children():
+			var nm6 := String(c6.name)
+			if nm6.begins_with("Bin_"):
+				x_bin5 += 1
+			elif nm6.begins_with("Hydrant_"):
+				x_hy5 += 1
+			for s6 in c6.get_children():
+				var src6 := String(s6.get_meta("source_glb", ""))
+				if src6.is_empty():
+					continue
+				var kd6 := _glb_kind(src6)
+				if glb_p.has(kd6):
+					glb_p[kd6] = int(glb_p[kd6]) + 1
+				if kd6 == "lamp" and not glow_p:
+					glow_p = _find_glow(s6)
+	_check(int(glb_p["tree"]) == n_tr and int(glb_p["grate"]) == n_tr,
+		"%s: 行道树 GLB + 树池篦 (树 %d / 篦 %d)" % [label, n_tr, int(glb_p["grate"])])
+	_check(int(glb_p["lamp"]) == n_lp and int(glb_p["bench"]) == n_bn,
+		"%s: 路灯/长椅 GLB 换装 (灯 %d/%d, 椅 %d/%d)"
+			% [label, n_lp, int(glb_p["lamp"]), n_bn, int(glb_p["bench"])])
+	_check(x_hy5 == 2, "%s: 消防栓 街道两端各一 (实际 %d)" % [label, x_hy5])
+	_check(x_bin5 >= 1, "%s: 垃圾桶 ≥1 (实际 %d)" % [label, x_bin5])
+	_check(glow_p or n_lp == 0, "%s: 灯罩 lamp_glow 自发光在场" % label)
+
 	# 端头语义: 构件计数/结构/文字缺席/z 对位 (决策 11/30)
 	var expect: Array = ek if ek.size() >= 2 else ["construction", "construction"]
 	var n_nat := 0
@@ -1170,6 +1245,36 @@ func _check_street(g: Node, label: String) -> void:
 		bsn = br.get_node_or_null("BuildingSigns")
 	_check(bsn != null, label + ": BuildingSigns 容器存在")
 
+
+## P3 批次5: GLB 文件名 → 道具类别 (street_lamp→lamp, tree_grate→grate …)
+func _glb_kind(src: String) -> String:
+	var base := String(src.get_file()).get_basename()
+	match base:
+		"street_lamp":
+			return "lamp"
+		"tree_grate":
+			return "grate"
+		"trash_bin":
+			return "bin"
+		"bistro_set":
+			return "bistro"
+		_:
+			return base
+
+## 递归找自发光表面材质 (灯罩 lamp_glow; set_night_glow 驱动同一资源)
+func _find_glow(node: Node) -> bool:
+	var mi := node as MeshInstance3D
+	if mi != null and mi.mesh != null:
+		for s in mi.mesh.get_surface_count():
+			var m: Material = mi.mesh.surface_get_material(s)
+			if m == null:
+				m = mi.get_surface_override_material(s)
+			if m is BaseMaterial3D and (m as BaseMaterial3D).emission_enabled:
+				return true
+	for c in node.get_children():
+		if _find_glow(c):
+			return true
+	return false
 
 func _check(cond: bool, msg: String):
 	if cond:

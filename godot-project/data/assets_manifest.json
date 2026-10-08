@@ -14,6 +14,106 @@
       "images": 0,
       "generator": "Khronos glTF Blender I/O v4.2.83",
       "gltf_version": 2
+    },
+    "godot-project/assets/models/barrier.glb": {
+      "bytes": 20284,
+      "sha256": "f2025071223b79e29892706b95245ab9e3d91b23021f26a03a860d0a784f37f1",
+      "triangles": 252,
+      "primitives": 3,
+      "materials": 3,
+      "images": 0,
+      "generator": "Khronos glTF Blender I/O v4.2.83",
+      "gltf_version": 2
+    },
+    "godot-project/assets/models/bench.glb": {
+      "bytes": 15000,
+      "sha256": "9b2e59ee7abac93ca4beed0d26d06cdc506357ea8b1799f5848eeece52976adb",
+      "triangles": 192,
+      "primitives": 2,
+      "materials": 2,
+      "images": 0,
+      "generator": "Khronos glTF Blender I/O v4.2.83",
+      "gltf_version": 2
+    },
+    "godot-project/assets/models/bistro_set.glb": {
+      "bytes": 17932,
+      "sha256": "0a8abefd2cd35c793ce4208d9cb1c5181957cb835ea631bfedeaab75f1167d6b",
+      "triangles": 220,
+      "primitives": 3,
+      "materials": 3,
+      "images": 0,
+      "generator": "Khronos glTF Blender I/O v4.2.83",
+      "gltf_version": 2
+    },
+    "godot-project/assets/models/bollard.glb": {
+      "bytes": 6396,
+      "sha256": "39f8d6c4f471a13c771ed69929a411b57ca128712ad1e3ded3d41a554d285157",
+      "triangles": 84,
+      "primitives": 1,
+      "materials": 1,
+      "images": 0,
+      "generator": "Khronos glTF Blender I/O v4.2.83",
+      "gltf_version": 2
+    },
+    "godot-project/assets/models/hydrant.glb": {
+      "bytes": 8892,
+      "sha256": "f3a4020091eb387b994285e5d0be7d656d93c1704eebdecbfedbfd5a2adf03c4",
+      "triangles": 120,
+      "primitives": 1,
+      "materials": 1,
+      "images": 0,
+      "generator": "Khronos glTF Blender I/O v4.2.83",
+      "gltf_version": 2
+    },
+    "godot-project/assets/models/planter.glb": {
+      "bytes": 16792,
+      "sha256": "9283c8cc1b9dbea12aaac9d45a781a874166dd21ec391b8c94209289c303cfc3",
+      "triangles": 168,
+      "primitives": 3,
+      "materials": 3,
+      "images": 0,
+      "generator": "Khronos glTF Blender I/O v4.2.83",
+      "gltf_version": 2
+    },
+    "godot-project/assets/models/street_lamp.glb": {
+      "bytes": 12152,
+      "sha256": "d3ffdbf64c33065d5673060c0b4e52ea4bcbbeeac4ba7f435c19e5fadfde3d03",
+      "triangles": 156,
+      "primitives": 2,
+      "materials": 2,
+      "images": 0,
+      "generator": "Khronos glTF Blender I/O v4.2.83",
+      "gltf_version": 2
+    },
+    "godot-project/assets/models/trash_bin.glb": {
+      "bytes": 8104,
+      "sha256": "292bb2462d5fca57dbb2a1441e27729a24c00710651a578b85857fea0ea096ec",
+      "triangles": 112,
+      "primitives": 1,
+      "materials": 1,
+      "images": 0,
+      "generator": "Khronos glTF Blender I/O v4.2.83",
+      "gltf_version": 2
+    },
+    "godot-project/assets/models/tree.glb": {
+      "bytes": 12604,
+      "sha256": "8a7e74b8145c3571716fdf9bf3719371ae5236cd06b7bd1bc5c2e237d7c98556",
+      "triangles": 132,
+      "primitives": 2,
+      "materials": 2,
+      "images": 0,
+      "generator": "Khronos glTF Blender I/O v4.2.83",
+      "gltf_version": 2
+    },
+    "godot-project/assets/models/tree_grate.glb": {
+      "bytes": 10652,
+      "sha256": "997bb0e34266f7cf17310e0711b271d893e4ed7bad2b6cb4d349be274fa4e6fb",
+      "triangles": 120,
+      "primitives": 2,
+      "materials": 2,
+      "images": 0,
+      "generator": "Khronos glTF Blender I/O v4.2.83",
+      "gltf_version": 2
     }
   },
   "blocks": {
@@ -61,7 +161,7 @@
       "updated_at": "2026-10-08"
     }
   },
-  "updated_at": "2026-10-08T13:18:49+00:00",
+  "updated_at": "2026-10-08T14:29:55+00:00",
   "audio": {
     "street_loop": {
       "path": "godot-project/assets/audio/ambient/street_loop.wav",
