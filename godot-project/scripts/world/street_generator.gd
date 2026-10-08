@@ -52,6 +52,9 @@ var _wall_mats: Array = []
 var _roof_mat: StandardMaterial3D
 var _road_mat: StandardMaterial3D
 var _sidewalk_mat: StandardMaterial3D
+var _curb_mat: StandardMaterial3D            # P3 批次4: 路缘石花岗岩带
+var _manhole_albedo: Texture2D               # P3 批次4: 井盖贴片
+var _manhole_normal: Texture2D
 var _facade_shader: Shader
 var _facade_mats: Dictionary = {}
 
@@ -201,12 +204,42 @@ func _build_materials():
 	_roof_mat.albedo_color = Color(0.30, 0.30, 0.33)
 	_roof_mat.roughness = 0.7
 	_road_mat = StandardMaterial3D.new()
-	_road_mat.albedo_color = Color(0.44, 0.42, 0.40)
-	_road_mat.roughness = 0.95
+	_apply_texture_family(_road_mat, "cobble", 2.0, Color(0.98, 0.97, 0.95), 0.95)
 	_sidewalk_mat = StandardMaterial3D.new()
-	_sidewalk_mat.albedo_color = Color(0.72, 0.70, 0.67)
-	_sidewalk_mat.roughness = 0.9
+	_apply_texture_family(_sidewalk_mat, "paving", 1.6, Color(1.0, 0.99, 0.97), 0.9)
+	_curb_mat = StandardMaterial3D.new()
+	_apply_texture_family(_curb_mat, "granite", 1.0, Color(0.96, 0.96, 0.97), 0.85)
+	_manhole_albedo = _load_texture("manhole_albedo")
+	_manhole_normal = _load_texture("manhole_normal")
 	_facade_shader = load("res://shaders/facade.gdshader")
+
+func _load_texture(nm: String) -> Texture2D:
+	var p := "res://assets/textures/%s.png" % nm
+	if not ResourceLoader.exists(p):
+		push_warning("贴图缺失(回退纯色, street_check 会报红): " + p)
+		return null
+	return load(p) as Texture2D
+
+## P3 批次4: 挂贴图族 albedo/normal/rough + 世界三平面平铺(跨街道对缝)。
+## 贴图缺失→保留纯色不崩,由 street_check 断言负责显性报红(诚实降级)。
+func _apply_texture_family(m: StandardMaterial3D, fam: String, tile_m: float, tint: Color, rough: float) -> void:
+	m.albedo_color = tint
+	m.roughness = rough
+	var albedo := _load_texture(fam + "_albedo")
+	if albedo == null:
+		return
+	m.albedo_texture = albedo
+	var nrm := _load_texture(fam + "_normal")
+	if nrm != null:
+		m.normal_enabled = true
+		m.normal_texture = nrm
+	var rgh := _load_texture(fam + "_rough")
+	if rgh != null:
+		m.roughness_texture = rgh
+	# 三平面世界空间: scale=每米重复数 = 1/tile_m (石块 2m/石板 1.6m/花岗岩 1m 一循环)
+	m.uv1_triplanar = true
+	m.uv1_world_triplanar = true
+	m.uv1_scale = Vector3(1.0 / tile_m, 1.0 / tile_m, 1.0 / tile_m)
 
 func _get_facade_material(levels: int, wpf: int, shop: bool, seed_f: float) -> ShaderMaterial:
 	var key := "%d_%d_%d" % [levels, wpf, int(shop)]

@@ -997,6 +997,54 @@ func _check_street(g: Node, label: String) -> void:
 					swb_ok = false
 	_check(swb_ok, label + ": 人行道 x ∈ [半路宽, backoff] 不越界")
 
+	# P3 批次4: 贴图化路面/人行道 (albedo+法线+粗糙度, 世界三平面平铺) + 路缘/井盖装饰
+	var road_mi: MeshInstance3D = null
+	if road is StaticBody3D:
+		for c2 in (road as Node3D).get_children():
+			if c2 is MeshInstance3D:
+				road_mi = c2
+	var rm = road_mi.material_override if road_mi != null else null
+	_check(rm is StandardMaterial3D and (rm as StandardMaterial3D).albedo_texture != null,
+		label + ": 路面贴图已挂载 (albedo)")
+	if rm is StandardMaterial3D:
+		var rmm := rm as StandardMaterial3D
+		_check(rmm.uv1_triplanar and rmm.uv1_world_triplanar and rmm.uv1_scale.x > 0.0,
+			"%s: 路面世界三平面平铺采样 (每米 %.2f 循环)" % [label, rmm.uv1_scale.x])
+		_check(rmm.normal_enabled and rmm.normal_texture != null, label + ": 路面法线贴图")
+		_check(rmm.roughness_texture != null, label + ": 路面粗糙度贴图")
+	var sw_mi: MeshInstance3D = null
+	if sw_nodes.size() > 0:
+		for c3 in (sw_nodes[0] as Node3D).get_children():
+			if c3 is MeshInstance3D:
+				sw_mi = c3
+	var sm = sw_mi.material_override if sw_mi != null else null
+	_check(sm is StandardMaterial3D and (sm as StandardMaterial3D).albedo_texture != null,
+		label + ": 人行道贴图已挂载 (albedo)")
+	if sm is StandardMaterial3D:
+		var smm := sm as StandardMaterial3D
+		_check(smm.uv1_triplanar and smm.uv1_world_triplanar,
+			"%s: 人行道世界三平面平铺采样 (每米 %.2f 循环)" % [label, smm.uv1_scale.x])
+		_check(smm.normal_enabled and smm.normal_texture != null, label + ": 人行道法线贴图")
+		_check(smm.roughness_texture != null, label + ": 人行道粗糙度贴图")
+	var rd_decor: Node = g.get_node_or_null("RoadDecor")
+	_check(rd_decor != null, label + ": 路缘/井盖装饰 RoadDecor 存在")
+	if rd_decor != null:
+		var n_curbs := 0
+		var n_mh := 0
+		var mh_textured := false
+		for c4 in (rd_decor as Node3D).get_children():
+			var nmn := String(c4.name)
+			if nmn.begins_with("Curb"):
+				n_curbs += 1
+			elif nmn.begins_with("Manhole"):
+				n_mh += 1
+				var mhm = (c4 as MeshInstance3D).material_override
+				if mhm is StandardMaterial3D and (mhm as StandardMaterial3D).albedo_texture != null:
+					mh_textured = true
+		_check(n_curbs == 2, label + ": 双侧路缘石带 (实际 %d)" % n_curbs)
+		_check(n_mh >= 1, label + ": 井盖贴片 ≥1 (实际 %d)" % n_mh)
+		_check(mh_textured, label + ": 井盖贴图已挂载")
+
 	# 道具: 容器 + 树/灯/椅 + x 口径 + 路面区无装饰
 	var propsn: Node = null
 	if br:

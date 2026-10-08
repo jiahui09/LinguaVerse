@@ -61,7 +61,7 @@
       "updated_at": "2026-10-08"
     }
   },
-  "updated_at": "2026-10-08",
+  "updated_at": "2026-10-08T13:18:49+00:00",
   "audio": {
     "street_loop": {
       "path": "godot-project/assets/audio/ambient/street_loop.wav",
@@ -100,5 +100,128 @@
     "max_audio_bytes": 614400,
     "max_audio_sec": 12,
     "min_audio_sec": 0.5
+  },
+  "textures": {
+    "godot-project/assets/textures/cobble_albedo.png": {
+      "path": "godot-project/assets/textures/cobble_albedo.png",
+      "bytes": 285319,
+      "sha256": "b366f6bb0ad1e532a441e50d6676d9c481a83ea7af0d2bd6242ab4f5abced839",
+      "width": 512,
+      "height": 512,
+      "channels": 4,
+      "family": "cobble",
+      "role": "albedo",
+      "generator_sha256": "4c4cebab3a1bb21e5fc200446bf3f331444796208d135193e2005141c0ed179d"
+    },
+    "godot-project/assets/textures/cobble_normal.png": {
+      "path": "godot-project/assets/textures/cobble_normal.png",
+      "bytes": 464664,
+      "sha256": "3523310c1adbfb3d0eaaa43dcbbf6ab5d62e253adc2b327ad8fbe3af26753098",
+      "width": 512,
+      "height": 512,
+      "channels": 4,
+      "family": "cobble",
+      "role": "normal",
+      "generator_sha256": "4c4cebab3a1bb21e5fc200446bf3f331444796208d135193e2005141c0ed179d"
+    },
+    "godot-project/assets/textures/cobble_rough.png": {
+      "path": "godot-project/assets/textures/cobble_rough.png",
+      "bytes": 105854,
+      "sha256": "d6d6d94a9505d3545f0315d34236b345ae78236c189fb54f4661cca5cd181654",
+      "width": 512,
+      "height": 512,
+      "channels": 4,
+      "family": "cobble",
+      "role": "rough",
+      "generator_sha256": "4c4cebab3a1bb21e5fc200446bf3f331444796208d135193e2005141c0ed179d"
+    },
+    "godot-project/assets/textures/granite_albedo.png": {
+      "path": "godot-project/assets/textures/granite_albedo.png",
+      "bytes": 182217,
+      "sha256": "33662746a56df13ee4d668fb0db859a5674c42942d99cf2cefa0977a2cc68fa9",
+      "width": 512,
+      "height": 512,
+      "channels": 4,
+      "family": "granite",
+      "role": "albedo",
+      "generator_sha256": "4c4cebab3a1bb21e5fc200446bf3f331444796208d135193e2005141c0ed179d"
+    },
+    "godot-project/assets/textures/granite_normal.png": {
+      "path": "godot-project/assets/textures/granite_normal.png",
+      "bytes": 459741,
+      "sha256": "62993c2ed0d7bd31752fb749022e7b91977902d3430ae25199f4e068a71cdca8",
+      "width": 512,
+      "height": 512,
+      "channels": 4,
+      "family": "granite",
+      "role": "normal",
+      "generator_sha256": "4c4cebab3a1bb21e5fc200446bf3f331444796208d135193e2005141c0ed179d"
+    },
+    "godot-project/assets/textures/granite_rough.png": {
+      "path": "godot-project/assets/textures/granite_rough.png",
+      "bytes": 142760,
+      "sha256": "bc5ab069acd22c398544556bb7d480c82cf3adf5acc53189520e5d756ba86a99",
+      "width": 512,
+      "height": 512,
+      "channels": 4,
+      "family": "granite",
+      "role": "rough",
+      "generator_sha256": "4c4cebab3a1bb21e5fc200446bf3f331444796208d135193e2005141c0ed179d"
+    },
+    "godot-project/assets/textures/manhole_albedo.png": {
+      "path": "godot-project/assets/textures/manhole_albedo.png",
+      "bytes": 30837,
+      "sha256": "b5ae208f72ff27df95c5288963e37a74d9e7ceff081782431c40334e7780d6e8",
+      "width": 256,
+      "height": 256,
+      "channels": 4,
+      "family": "manhole",
+      "role": "albedo",
+      "generator_sha256": "4c4cebab3a1bb21e5fc200446bf3f331444796208d135193e2005141c0ed179d"
+    },
+    "godot-project/assets/textures/manhole_normal.png": {
+      "path": "godot-project/assets/textures/manhole_normal.png",
+      "bytes": 25560,
+      "sha256": "9c6d10ce86cb45171db044cff99f73cd30ab3c624c81e4ab069a5ef05627902e",
+      "width": 256,
+      "height": 256,
+      "channels": 4,
+      "family": "manhole",
+      "role": "normal",
+      "generator_sha256": "4c4cebab3a1bb21e5fc200446bf3f331444796208d135193e2005141c0ed179d"
+    },
+    "godot-project/assets/textures/paving_albedo.png": {
+      "path": "godot-project/assets/textures/paving_albedo.png",
+      "bytes": 172522,
+      "sha256": "59c122d02045595b372cab82018635ddd8e7576825ef90b11087dba37fe31285",
+      "width": 512,
+      "height": 512,
+      "channels": 4,
+      "family": "paving",
+      "role": "albedo",
+      "generator_sha256": "4c4cebab3a1bb21e5fc200446bf3f331444796208d135193e2005141c0ed179d"
+    },
+    "godot-project/assets/textures/paving_normal.png": {
+      "path": "godot-project/assets/textures/paving_normal.png",
+      "bytes": 261428,
+      "sha256": "2627e7a088a04b09b2dea9f0fa78e0582e907a6c9e3803729afa2c5236adc071",
+      "width": 512,
+      "height": 512,
+      "channels": 4,
+      "family": "paving",
+      "role": "normal",
+      "generator_sha256": "4c4cebab3a1bb21e5fc200446bf3f331444796208d135193e2005141c0ed179d"
+    },
+    "godot-project/assets/textures/paving_rough.png": {
+      "path": "godot-project/assets/textures/paving_rough.png",
+      "bytes": 94276,
+      "sha256": "fb99941d4964dbbe3d3e72a5731658356a776a1b0d2c40512054020035c0dfbb",
+      "width": 512,
+      "height": 512,
+      "channels": 4,
+      "family": "paving",
+      "role": "rough",
+      "generator_sha256": "4c4cebab3a1bb21e5fc200446bf3f331444796208d135193e2005141c0ed179d"
+    }
   }
 }
