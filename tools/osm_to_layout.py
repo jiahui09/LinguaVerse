@@ -5,16 +5,21 @@ osm_to_layout.py — Overpass OSM → Godot 街道布局 JSON（v3，连续立�
 输入:  data/osm/rosiers_full.json
 输出:  data/layouts/rosiers_layout.json
 
+P2-B 参数化: --input/--output/--street-name/--cafe-name/--span-down/--span-up/--width
+  候选产物一律先写 artifacts/candidates/<ts>/ (隔离候选纪律), 人工核验后再集成。
+  不带参数运行 = 与历史字节级一致 (回归由 street_check 清单 sha256 断言兜底)。
+
 核心模型（对 V1 街景最关键的正确抽象）:
   巴黎街景 = 街道中线 + 两侧"连续临街立面"（盒子简化）
   每栋建筑不再保留 OBB 旋转——而是投影到街道坐标系:
     side  : +1 = 街道左侧(东), -1 = 右侧(西)
-    s0,s1 : 沿街跨度(米, 相对咖啡馆)
+    s0,s1 : 沿街跨度(米, 相对咖啡馆/锚点)
     depth : 进深(米, 从街边向街区内部)
     levels: 层数 → 高度
   Godot 生成器据此沿街道摆连续立面, 视觉天然对齐、无缝隙观感
 """
 
+import argparse
 import json
 import math
 import sys
@@ -122,19 +127,61 @@ def polygon_area(pts):
 
 
 def main():
-    with open(RAW_PATH, encoding="utf-8") as f:
+    ap = argparse.ArgumentParser(description="OSM Overpass JSON → 街道布局 JSON")
+    ap.add_argument("--input", default=str(RAW_PATH), help="Overpass 结果 JSON")
+    ap.add_argument("--output", default=str(OUT_PATH), help="布局 JSON 输出路径")
+    ap.add_argument("--street-name", default="Rue des Rosiers", help="街道名 (meta/street)")
+    ap.add_argument("--street-filter", default="",
+                    help="参与中线拼接的街道名精确匹配 (空=输入里全部 highway, "
+                         "与历史行为一致; 多街区 bbox 拉取时必填否则中线会乱链)")
+    ap.add_argument("--highway-types", default="",
+                    help="中线允许的 highway 类别, 逗号分隔 (空=全部)。"
+                         "Place des Vosges 这类地名挂着外环车行道+园内步道混类, "
+                         "不过滤会把花园十字路链进中线")
+    ap.add_argument("--cafe-name", default=CAFE_NAME,
+                    help="咖啡馆定位名; 拉取数据中无咖啡馆节点时自动无 cafe_anchor")
+    ap.add_argument("--span-down", type=float, default=SPAN_DOWN, help="锚点 -s 保留范围(米)")
+    ap.add_argument("--span-up", type=float, default=SPAN_UP, help="锚点 +s 保留范围(米)")
+    ap.add_argument("--width", type=float, default=STREET_WIDTH, help="路面宽(米)")
+    ap.add_argument("--across-max", type=float, default=ACROSS_MAX,
+                    help="建筑离中线垂直距离上限(米); 广场环线中线离临街面更远, 需调大")
+    ap.add_argument("--placement", choices=["backoff", "by_v"], default="backoff",
+                    help="摆楼模型: backoff=V1 舞台布景(默认, 输出字节中性); "
+                         "by_v=盒心按 OSM 真实投影 |v|, depth 用真实占地进深, "
+                         "并写入 street.placement 字段 (装配器 get_facade_face 消费)")
+    args = ap.parse_args()
+    raw_path = Path(args.input)
+    out_path = Path(args.output)
+    street_width = args.width
+    street_backoff = street_width / 2 + 1.5
+
+    with open(raw_path, encoding="utf-8") as f:
         raw = json.load(f)
     elems = raw.get("elements", [])
 
     buildings = [e for e in elems if e["type"] == "way" and "building" in e.get("tags", {})]
     streets = [e for e in elems if e["type"] == "way" and "highway" in e.get("tags", {})]
+    if args.street_filter:
+        streets = [s for s in streets if s.get("tags", {}).get("name") == args.street_filter]
+    if args.highway_types:
+        allow = {t.strip() for t in args.highway_types.split(",") if t.strip()}
+        streets = [s for s in streets if s.get("tags", {}).get("highway") in allow]
     cafes = [e for e in elems if e["type"] == "node" and e.get("tags", {}).get("amenity") == "cafe"]
 
-    cafe_osm = next((c for c in cafes if CAFE_NAME in c.get("tags", {}).get("name", "")),
+    cafe_osm = next((c for c in cafes if args.cafe_name in c.get("tags", {}).get("name", "")),
                     (cafes[0] if cafes else None))
-    origin = (cafe_osm["lat"], cafe_osm["lon"]) if cafe_osm else \
-             (sum(e["bounds"]["minlat"] for e in elems) / len(elems),
-              sum(e["bounds"]["minlon"] for e in elems) / len(elems))
+    if cafe_osm:
+        origin = (cafe_osm["lat"], cafe_osm["lon"])
+    else:
+        # 无咖啡馆锚点 (如 Place des Vosges 拉取): 取几何包围盒中心, 元素不依赖 bounds 字段
+        lats = [g["lat"] for e in elems for g in e.get("geometry", [])]
+        lons = [g["lon"] for e in elems for g in e.get("geometry", [])]
+        lats += [e["lat"] for e in elems if e.get("type") == "node" and "lat" in e]
+        lons += [e["lon"] for e in elems if e.get("type") == "node" and "lon" in e]
+        if not lats:
+            print("输入无几何数据", file=sys.stderr)
+            return 1
+        origin = ((min(lats) + max(lats)) / 2, (min(lons) + max(lons)) / 2)
     lat0, lon0 = origin
 
     poly_osm, _ = build_street_polyline(streets)
@@ -148,11 +195,13 @@ def main():
     wsum = sum(sg["L"] for sg in segs)
     main_ang = sum(sg["ang"] * sg["L"] for sg in segs) / wsum
 
-    # 咖啡馆沿街位置
+    # 咖啡馆沿街位置 (无咖啡馆 → 锚点 = 原点 = s 0)
+    cafe_s, cafe_v = 0.0, 0.0
     if cafe_osm:
         cl = to_local(cafe_osm["lat"], cafe_osm["lon"], lat0, lon0)
         cafe_s, cafe_v, _ = project_to_segments(cl, segs)
         print(f"咖啡馆: 沿街 {cafe_s:.1f}m, 离街 {cafe_v:.1f}m")
+    anchor_s = cafe_s
 
     # 每栋建筑 → 沿街投影跨度 (s0..s1), 侧别
     keep = []
@@ -165,10 +214,12 @@ def main():
         s_vals = [pr[0] for pr in proj]
         v_vals = [pr[1] for pr in proj]
         s0, s1 = min(s_vals), max(s_vals)
+        if s1 - s0 < 2.0:
+            continue  # 退化投影 (链起点转角建筑全部顶点钳到 s=0, 零宽 sliver)
         v_mean = sum(v_vals) / len(v_vals)
-        if abs(v_mean) > ACROSS_MAX:
+        if abs(v_mean) > args.across_max:
             continue
-        if not (cafe_s - SPAN_DOWN - 5 <= (s0 + s1) / 2 <= cafe_s + SPAN_UP + 5):
+        if not (anchor_s - args.span_down - 5 <= (s0 + s1) / 2 <= anchor_s + args.span_up + 5):
             continue
 
         tags = b.get("tags", {})
@@ -181,6 +232,10 @@ def main():
 
         along_w = s1 - s0                      # 沿街宽度
         depth = min(MAX_DEPTH, max(along_w, 8.0) * 0.9 + 3.0)  # 进深≈宽或封顶
+        if args.placement == "by_v":
+            # by_v: 盒心=OSM 真实投影 v → 进深用真实占地 (面积/沿街宽), 合成进深会戳穿路面
+            real_d = polygon_area(pts) / max(along_w, 1.0)
+            depth = min(MAX_DEPTH, max(6.0, real_d))
         keep.append({
             "id": b["id"],
             "name": tags.get("name", ""),
@@ -227,29 +282,31 @@ def main():
 
     layout = {
         "meta": {
-            "street": "Rue des Rosiers",
+            "street": args.street_name,
             "source": "OpenStreetMap (ODbL)",
             "origin_lat": round(lat0, 6), "origin_lon": round(lon0, 6),
             "unit": "meters",
             "street_axis_deg": round(main_ang, 1),  # 0=+Z
         },
         "street": {
-            "name": "Rue des Rosiers",
-            "width": STREET_WIDTH,
-            "backoff": STREET_BACKOFF,
+            "name": args.street_name,
+            "width": street_width,
+            "backoff": street_backoff,
             "total_len": round(wsum, 1),
         },
         "cafe_anchor": cafe_anchor,
         "buildings": sorted(keep, key=lambda b: (b["side"], b["s0"])),
     }
+    if args.placement == "by_v":
+        layout["street"]["placement"] = "by_v"
 
-    OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with open(OUT_PATH, "w", encoding="utf-8") as f:
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(out_path, "w", encoding="utf-8") as f:
         json.dump(layout, f, ensure_ascii=False, indent=1)
 
     n_side = {1: sum(1 for b in keep if b["side"] == 1),
               -1: sum(1 for b in keep if b["side"] == -1)}
-    print(f"输出: {OUT_PATH}")
+    print(f"输出: {out_path}")
     print(f"保留建筑 {len(keep)} 栋 (左 {n_side[1]} / 右 {n_side[-1]}) | 街向 {main_ang:.0f}° | 街长 {wsum:.0f}m")
     print(f"咖啡馆替换: {cafe_bld['name'] if cafe_bld else '无'} (s={cafe_anchor['s'] if cafe_anchor else '-'})")
     return 0

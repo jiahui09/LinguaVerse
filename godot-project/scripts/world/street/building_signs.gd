@@ -30,8 +30,9 @@ func params() -> Dictionary:
 func param_hash() -> String:
 	return str(PARAMS).sha256_text()
 
-## 相邻同名同侧楼段合并 → runs: [{name, side, s0, s1}]
+## 相邻同名同侧楼段合并 → runs: [{name, side, s0, s1, v, depth}]
 ## (布局序列相邻才合并 — 当前 OSM 段序即里程序; 一个实体一牌, 不重复挂)
+## v/depth 随 run 传递, by_v 布局时取立面位用 (get_facade_face)
 static func name_runs(layout: Dictionary, p: Dictionary) -> Array:
 	var runs: Array = []
 	for b in layout.get("buildings", []):
@@ -47,7 +48,8 @@ static func name_runs(layout: Dictionary, p: Dictionary) -> Array:
 					and absf(float(last["s1"]) - s0) < float(p["merge_gap"]):
 				last["s1"] = s1
 				continue
-		runs.append({"name": nm, "side": side, "s0": s0, "s1": s1})
+		runs.append({"name": nm, "side": side, "s0": s0, "s1": s1,
+			"v": float(b.get("v", 0.0)), "depth": float(b.get("depth", 0.0))})
 	return runs
 
 ## 装配器调用: 生成 BuildingSigns 容器 (gen = street_generator)
@@ -68,14 +70,15 @@ func build(gen) -> Node3D:
 
 func _spawn_sign(gen, parent: Node3D, r: Dictionary, idx: int) -> void:
 	var side := float(r["side"])
-	var backoff = float(gen.layout["street"].get("backoff", 6.0))
+	# 立面位置统一由装配器给出 (backoff 模式 = side*backoff; by_v 模式按 OSM 投影)
+	var face: float = gen.get_facade_face(r)
 	var s_mid := (float(r["s0"]) + float(r["s1"])) / 2.0
 
 	var sign := Node3D.new()
 	sign.name = "Sign_%d" % idx
-	# 前立面中心 = side*backoff; 牌向街前探 face_offset → |x| < backoff (不越界)
+	# 牌向街前探 face_offset → |x| < 立面位 (不越界)
 	sign.position = Vector3(
-		side * (backoff - float(PARAMS["face_offset"])),
+		side * (face - float(PARAMS["face_offset"])),
 		float(PARAMS["y"]),
 		s_mid)
 	sign.set_meta("basis", "reported")

@@ -1,0 +1,9 @@
+[out:json][timeout:40];
+(
+  way["building"](48.8530,2.3585,48.8585,2.3720);
+);
+out geom tags;
+(
+  way["highway"](48.8530,2.3585,48.8585,2.3720);
+);
+out geom tags;

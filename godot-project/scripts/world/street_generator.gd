@@ -218,7 +218,9 @@ func _add_cyl_shape(parent: Node3D, radius: float, height: float, pos: Vector3):
 
 func _build_all_buildings():
 	var backoff = float(layout["street"].get("backoff", 6.0))
-	var cafe: Dictionary = layout.get("cafe_anchor", {})
+	# cafe_anchor 可为 null (无咖啡馆街区, 如 Place des Vosges by_v 布局)
+	var cafe_raw = layout.get("cafe_anchor")
+	var cafe: Dictionary = cafe_raw if cafe_raw is Dictionary else {}
 	# 咖啡馆占位: 模型沿街约 7.2m(局部 x ±3.6 → 世界 z ±3.6), 排除同侧重叠建筑
 	var cafe_side := -99.0
 	var cafe_s := 0.0
@@ -238,6 +240,18 @@ func _build_all_buildings():
 func _seed_from_id(idn: int) -> float:
 	return float((idn * 2654435761) & 0xFFFF) / 65535.0
 
+## 立面前表面离中线的无符号距离。摆楼/挂牌等子系统统一从这里取位, 不各自算:
+## - backoff 模式 (V1 默认, 布局无 placement 字段): 舞台布景模型, 盒紧贴人行道;
+## - by_v 模式 (广场/宽街): OSM 真实投影 |v| − depth/2, 夹取不小于 backoff,
+##   保证窄街布局行为与历史字节级一致。
+func get_facade_face(b: Dictionary) -> float:
+	var backoff := float(layout["street"].get("backoff", 6.0))
+	if String(layout["street"].get("placement", "backoff")) != "by_v":
+		return backoff
+	var v := absf(float(b.get("v", 0.0)))
+	var d := maxf(3.0, float(b.get("depth", 12.0)))
+	return maxf(backoff, v - d / 2.0)
+
 func _build_one_building(b: Dictionary, backoff: float):
 	var side = 1.0 if float(b["side"]) >= 0.0 else -1.0
 	var s_mid = (float(b["s0"]) + float(b["s1"])) / 2.0
@@ -248,12 +262,12 @@ func _build_one_building(b: Dictionary, backoff: float):
 	var idn = int(b.get("id", 0))
 	var seed_f = _seed_from_id(idn)
 
-	# 节点原点 = 前立面中心
+	# 节点原点 = 前立面中心 (by_v 布局时立面按 OSM 真实投影, 见 get_facade_face)
 	var body := StaticBody3D.new()
 	body.name = "Building_%d" % idn
 	body.collision_layer = 1
 	body.collision_mask = 1
-	body.position = Vector3(side * backoff, 0, s_mid)
+	body.position = Vector3(side * get_facade_face(b), 0, s_mid)
 
 	# 墙身(街区方向伸 depth)
 	var wall_mi := MeshInstance3D.new()
@@ -304,7 +318,8 @@ func _build_one_building(b: Dictionary, backoff: float):
 const CAFE_GLB := "res://assets/models/cafe.glb"
 
 func _build_cafe_site():
-	var cafe: Dictionary = layout.get("cafe_anchor", {})
+	var cafe_raw = layout.get("cafe_anchor")
+	var cafe: Dictionary = cafe_raw if cafe_raw is Dictionary else {}
 	if cafe.is_empty():
 		return
 	var side = 1.0 if float(cafe.get("side", 1)) >= 0.0 else -1.0

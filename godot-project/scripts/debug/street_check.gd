@@ -4,8 +4,11 @@ extends SceneTree
 ## 用法: godot --headless --path godot-project -s res://scripts/debug/street_check.gd
 ## P2-A: 断言按子系统分组 — 每子系统"产物存在 + 面数 + 位置不越界" + basis 分级
 ##        + 街区清单三方核对 (manifest == 磁盘 == 运行时重算)。
+## P2-B 候选目录版: LV_LAYOUT_CANDIDATE=<布局JSON绝对路径> 切换 —
+##        结构核验 + 裸装配器试装配 (五子系统复用性实证), 不加载 main.tscn。
 
 const Planting := preload("res://scripts/world/street/planting.gd")
+const BuildingSigns := preload("res://scripts/world/street/building_signs.gd")
 
 var failures: int = 0
 
@@ -13,6 +16,10 @@ func _init():
 	_run()
 
 func _run():
+	var cand := OS.get_environment("LV_LAYOUT_CANDIDATE")
+	if cand != "":
+		await _run_candidate(cand)
+		return
 	var scene: PackedScene = load("res://scenes/main.tscn")
 	var main: Node = scene.instantiate()
 	root.add_child(main)
@@ -464,6 +471,179 @@ func _mesh_faces(mi: MeshInstance3D) -> int:
 	if arrs.is_empty() or arrs[Mesh.ARRAY_INDEX] == null:
 		return 0
 	return int(arrs[Mesh.ARRAY_INDEX].size() / 3)
+
+## ---------- P2-B 候选目录版 ----------
+## LV_LAYOUT_CANDIDATE=<绝对路径> 时执行: 布局结构核验 + 裸装配器试装配。
+## 不加载 main.tscn (无 NPC/玩家), Rosiers 专属断言不适用; 通过 ≠ 视觉验收。
+func _run_candidate(path: String):
+	print("[StreetCheck] 模式: 候选目录版 — ", path)
+	var fa := FileAccess.open(path, FileAccess.READ)
+	_check(fa != null, "候选文件可读 (绝对路径)")
+	if fa == null:
+		_quit()
+		return
+	var parsed = JSON.parse_string(fa.get_as_text())
+	_check(parsed is Dictionary, "JSON 解析为对象")
+	if not (parsed is Dictionary):
+		_quit()
+		return
+	var layout: Dictionary = parsed
+	var meta: Dictionary = layout.get("meta", {})
+	var st: Dictionary = layout.get("street", {})
+	_check(String(meta.get("source", "")).find("OpenStreetMap") >= 0,
+		"meta.source 标注 OpenStreetMap (ODbL)")
+	_check(String(st.get("name", "")).strip_edges() != "", "street.name 非空")
+	var total_len := float(st.get("total_len", 0.0))
+	_check(total_len >= 100.0, "中线总长 ≥100m (实际 %.0fm)" % total_len)
+	_check(String(st.get("placement", "")) == "by_v",
+		"placement == by_v (OSM 真实投影摆楼)")
+	var width := float(st.get("width", 0.0))
+	var backoff := float(st.get("backoff", 0.0))
+	_check(width > 0.0 and backoff > width / 2.0,
+		"width>0 且 backoff > 半路宽 (实际 %.1f/%.1f)" % [width, backoff])
+
+	var bs: Array = layout.get("buildings", [])
+	_check(bs.size() >= 20, "候选建筑 ≥20 栋 (实际 %d)" % bs.size())
+	var finite_ok := true
+	var span_ok := true
+	var face_ok := true
+	var lv_ok := true
+	var side_n := {1: 0, -1: 0}
+	var side_span := {1: 0.0, -1: 0.0}
+	var side_min := {1: 1e9, -1: 1e9}
+	var side_max := {1: -1e9, -1: -1e9}
+	for b in bs:
+		var side := 1.0 if float(b["side"]) >= 0.0 else -1.0
+		var s0 := float(b["s0"])
+		var s1 := float(b["s1"])
+		var v := float(b.get("v", 0.0))
+		var d := float(b.get("depth", 0.0))
+		var lv := int(b.get("levels", 0))
+		var h := float(b.get("height", 0.0))
+		if not (is_finite(s0) and is_finite(s1) and is_finite(v) and is_finite(d)):
+			finite_ok = false
+		if s0 >= s1 or s1 - s0 > 60.0:
+			span_ok = false
+		# by_v 立面 (与装配器 get_facade_face 同式): 不穿进路面
+		var face: float = maxf(backoff, absf(v) - d / 2.0)
+		if face < width / 2.0 + 0.5:
+			face_ok = false
+		if lv < 2 or lv > 12 or absf(h - float(lv) * 3.2) > 0.11:
+			lv_ok = false
+		var k := int(side)
+		side_n[k] = side_n[k] + 1
+		side_min[k] = minf(side_min[k], s0)
+		side_max[k] = maxf(side_max[k], s1)
+	for k in side_span:
+		side_span[k] = side_max[k] - side_min[k]
+	_check(finite_ok, "全部字段有限 (无 NaN/Inf)")
+	_check(span_ok, "跨度合法 (s0<s1 且单栋 ≤60m, 防投影翻车)")
+	_check(face_ok, "by_v 立面全不穿路面 (face ≥ 半路宽+0.5)")
+	_check(lv_ok, "层数 2-12 且 height==levels*3.2")
+	var main_side := 1 if side_n[1] >= side_n[-1] else -1
+	_check(side_span[main_side] >= total_len * 0.5,
+		"主侧覆盖 ≥50%% 中线 (%d 侧覆盖 %.0f/%.0fm)"
+			% [main_side, side_span[main_side], total_len])
+	var runs: Array = BuildingSigns.name_runs(layout, BuildingSigns.PARAMS)
+	_check(runs.size() >= 1, "命名楼段可合并为铭牌 run (实际 %d)" % runs.size())
+
+	# ---- 试装配: 裸 StreetGenerator 消费该布局 (五子系统复用性实证) ----
+	var gen: Node = (load("res://scripts/world/street_generator.gd") as GDScript).new()
+	gen.layout_path = path
+	root.add_child(gen)
+	await process_frame
+	await process_frame
+	_check(gen.layout.size() > 0, "装配器读入候选布局")
+	var bld_root: Node = gen.buildings_root
+	_check(bld_root != null, "Buildings 根存在")
+	var n_gen := 0
+	if bld_root:
+		for c in bld_root.get_children():
+			if String(c.name).begins_with("Building_"):
+				n_gen += 1
+	_check(n_gen > 0 and n_gen <= bs.size(),
+		"生成建筑 %d 栋 (0<n≤候选 %d)" % [n_gen, bs.size()])
+	var containers := ["Road", "Sidewalk", "StreetProps", "BuildingSigns", "RoadNames"]
+	var all_c := true
+	var missing := ""
+	for cname in containers:
+		var n: Node = null
+		if cname == "Road" or cname == "Sidewalk":
+			n = gen.get_node_or_null(cname)
+		elif cname == "StreetProps":
+			n = bld_root.get_node_or_null(cname) if bld_root else null
+		else:
+			n = bld_root.get_node_or_null(cname) if bld_root else null
+		if n == null:
+			all_c = false
+			missing += cname + " "
+	_check(all_c, "五子系统容器齐 (缺: %s)" % ("无" if all_c else missing))
+	# 摆楼实证: 节点 x == side * get_facade_face(b) (by_v)
+	var place_ok := true
+	for b in bs:
+		var idn := int(b["id"])
+		var nd: Node = bld_root.get_node_or_null("Building_%d" % idn) if bld_root else null
+		if nd == null:
+			continue  # cafe 清除区跳过的不在此断言
+		var side := 1.0 if float(b["side"]) >= 0.0 else -1.0
+		var face: float = gen.get_facade_face(b)
+		var want: float = side * face
+		if absf((nd as Node3D).position.x - want) > 0.01:
+			place_ok = false
+	_check(place_ok, "摆楼 x == side*get_facade_face (by_v 逐栘认证)")
+	# 面数预算: 单街区 ≤20,000 (P2-B 验收)
+	var faces := 0
+	for m in _collect_mesh(gen):
+		faces += _mesh_faces(m)
+	_check(faces <= 20000, "候选单街区面数 ≤20000 (实际 %d)" % faces)
+	# 铭牌 basis 分级 + 贴立面
+	var signs: Node = bld_root.get_node_or_null("BuildingSigns") if bld_root else null
+	if signs:
+		var sign_ok := true
+		var attach_ok := true
+		var labels_ok := true
+		var idx := 0
+		for c in signs.get_children():
+			if not String(c.name).begins_with("Sign_"):
+				continue
+			var r: Dictionary = runs[idx] if idx < runs.size() else {}
+			idx += 1
+			var lb := _first_label(c)
+			if lb == null or String(lb.get_meta("basis", "")) != "reported":
+				labels_ok = false
+			if r.is_empty():
+				continue
+			var side := float(r["side"])
+			var rface: float = gen.get_facade_face(r)
+			var want_x: float = side * (rface - float(BuildingSigns.PARAMS["face_offset"]))
+			if absf((c as Node3D).position.x - want_x) > 0.01:
+				attach_ok = false
+		_check(sign_ok and labels_ok, "铭牌 Label3D basis==reported (run 数 %d)" % idx)
+		_check(attach_ok, "铭牌贴 by_v 立面 (x==side*(face-face_offset))")
+	else:
+		_check(false, "BuildingSigns 容器存在")
+	# 路名牌: 名称与主街一致 + 方位词 ai-drafted
+	var rn: Node = bld_root.get_node_or_null("RoadNames") if bld_root else null
+	if rn:
+		var name_ok := true
+		var dir_ok := true
+		for plate in rn.get_children():
+			var nm := _first_label(plate)
+			if nm == null or String(nm.text) != String(st.get("name", "")) \
+					or String(nm.get_meta("basis", "")) != "reported":
+				name_ok = false
+		_check(name_ok, "路名牌主行 == street.name 且 basis reported")
+		for plate in rn.get_children():
+			var dl := plate.get_node_or_null("DirHint")
+			if dl == null or String((dl as Label3D).get_meta("basis", "")) != "ai-drafted":
+				dir_ok = false
+		_check(dir_ok, "方位词 basis ai-drafted (游戏世界口径)")
+	else:
+		_check(false, "RoadNames 容器存在")
+	print("[StreetCheck] 候选统计: 建筑 %d / 生成 %d / 面数 %d / 主侧覆盖 %.0fm"
+		% [bs.size(), n_gen, faces, side_span[main_side]])
+	_quit()
+
 
 func _check(cond: bool, msg: String):
 	if cond:
