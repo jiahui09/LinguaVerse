@@ -374,6 +374,57 @@ def gen_granite(size: int, seed: int) -> tuple[bytearray, bytearray, bytearray]:
     return albedo, normal_from_height(height, w, h, 2.0), rough
 
 
+def gen_facade(size: int, seed: int) -> tuple[bytearray, bytearray, bytearray]:
+    """Haussmann 石灰拉毛立面(P3 批次6): 低频斑驳 + 抹痕 + 细颗粒 → albedo/normal/rough。"""
+    w = h = size
+    patch = fbm(w, h, 4, 4, seed + 11)        # 新旧石灰大块斑驳
+    stain = fbm(w, h, 3, 3, seed + 17)        # 雨渍低频分布
+    fine = fbm(w, h, 48, 3, seed + 23)        # 拉毛细颗粒
+    grit = vnoise(w, h, 128, seed + 31)       # 高频砂点
+    # 横向抹痕: 整数周期正弦(环面无缝) + 噪声调制
+    trowel = [0.0] * (w * h)
+    for y in range(h):
+        band = 0.5 + 0.5 * math.sin(y * (2.0 * math.pi * 7.0 / h))
+        base = y * w
+        for x in range(w):
+            trowel[base + x] = band
+
+    albedo = bytearray(w * h * 4)
+    height = [0.0] * (w * h)
+    rough = bytearray(w * h * 4)
+
+    for i in range(w * h):
+        p = patch[i]
+        st = smooth01(0.60, 0.82, stain[i])
+        hh = (
+            0.50
+            + (p - 0.5) * 0.42
+            + (fine[i] - 0.5) * 0.30
+            + (grit[i] - 0.5) * 0.12
+            + (trowel[i] - 0.5) * 0.06
+            - st * 0.18
+        )
+        height[i] = hh
+        # 奶白石灰岩基色, 斑驳处偏暖灰, 雨渍微沉
+        v = 0.93 * (0.93 + 0.14 * p) * (1.0 - 0.07 * st)
+        v += (fine[i] - 0.5) * 0.045 + (grit[i] - 0.5) * 0.03
+        r = clamp01(v * 1.005)
+        g = clamp01(v * 0.985)
+        b = clamp01(v * 0.945)
+        o = i * 4
+        albedo[o] = int(r * 255 + 0.5)
+        albedo[o + 1] = int(g * 255 + 0.5)
+        albedo[o + 2] = int(b * 255 + 0.5)
+        albedo[o + 3] = 255
+        rv = clamp01(0.84 + (fine[i] - 0.5) * 0.12 + st * 0.08 + (grit[i] - 0.5) * 0.05)
+        rvb = int(rv * 255 + 0.5)
+        rough[o] = rvb
+        rough[o + 1] = rvb
+        rough[o + 2] = rvb
+        rough[o + 3] = 255
+    return albedo, normal_from_height(height, w, h, 1.6), rough
+
+
 def gen_manhole(size: int, seed: int) -> tuple[bytearray, bytearray]:
     """井盖贴片：同心环 + 菱形防滑纹 + 螺栓 + 锈斑，圆形透明边 → albedo/normal。"""
     w = h = size
@@ -482,6 +533,9 @@ def main() -> int:
         ("granite_rough.png", "granite", "rough", 512, "rough", 20261006),
         ("manhole_albedo.png", "manhole", "albedo", 256, "albedo", 20261007),
         ("manhole_normal.png", "manhole", "normal", 256, "normal", 20261007),
+        ("facade_albedo.png", "facade", "albedo", 512, "albedo", 20261008),
+        ("facade_normal.png", "facade", "normal", 512, "normal", 20261008),
+        ("facade_rough.png", "facade", "rough", 512, "rough", 20261008),
     ]
 
     textures: dict[str, dict] = {}
@@ -494,6 +548,9 @@ def main() -> int:
             buf = {"albedo": a, "normal": n, "rough": r}[kind]
         elif family == "granite":
             a, n, r = gen_granite(size, int(seed))
+            buf = {"albedo": a, "normal": n, "rough": r}[kind]
+        elif family == "facade":
+            a, n, r = gen_facade(size, int(seed))
             buf = {"albedo": a, "normal": n, "rough": r}[kind]
         else:  # manhole
             a, n = gen_manhole(size, int(seed))

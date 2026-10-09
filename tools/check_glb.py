@@ -8,7 +8,7 @@
     · PNG 完整解码（zlib + 逐行反滤波）→ 尺寸/哈希/体积交叉核对
     · ≤2048² 且 2 的幂；非纯色（RGB 人口标准差 ≥ 阈值）
     · 法线贴图 +Z 约定（B 通道均值 ≥ 200）；井盖 alpha 含透明边
-    · 族别齐全：cobble/paving/granite 需 albedo+normal+rough；manhole 需 albedo+normal
+    · 族别齐全：cobble/paving/granite/facade 需 albedo+normal+rough；manhole 需 albedo+normal
     · 目录孤儿文件（存在但未入清单）= 漂移
 
 用法：
@@ -132,6 +132,7 @@ REQUIRED_FAMILIES = {
     "cobble": {"albedo", "normal", "rough"},
     "paving": {"albedo", "normal", "rough"},
     "granite": {"albedo", "normal", "rough"},
+    "facade": {"albedo", "normal", "rough"},
     "manhole": {"albedo", "normal"},
 }
 

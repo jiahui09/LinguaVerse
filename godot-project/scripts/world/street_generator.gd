@@ -57,6 +57,14 @@ var _manhole_albedo: Texture2D               # P3 批次4: 井盖贴片
 var _manhole_normal: Texture2D
 var _facade_shader: Shader
 var _facade_mats: Dictionary = {}
+var _facade_albedo: Texture2D               # P3 批次6: 墙身拉毛贴图 (传给 shader)
+var _facade_normal: Texture2D
+var _door_mat: StandardMaterial3D           # P3 批次6: 立面细节材质
+var _trim_mat: StandardMaterial3D
+var _pipe_mat: StandardMaterial3D
+var _chimney_mat: StandardMaterial3D
+var _iron_mat: StandardMaterial3D
+var _awning_mats: Array = []
 
 var cafe_site: Node3D = null
 var buildings_root: Node3D
@@ -199,6 +207,8 @@ func _build_materials():
 		var f = 1.0 + (float(i) - 3.5) * 0.03
 		m.albedo_color = Color(_wall_base.r * f, _wall_base.g * f, _wall_base.b * f)
 		m.roughness = 0.92
+		# P3 批次6: 墙身石灰拉毛贴图 (世界三平面, 跨楼无缝)
+		_apply_texture_family(m, "facade", 1.6, m.albedo_color, 0.92)
 		_wall_mats.append(m)
 	_roof_mat = StandardMaterial3D.new()
 	_roof_mat.albedo_color = Color(0.30, 0.30, 0.33)
@@ -211,7 +221,34 @@ func _build_materials():
 	_apply_texture_family(_curb_mat, "granite", 1.0, Color(0.96, 0.96, 0.97), 0.85)
 	_manhole_albedo = _load_texture("manhole_albedo")
 	_manhole_normal = _load_texture("manhole_normal")
+	_facade_albedo = _load_texture("facade_albedo")
+	_facade_normal = _load_texture("facade_normal")
 	_facade_shader = load("res://shaders/facade.gdshader")
+	# P3 批次6: 立面成套细节材质
+	_door_mat = StandardMaterial3D.new()
+	_door_mat.albedo_color = Color(0.24, 0.17, 0.11)
+	_door_mat.roughness = 0.65
+	_trim_mat = StandardMaterial3D.new()
+	_trim_mat.albedo_color = Color(0.87, 0.85, 0.80)
+	_trim_mat.roughness = 0.8
+	_pipe_mat = StandardMaterial3D.new()
+	_pipe_mat.albedo_color = Color(0.55, 0.56, 0.58)
+	_pipe_mat.roughness = 0.45
+	_pipe_mat.metallic = 0.3
+	_chimney_mat = StandardMaterial3D.new()
+	_chimney_mat.albedo_color = Color(0.55, 0.33, 0.24)
+	_chimney_mat.roughness = 0.9
+	_iron_mat = StandardMaterial3D.new()
+	_iron_mat.albedo_color = Color(0.13, 0.14, 0.15)
+	_iron_mat.roughness = 0.5
+	_iron_mat.metallic = 0.35
+	var awn_red := StandardMaterial3D.new()
+	awn_red.albedo_color = Color(0.45, 0.12, 0.12)
+	awn_red.roughness = 0.85
+	var awn_green := StandardMaterial3D.new()
+	awn_green.albedo_color = Color(0.13, 0.26, 0.17)
+	awn_green.roughness = 0.85
+	_awning_mats = [awn_red, awn_green]
 
 func _load_texture(nm: String) -> Texture2D:
 	var p := "res://assets/textures/%s.png" % nm
@@ -241,8 +278,10 @@ func _apply_texture_family(m: StandardMaterial3D, fam: String, tile_m: float, ti
 	m.uv1_world_triplanar = true
 	m.uv1_scale = Vector3(1.0 / tile_m, 1.0 / tile_m, 1.0 / tile_m)
 
-func _get_facade_material(levels: int, wpf: int, shop: bool, seed_f: float) -> ShaderMaterial:
-	var key := "%d_%d_%d" % [levels, wpf, int(shop)]
+## P3 批次6: 按建筑实际宽/高设 wall_width_m/wall_height_m (修复: 首版漏设,
+## 窗洞密度全按默认 10×18 算), 并挂墙身拉毛贴图; 尺寸进缓存键 → 每栋窗格与实际对齐。
+func _get_facade_material(levels: int, wpf: int, shop: bool, along_w: float, height: float) -> ShaderMaterial:
+	var key := "%d_%d_%d_%d_%d" % [levels, wpf, int(shop), int(along_w * 10.0), int(height * 10.0)]
 	if _facade_mats.has(key):
 		return _facade_mats[key]
 	var m = ShaderMaterial.new()
@@ -250,6 +289,14 @@ func _get_facade_material(levels: int, wpf: int, shop: bool, seed_f: float) -> S
 	m.set_shader_parameter("levels", levels)
 	m.set_shader_parameter("windows_per_floor", wpf)
 	m.set_shader_parameter("ground_shop", shop)
+	m.set_shader_parameter("wall_width_m", along_w)
+	m.set_shader_parameter("wall_height_m", height)
+	m.set_shader_parameter("wall_tile_m", 1.6)
+	if _facade_albedo != null:
+		m.set_shader_parameter("wall_tex", _facade_albedo)
+		if _facade_normal != null:
+			m.set_shader_parameter("wall_nrm", _facade_normal)
+		m.set_shader_parameter("wall_tex_on", true)
 	_facade_mats[key] = m
 	return m
 
@@ -342,19 +389,20 @@ func _build_one_building(b: Dictionary, backoff: float):
 	body.position = Vector3(side * get_facade_face(b), 0, s_mid)
 
 	# 墙身(街区方向伸 depth)
+	# P3 批次6: 直接用调色板材质 (旧版新建材质只抄 albedo_color → 丢贴图, 街平面成纯色)
 	var wall_mi := MeshInstance3D.new()
+	wall_mi.name = "Wall"
 	var wbox := BoxMesh.new()
 	wbox.size = Vector3(depth, height, along_w)
 	wall_mi.mesh = wbox
-	var wmat := StandardMaterial3D.new()
-	wmat.albedo_color = _wall_mats[int(seed_f * float(_wall_mats.size())) % _wall_mats.size()].albedo_color
-	wmat.roughness = 0.92
+	var wmat := _wall_mats[int(seed_f * float(_wall_mats.size())) % _wall_mats.size()] as StandardMaterial3D
 	wall_mi.material_override = wmat
 	wall_mi.position = Vector3(side * depth / 2.0, height / 2.0, 0)
 	body.add_child(wall_mi)
 
 	# 屋顶锌灰(前表面起, 略探出)
 	var roof_mi := MeshInstance3D.new()
+	roof_mi.name = "Roof"
 	var rbox := BoxMesh.new()
 	rbox.size = Vector3(depth + 0.4, 0.6, along_w + 0.5)
 	roof_mi.mesh = rbox
@@ -365,13 +413,17 @@ func _build_one_building(b: Dictionary, backoff: float):
 	# 临街立面(窗户 shader 薄盒, 位于前表面 x≈0 稍向街)
 	var n_wpf = max(1, int(round(along_w / 2.8)))
 	var facade_mi := MeshInstance3D.new()
+	facade_mi.name = "Facade"
 	var fbox := BoxMesh.new()
 	fbox.size = Vector3(0.12, height, along_w)
 	facade_mi.mesh = fbox
-	facade_mi.material_override = _get_facade_material(levels, n_wpf, true, seed_f)
+	facade_mi.material_override = _get_facade_material(levels, n_wpf, true, along_w, height)
 	# 薄盒中心: 前表面(side*backoff处,x=0)向街外探 0.06
 	facade_mi.position = Vector3(-side * 0.09, height / 2.0, 0)
 	body.add_child(facade_mi)
+
+	# P3 批次6: 立面成套细节 (檐口/门/落管/烟囱 + 阳台或老虎窗 + 雨棚)
+	_build_facade_details(body, side, along_w, depth, height, levels, seed_f)
 
 	# 碰撞(整墙身)
 	var col := CollisionShape3D.new()
@@ -382,6 +434,57 @@ func _build_one_building(b: Dictionary, backoff: float):
 	body.add_child(col)
 
 	buildings_root.add_child(body)
+
+## ---------- P3 批次6: 立面成套细节 ----------
+## 每栋必有: 檐口(双带) + 入户门(扇+过梁) + 落水管 + 烟囱(身+压顶);
+## 按 seed 变体: 阳台(seed≤0.35) XOR 老虎窗(>0.35), 雨棚店铺模块(seed>0.4)。
+## 面数纪律(决策29 单栋≤3k / 单街≤25k): 细节满配 152 面/栋,
+## worst-case 单街推演 17,576-1,836+51×152=23,492 < 25k; 实测以 street_check 为准。
+
+func _dmesh(parent: Node3D, mesh: Mesh, mat: Material, pos: Vector3, nm: String) -> void:
+	var mi := _add_mesh(parent, mesh, mat, pos)
+	mi.name = nm
+
+func _build_facade_details(body: StaticBody3D, side: float, along_w: float, depth: float, height: float, levels: int, seed_f: float) -> void:
+	var fr2: float = seed_f * 7.3
+	fr2 = fr2 - floor(fr2)
+	var fr3: float = seed_f * 11.7
+	fr3 = fr3 - floor(fr3)
+	var floor_h: float = (height - 4.2) / float(max(1, levels))
+
+	# 檐口: 双层石线脚 (顶带探街至 -side*0.40, 滴水带更宽更靠下)
+	_dmesh(body, _box_mesh(0.42, 0.20, along_w + 0.36), _trim_mat, Vector3(-side * 0.19, height - 0.16, 0), "Detail_Cornice")
+	_dmesh(body, _box_mesh(0.30, 0.14, along_w + 0.52), _trim_mat, Vector3(-side * 0.15, height - 0.35, 0), "Detail_Cornice2")
+	# 入户门: 木门扇(朝街外探 5cm 消 z-fight) + 石过梁, 两端交替
+	var door_z: float = clampf((1.0 if seed_f < 0.5 else -1.0) * (along_w * 0.5 - 0.85), -1.0 * (along_w * 0.5 - 0.7), along_w * 0.5 - 0.7)
+	_dmesh(body, _box_mesh(0.07, 2.15, 1.05), _door_mat, Vector3(-side * 0.165, 1.075, door_z), "Detail_Door")
+	_dmesh(body, _box_mesh(0.16, 0.30, 1.35), _trim_mat, Vector3(-side * 0.17, 2.40, door_z), "Detail_DoorTrim")
+	# 落水管: 镀锌方管 (BoxMesh 12 面)。首版 CylinderMesh radial5 实测 50 面/根
+	# (Godot 圆柱细分远超预期) → 方管既省 38 面/根, 也是巴黎常见锌质做法
+	var spout_z: float = (1.0 if fr2 < 0.5 else -1.0) * (along_w * 0.5 - 0.14)
+	_dmesh(body, _box_mesh(0.10, height - 0.3, 0.10), _pipe_mat, Vector3(-side * 0.17, (height - 0.3) / 2.0, spout_z), "Detail_Spout")
+	# 烟囱: 屋面后部砖体 + 石压顶
+	var chim_z: float = (fr3 - 0.5) * along_w * 0.6
+	_dmesh(body, _box_mesh(0.8, 1.3, 0.9), _chimney_mat, Vector3(side * depth * 0.7, height + 0.95, chim_z), "Detail_Chimney")
+	_dmesh(body, _box_mesh(0.9, 0.12, 1.0), _trim_mat, Vector3(side * depth * 0.7, height + 1.66, chim_z), "Detail_ChimneyCap")
+	# 变体: 阳台 (seed≤0.35, 平台+顶杆+3栏杆, 与 shader 阳台铁艺带同层对齐)
+	#       或 老虎窗 (>0.35, 窗体+压顶) — 每栋必有其一
+	var variant_z: float = (fr2 - 0.5) * along_w * 0.45
+	if seed_f <= 0.35:
+		var yb: float = 4.2 + floor_h
+		_dmesh(body, _box_mesh(1.7, 0.09, 0.6), _trim_mat, Vector3(-side * 0.45, yb - 0.045, variant_z), "Detail_Balcony")
+		_dmesh(body, _box_mesh(1.7, 0.05, 0.05), _iron_mat, Vector3(-side * 0.725, yb + 0.52, variant_z), "Detail_BalconyRail")
+		for k in 3:
+			_dmesh(body, _box_mesh(0.04, 0.5, 0.04), _iron_mat, Vector3(-side * 0.725, yb + 0.27, variant_z + (float(k) - 1.0) * 0.62), "Detail_BalconyBar%d" % k)
+	else:
+		var dy := height + 0.3   # 屋面顶 (roof 盒顶 = height+0.3)
+		_dmesh(body, _box_mesh(0.95, 0.95, 1.05), _trim_mat, Vector3(side * 0.55, dy + 0.475, variant_z), "Detail_Dormer")
+		_dmesh(body, _box_mesh(1.15, 0.12, 1.25), _iron_mat, Vector3(side * 0.55, dy + 1.01, variant_z), "Detail_DormerRoof")
+	# 店铺模块: 实体雨棚+垂边 (shader 已画店面橱窗/雨棚阴影带, 这里补立体件)
+	if seed_f > 0.4:
+		var awn := _awning_mats[int(seed_f * 2.0) % _awning_mats.size()] as StandardMaterial3D
+		_dmesh(body, _box_mesh(2.3, 0.07, 0.62), awn, Vector3(-side * 0.46, 3.62, 0), "Detail_Awning")
+		_dmesh(body, _box_mesh(2.3, 0.16, 0.05), awn, Vector3(-side * 0.745, 3.50, 0), "Detail_AwningValance")
 
 ## ---------- 咖啡馆 ----------
 ## 模型(cafe.glb): 门面在模型局部 z≈0 面朝 +Z, 内部向 -Z(吧台 z≈-6.5)

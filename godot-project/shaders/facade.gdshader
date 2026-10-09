@@ -16,10 +16,22 @@ uniform vec3 shop_glass : source_color = vec3(0.35, 0.55, 0.62); // 橱窗玻璃
 
 uniform float wall_width_m : hint_range(1.0, 60.0) = 10.0;   // 立面实际宽(米)
 uniform float wall_height_m : hint_range(2.0, 60.0) = 18.0;  // 立面实际高(米)
-uniform int levels : hint_range(1, 12) = 6;                  // 层数
-uniform int windows_per_floor : hint_range(1, 6) = 2;        // 每层窗洞数
+// hint_range 运行时也 clamp 参数: 原上限 12/6 会把宽街墙的层数/跨数夹满
+// (旧默认 10×18 恒在范围内, 批次6 传实际尺寸才暴露 → 巨窗失真)
+uniform int levels : hint_range(1, 24) = 6;                  // 层数
+uniform int windows_per_floor : hint_range(1, 32) = 2;       // 每层窗洞数
 uniform bool ground_shop = false;                            // 底层是否商铺
 uniform float night_glow : hint_range(0.0, 1.0) = 0.0;       // 夜间窗内暖光
+
+// P3 批次6: 墙身石灰拉毛贴图 (make_textures facade 族, 环面可平铺)
+// wall_tex_on=false 时保持原纯色行为 (贴图缺失诚实降级, street_check 会报红)
+uniform sampler2D wall_tex : source_color, filter_linear_mipmap;
+// 法线数据纹理不给 type hint: source_color/hint_default_normal 在 4.7 下
+// 组合或命名会被拒 ("Expected valid type hint after ':'" → 编译失败 →
+// llvmpipe 真渲染整面 fallback, headless 门禁不编译 shader 抓不到); 我们总是传真实纹理
+uniform sampler2D wall_nrm : filter_linear_mipmap;
+uniform float wall_tile_m : hint_range(0.5, 8.0) = 1.6;
+uniform bool wall_tex_on = false;
 
 varying vec3 v_normal_local;
 
@@ -47,6 +59,7 @@ void fragment() {
 	vec3 albedo = wall_col;
 	float rough = 0.9;
 	float metal = 0.0;
+	bool use_wall_tex = true;   // 墙区才叠拉毛贴图 (窗/门面/线脚/雨棚带不叠)
 
 	if (is_facade) {
 		// ===== 底层商铺(地面向上 ~4.2m) =====
@@ -61,6 +74,7 @@ void fragment() {
 				bool in_glass_span = bx > 0.10 && bx < 0.90;
 				albedo = shop_col;
 				rough = 0.7;
+				use_wall_tex = false;
 				if (glass && in_glass_span) {
 					float seed = hash12(vec2(floor(px / bay), 0.0));
 					albedo = shop_glass * (0.85 + 0.15 * seed);
@@ -85,7 +99,9 @@ void fragment() {
 			float bx = fract(px / bay_w);
 
 			bool win_v = fy > 0.22 && fy < 0.88;
-			bool win_h = bx > 0.14 && bx < 0.86;
+			// 窗宽收窄至跨 48% (原 72% → 窗间墙仅 0.7m, 中远看像整条玻璃带;
+			// 巴黎奥斯曼立面窗宽 ~1.2-1.4m、窗间墙 ~1.4m 的比例)
+			bool win_h = bx > 0.26 && bx < 0.74;
 			bool sill = fy > 0.88 && fy < 0.94;      // 窗台
 			bool floor_band = fy >= 0.94;            // 楼板带
 			bool balcony = fy < 0.06;                // 阳台铁艺
@@ -103,17 +119,29 @@ void fragment() {
 				albedo = glass;
 				rough = 0.25;
 				metal = 0.1;
+				use_wall_tex = false;
 			} else if (sill) {
 				albedo = trim_col * 0.9;
 				rough = 0.85;
+				use_wall_tex = false;
 			} else if (floor_band) {
 				albedo = trim_col;
 				rough = 0.75;
+				use_wall_tex = false;
 			} else if (balcony) {
 				albedo = frame_col;
 				rough = 0.6;
+				use_wall_tex = false;
 			}
 		}
+	}
+
+	// 墙区叠石灰拉毛贴图: 乘算保持统一色调 (贴图均值 ≈0.93 → 除回补偿)
+	if (wall_tex_on && use_wall_tex) {
+		vec2 tuv = vec2(px, py) / wall_tile_m;
+		albedo *= texture(wall_tex, tuv).rgb / 0.93;
+		NORMAL_MAP = texture(wall_nrm, tuv).rgb;
+		NORMAL_MAP_DEPTH = 0.5;
 	}
 
 	ALBEDO = albedo;

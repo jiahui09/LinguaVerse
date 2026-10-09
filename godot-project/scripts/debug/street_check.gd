@@ -91,6 +91,62 @@ func _run():
 				no_col += 1
 	_check(no_col == 0, "所有建筑有碰撞体(缺失 %d)" % no_col)
 
+	# ── P3 批次6: 街平面无纯色盒面 (逐栋) ──
+	# ① 墙身挂 facade 族拉毛贴图; ② 立面 shader 挂墙贴图(wall_tex);
+	# ③ 细节齐套: 檐口/入户门/落水管/烟囱 必有 + 阳台 XOR 老虎窗 必有其一;
+	# ④ 单栋面数 ≤3,000 (决策 29); 文字 basis 不变式与此无关, 另段断言。
+	var plain_face := 0
+	var over_budget := 0
+	var n_b_checked := 0
+	var det_sum := 0
+	var det_max := 0
+	var detail_list: Array = []
+	if bld_root:
+		for child in bld_root.get_children():
+			if not String(child.name).begins_with("Building_"):
+				continue
+			n_b_checked += 1
+			var kinds := {}
+			var wall_tex_ok := false
+			var facade_tex_ok := false
+			var b_faces := 0
+			for mesh_node in _collect_mesh(child):
+				b_faces += _mesh_faces(mesh_node)
+			for c in child.get_children():
+				if c is MeshInstance3D:
+					var nm := String(c.name)
+					if nm == "Wall":
+						var sm := c.material_override as StandardMaterial3D
+						wall_tex_ok = sm != null and sm.albedo_texture != null
+					elif nm == "Facade":
+						var sh := c.material_override as ShaderMaterial
+						facade_tex_ok = sh != null and sh.get_shader_parameter("wall_tex") != null
+					elif nm.begins_with("Detail_"):
+						kinds[nm] = true
+			var kinds_ok: bool = kinds.has("Detail_Cornice") and kinds.has("Detail_Door") \
+				and kinds.has("Detail_Spout") and kinds.has("Detail_Chimney") \
+				and (kinds.has("Detail_Balcony") or kinds.has("Detail_Dormer"))
+			if not (wall_tex_ok and facade_tex_ok and kinds_ok):
+				plain_face += 1
+				if plain_face <= 6:
+					print("[StreetCheck] 纯色违例明细: %s wall_tex=%s facade_tex=%s kinds=%s"
+						% [child.name, wall_tex_ok, facade_tex_ok, kinds.keys()])
+			if b_faces > 3000:
+				over_budget += 1
+			# 逐栋面数统计 (批次6 面数提案依据): 细节面数 = b_faces − 36 (墙/顶/立面)
+			var det := b_faces - 36
+			det_sum += det
+			if det > det_max:
+				det_max = det
+			if det > 0:
+				detail_list.append("%s=%d" % [String(child.name).replace("Building_", ""), det])
+	_check(n_b_checked > 0, "逐栋立面检查覆盖 %d 栋" % n_b_checked)
+	print("[StreetCheck] 逐栋立面面数: 共%d栋 细节面数合计=%d avg=%.1f max=%d"
+		% [n_b_checked, det_sum, float(det_sum) / float(max(1, n_b_checked)), det_max])
+	print("[StreetCheck] 逐栋明细: ", JSON.stringify(detail_list))
+	_check(plain_face == 0, "街平面无纯色盒面(贴图墙身+shader挂贴图+檐/门/管/囱/(阳台|老虎窗), 违例 %d 栋)" % plain_face)
+	_check(over_budget == 0, "单栋面数 ≤3000(决策29, 超预算 %d 栋)" % over_budget)
+
 	# ── 街道道具 (P1-4 / 决策 11 自然边界) ──
 	var props: Node = null
 	if bld_root:
@@ -640,7 +696,10 @@ func _run():
 	else:
 		print("[SKIP] LV_FIXED_HOUR=", env_hour, " 已设置 → 跳过 fixed_hour 断言")
 
-	# 面数估算 (决策 29): 单街 ≤25,000 + 三街总门禁 —
+	# 面数估算 (决策 29, 批次6 修订 2026-10-09 用户批准): 单街 ≤30,000 + 三街总 ≤65,000 —
+	# 批次6 实测 10,904+20,268+24,536=55,708 > 原 50k → 「理由+实测+新预算」提案已批:
+	# 总 50k→65k (留 9,292≈17% 给批次7 拱廊五件套), 单街 25k→30k (vosges 24,536 余量仅1.9%),
+	# 单栋 3,000 / GLB≤8MiB / 贴图≤2048² 维持。
 	# 遍历全部 generator 的 buildings_root (含 StreetProps 道具)
 	var total_faces := 0
 	var per_gen_faces: Dictionary = {}
@@ -654,9 +713,9 @@ func _run():
 					gf += _mesh_faces(mesh_node)
 		per_gen_faces[String((g3 as Node).name)] = gf
 		total_faces += gf
-		if gf > 25000:
+		if gf > 30000:
 			under_single = false
-	_check(under_single, "单街面数 ≤25000 (%s)" % JSON.stringify(per_gen_faces))
+	_check(under_single, "单街面数 ≤30000 (%s)" % JSON.stringify(per_gen_faces))
 	var prop_faces := 0
 	if props:
 		for child in props.get_children():
@@ -665,7 +724,7 @@ func _run():
 	print("[StreetCheck] 各生成器面数: ", JSON.stringify(per_gen_faces))
 	print("[StreetCheck] 建筑估算面数(rosiers): ", total_faces - prop_faces)
 	print("[StreetCheck] 道具估算面数(rosiers): ", prop_faces)
-	_check(total_faces < 50000, "三街建筑+道具总面数预算(实际 %d < 50000)" % total_faces)
+	_check(total_faces < 65000, "三街建筑+道具总面数预算(实际 %d < 65000, 批次6 批准)" % total_faces)
 
 	main.queue_free()
 	_quit()
@@ -863,12 +922,13 @@ func _run_candidate(path: String):
 		if absf((nd as Node3D).position.x - want) > 0.01:
 			place_ok = false
 	_check(place_ok, "摆楼 x == side*get_facade_face (by_v 逐栘认证)")
-	# 面数预算: 单街区 ≤25,000 (P2-B 原 20k; 决策 29 修订 2026-10-08 —
-	# Vosges 495m 环实测 20316 撞线, 道具占 88%, 批次5 GLB 替换后复核定值)
+	# 面数预算: 单街区 ≤30,000 (P2-B 原 20k; 决策 29 修订 2026-10-08 —
+	# Vosges 495m 环实测 20316 撞线, 道具占 88%, 批次5 GLB 替换后复核定值;
+	# 批次6 修订 2026-10-09 用户批准 25k→30k, 见决策29 批次6 注记)
 	var faces := 0
 	for m in _collect_mesh(gen):
 		faces += _mesh_faces(m)
-	_check(faces <= 25000, "候选单街区面数 ≤25000 (实际 %d)" % faces)
+	_check(faces <= 30000, "候选单街区面数 ≤30000 (实际 %d)" % faces)
 	# 铭牌 basis 分级 + 贴立面
 	var signs: Node = bld_root.get_node_or_null("BuildingSigns") if bld_root else null
 	if signs:
@@ -956,7 +1016,7 @@ func _check_street(g: Node, label: String) -> void:
 	var bo := float(st.get("backoff", 6.0))
 	_check(sw > 0.0 and bo > sw / 2.0, "%s: width>0 且 backoff>半路宽 (%.1f/%.1f)" % [label, sw, bo])
 
-	# 建筑: 生成数 ∈ (0, 布局数] + 全碰撞 + 单街面数 ≤25000 (决策 29)
+	# 建筑: 生成数 ∈ (0, 布局数] + 全碰撞 + 单街面数 ≤30000 (决策 29, 批次6 批准)
 	var br: Node = g.get("buildings_root")
 	_check(br != null, label + ": Buildings 根存在")
 	var n_gen := 0
@@ -976,7 +1036,7 @@ func _check_street(g: Node, label: String) -> void:
 					no_col += 1
 	_check(n_gen > 0 and n_gen <= bs.size(), "%s: 生成建筑 %d ∈ (0,%d]" % [label, n_gen, bs.size()])
 	_check(no_col == 0, "%s: 建筑全有碰撞体 (缺 %d)" % [label, no_col])
-	_check(faces <= 25000, "%s: 单街面数 ≤25000 (实际 %d)" % [label, faces])
+	_check(faces <= 30000, "%s: 单街面数 ≤30000 (实际 %d)" % [label, faces])
 
 	# 路面: 存在/layer1/碰撞/宽 + 范围 == ends·road_limits 公式 + surface_drop 生效
 	var s0m := 1e9
