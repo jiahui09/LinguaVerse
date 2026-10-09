@@ -448,6 +448,13 @@ func _build_one_building(b: Dictionary, backoff: float):
 func _dmesh(parent: Node3D, mesh: Mesh, mat: Material, pos: Vector3, nm: String) -> void:
 	var mi := _add_mesh(parent, mesh, mat, pos)
 	mi.name = nm
+	# 诊断→优化方案 §3：立面孔线/门斗/烟囱等微小细节不进阴影通道（−287 draw calls）。
+	# 取证（修正后方法：截图固定等 16 帧收敛 + 每帧强制 paused=false + 选择性 stash，
+	# 见 docs/性能优化-设计与实施.md §5）：定时刻 A/B 静态机位 mean_abs_diff ≤2.4，
+	# 路面亮度 rgb=(40.5,43.6,55.7) 与基线逐值相同，同配置两次运行 0.0~0.6 → 视觉等价。
+	# 注：早先"路面 −17%"是取证方法缺陷造成的假阳性（基线侧 stash 连带回滚了截图脚本、
+	# 失焦暂停在两侧状态不一致导致一侧世界被冻结），该结论已作废。
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 
 func _build_facade_details(body: StaticBody3D, side: float, along_w: float, depth: float, height: float, levels: int, seed_f: float) -> void:
 	var fr2: float = seed_f * 7.3
