@@ -16,6 +16,12 @@ Blender headless 确定性生成 5 件人物模型，参数化变体（服装/�
   每件 6 个部件对象（Head/Torso/ArmL/ArmR/LegL/LegR），部件内部 join 成单 mesh，
   origin 移到**关节枢轴**（肩/髋/颈）→ Godot 里直接转 rotation.x 即可摆臂迈腿。
   不 join 成单 mesh：glTF 按对象导出节点层级，Node 名 = Blender 对象名。
+
+中等圆润化（真机反馈"更写实而不是方块人"，用户选档 600–800 面/件）:
+  方块躯干 → 低段位圆台收分（肩宽腰细/腕细），头/手 → UV 球，四肢 → 圆台，
+  鼻 → 小球；鞋/围裙/帽檐仍为低面盒体（贴图五官不做——小几何五官更立体）。
+  面数控制靠段位（球 seg/rings、柱 seg 6–12），目标每件 600–800 tris。
+  六部件结构与关节枢轴（颈 1.44/肩 1.43/髋 0.92）不变 → npc_base 摆动兼容。
 """
 
 import json
@@ -80,6 +86,24 @@ def gcyl(name, gr, gh, gpos, mat_name, seg=8, caps=True, scale_xz=(1.0, 1.0)):
     return _finish(o, name, mat_name)
 
 
+def gsphere(name, gr, gpos, mat_name, seg=12, rings=7, scale=(1.0, 1.0, 1.0)):
+    """UV 球（中等圆润化）。scale=(gx, gy, gz)；seg·rings 控面数。"""
+    bpy.ops.mesh.primitive_uv_sphere_add(
+        segments=seg, ring_count=rings, radius=gr, location=_bpos(gpos))
+    o = bpy.context.active_object
+    o.scale = scale
+    return _finish(o, name, mat_name)
+
+
+def gcone(name, r_bot, r_top, gh, gpos, mat_name, seg=8, caps=True):
+    """圆台（radius1=底/Godot 下端, radius2=顶/Godot 上端）——四肢/躯干收分。"""
+    bpy.ops.mesh.primitive_cone_add(
+        vertices=seg, radius1=r_bot, radius2=r_top, depth=gh,
+        end_fill_type="NGON" if caps else "NOTHING", location=_bpos(gpos))
+    o = bpy.context.active_object
+    return _finish(o, name, mat_name)
+
+
 def _tris(o):
     return sum(max(0, len(p.vertices) - 2) for p in o.data.polygons)
 
@@ -109,7 +133,7 @@ OUT_DIR = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "..", "artifacts", "npc-glb")
 )
 REPORT = []
-SOFT_CAP = 340  # 单件软帽（决策29 GLB 8MiB 是硬线；面数软帽只告警）
+SOFT_CAP = 800  # 单件软帽（决策29 GLB 8MiB 是硬线；中等圆润化档 600–800 面只告警）
 
 # ---------------- 变体参数（5 件） ----------------
 # top: 上衣/大衣色  bottom: 下装  hair: 发色  skin: 肤色  shoe: 鞋
@@ -153,34 +177,40 @@ def build_human(p, prefix):
     mat(prefix + "_scarf", (0.58, 0.22, 0.20), rough=0.95)
     SKIN, HAIR, TOP, BOT, SHOE = (prefix + "_skin"), (prefix + "_hair"), (prefix + "_top"), (prefix + "_bottom"), (prefix + "_shoe")
 
-    # ---- Head（颈枢轴 y=1.44）----
+    # ---- Head（颈枢轴 y=1.44）球面头 + 低段位五官 ----
     head = [
-        gbox("hd", (0.21, 0.245, 0.225), (0, 1.575, 0), SKIN),   # 头
-        gbox("hair", (0.222, 0.11, 0.238), (0, 1.655, 0.012), HAIR),  # 发盖(覆顶+后)
-        gbox("eye_l", (0.04, 0.032, 0.02), (-0.072, 1.585, -0.114), "npc_eye"),
-        gbox("eye_r", (0.04, 0.032, 0.02), (0.072, 1.585, -0.114), "npc_eye"),
-        gbox("nose", (0.034, 0.05, 0.036), (0, 1.535, -0.124), SKIN),
+        gsphere("hd", 0.118, (0, 1.575, 0), SKIN, seg=12, rings=7,
+                scale=(0.92, 1.0, 0.86)),            # 椭球头 0.217×0.236×0.203
+        gsphere("hair", 0.126, (0, 1.628, 0.020), HAIR, seg=12, rings=4,
+                scale=(0.95, 0.62, 0.92)),          # 发盖（覆顶+后脑）
+        gsphere("eye_l", 0.016, (-0.045, 1.588, -0.101), "npc_eye", seg=6, rings=3),
+        gsphere("eye_r", 0.016, (0.045, 1.588, -0.101), "npc_eye", seg=6, rings=3),
+        gsphere("nose", 0.020, (0, 1.548, -0.108), SKIN, seg=6, rings=3,
+                scale=(0.8, 1.0, 0.9)),
     ]
     if p.get("skirt"):  # 发髻
-        head.append(gbox("bun", (0.09, 0.09, 0.09), (0, 1.70, 0.09), HAIR))
+        head.append(gsphere("bun", 0.050, (0, 1.690, 0.082), HAIR, seg=8, rings=4))
     if p["hat"] == "fedora":
         head += [
-            gbox("hat_top", (0.20, 0.095, 0.20), (0, 1.745, 0.0), "%s_hat" % prefix),
-            gbox("hat_brim", (0.32, 0.022, 0.32), (0, 1.70, 0.0), "%s_hat" % prefix),
+            gcone("hat_top", 0.100, 0.086, 0.092, (0, 1.735, 0.0), "%s_hat" % prefix,
+                  seg=12),                                          # 帽体收分
+            gcyl("hat_brim", 0.160, 0.020, (0, 1.692, 0.0), "%s_hat" % prefix, seg=12),
         ]
     elif p["hat"] == "flat":
         head += [
-            gbox("cap", (0.225, 0.06, 0.235), (0, 1.715, 0.0), "%s_hat" % prefix),
-            gbox("visor", (0.18, 0.02, 0.12), (0, 1.695, -0.16), "%s_hat" % prefix),
+            gcyl("cap", 0.115, 0.058, (0, 1.700, 0.005), "%s_hat" % prefix, seg=10,
+                 scale_xz=(1.0, 1.06)),
+            gbox("visor", (0.175, 0.018, 0.115), (0, 1.688, -0.155), "%s_hat" % prefix),
         ]
     elif p["hat"] == "beret":
-        head.append(gbox("beret", (0.235, 0.05, 0.235), (0, 1.71, 0.01), "%s_hat" % prefix))
+        head.append(gsphere("beret", 0.118, (0, 1.698, 0.012), "%s_hat" % prefix,
+                            seg=10, rings=4, scale=(1.0, 0.45, 1.0)))
     h_obj = _join_part("Head", head, (0, 1.44, 0))
 
     # ---- Torso（颈枢轴 y=1.44；呼吸/点头整体动作挂上层 Model）----
     torso = [
-        gbox("chest", (0.40, 0.52, 0.235), (0, 1.20, 0), TOP),  # 0.94..1.46
-        gbox("hips", (0.375, 0.10, 0.225), (0, 0.94, 0), BOT),
+        gcone("chest", 0.178, 0.202, 0.52, (0, 1.20, 0), TOP, seg=12),  # 肩宽腰细 0.94..1.46
+        gcyl("hips", 0.190, 0.10, (0, 0.94, 0), BOT, seg=12, scale_xz=(0.99, 0.94)),
     ]
     if p["mode"] == "apron":
         torso += [
@@ -189,30 +219,31 @@ def build_human(p, prefix):
         ]
     elif p["mode"] == "coat":
         torso.append(
-            gbox("coat_skirt", (0.415, 0.17, 0.25), (0, 0.90, 0.0), TOP))
+            gcone("coat_skirt", 0.213, 0.198, 0.17, (0, 0.90, 0.0), TOP, seg=12))
     if p["scarf"]:
         torso.append(
-            gbox("scarf", (0.23, 0.075, 0.25), (0, 1.465, 0.0), "%s_scarf" % prefix))
+            gcyl("scarf", 0.115, 0.075, (0, 1.465, 0.0), "%s_scarf" % prefix, seg=10,
+                 scale_xz=(1.0, 1.05)))
     if p["skirt"]:
         torso.append(
-            gcyl("skirt", 0.235, 0.36, (0, 0.78, 0), BOT, seg=10,
-                 scale_xz=(1.0, 0.92)))   # A 字裙 (0.60..0.96)
+            gcone("skirt", 0.235, 0.185, 0.36, (0, 0.78, 0), BOT, seg=12))  # A 字裙 0.60..0.96
     t_obj = _join_part("Torso", torso, (0, 1.44, 0))
 
-    # ---- ArmL/R（肩枢轴 y=1.43, x=±0.255）----
+    # ---- ArmL/R（肩枢轴 y=1.43, x=±0.255）圆台臂收分 + 球手 ----
     arms = []
     for side, sx in (("L", -1), ("R", 1)):
         parts = [
-            gbox("arm", (0.115, 0.55, 0.135), (sx * 0.255, 1.145, 0), TOP),
-            gbox("hand", (0.095, 0.095, 0.115), (sx * 0.255, 0.845, 0), SKIN),
+            gcone("arm", 0.048, 0.060, 0.55, (sx * 0.255, 1.145, 0), TOP, seg=8),
+            gsphere("hand", 0.052, (sx * 0.255, 0.838, 0), SKIN, seg=8, rings=4,
+                    scale=(0.88, 1.0, 0.98)),
         ]
         arms.append(_join_part("Arm" + side, parts, (sx * 0.255, 1.43, 0)))
 
-    # ---- LegL/R（髋枢轴 y=0.92, x=±0.09）----
+    # ---- LegL/R（髋枢轴 y=0.92, x=±0.09）圆台腿收分 + 低面鞋 ----
     legs = []
     for side, sx in (("L", -1), ("R", 1)):
         parts = [
-            gbox("leg", (0.145, 0.78, 0.17), (sx * 0.09, 0.53, 0), BOT),  # 0.14..0.92
+            gcone("leg", 0.055, 0.075, 0.78, (sx * 0.09, 0.53, 0), BOT, seg=8),  # 0.14..0.92
             gbox("shoe", (0.15, 0.10, 0.27), (sx * 0.09, 0.05, -0.04), SHOE),
         ]
         legs.append(_join_part("Leg" + side, parts, (sx * 0.09, 0.92, 0)))

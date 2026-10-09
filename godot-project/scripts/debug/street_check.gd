@@ -73,6 +73,27 @@ func _run():
 	for npc in npcs:
 		_check(npc.global_position.y >= 0.0, "%s 在地面上 y=%.2f" % [npc.name, npc.global_position.y])
 
+	# 贴图 mipmap 门禁（真机反馈: 站定时石子纹理不显示、走动闪烁 → 根因=导入关 mipmap,
+	# 世界三平面 minification 走样）。全 14 张须 generate=true，防回归。
+	var mip_total := 0
+	var mip_ok := 0
+	var mip_dir := DirAccess.open("res://assets/textures")
+	if mip_dir:
+		mip_dir.list_dir_begin()
+		var fn := mip_dir.get_next()
+		while fn != "":
+			if fn.ends_with(".import"):
+				mip_total += 1
+				var mf := FileAccess.open("res://assets/textures/" + fn, FileAccess.READ)
+				if mf != null:
+					if mf.get_as_text().find("mipmaps/generate=true") >= 0:
+						mip_ok += 1
+					mf.close()
+			fn = mip_dir.get_next()
+		mip_dir.list_dir_end()
+	_check(mip_ok == 14 and mip_total == 14,
+		"贴图 mipmap 全开 (%d/%d 张 generate=true)" % [mip_ok, mip_total])
+
 	# 玩家
 	var player: Node = main.get_node_or_null("Player")
 	_check(player != null, "玩家存在")

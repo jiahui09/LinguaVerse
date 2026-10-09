@@ -126,9 +126,9 @@
       "gltf_version": 2
     },
     "godot-project/assets/models/npc_antoine.glb": {
-      "bytes": 25136,
-      "sha256": "f635d9c32de62048aaaa6644f06fb633600bc64fa7a87fc529588519c7ce07aa",
-      "triangles": 216,
+      "bytes": 61432,
+      "sha256": "98d645cd6898bdb3662a7385607729c475d273ba7d710a5780181cff70df4547",
+      "triangles": 700,
       "primitives": 14,
       "materials": 7,
       "images": 0,
@@ -136,9 +136,9 @@
       "gltf_version": 2
     },
     "godot-project/assets/models/npc_colette.glb": {
-      "bytes": 25124,
-      "sha256": "08f8c5b6734e9ef264a6c5963cb2548f20d4c7349e2c37bf9f18b86187e952c7",
-      "triangles": 228,
+      "bytes": 61384,
+      "sha256": "0befc2459c5f2b77da8b98bb227329614a3bc8253058f5f3e1e3af36c8a780d7",
+      "triangles": 700,
       "primitives": 13,
       "materials": 6,
       "images": 0,
@@ -146,9 +146,9 @@
       "gltf_version": 2
     },
     "godot-project/assets/models/npc_jean.glb": {
-      "bytes": 26676,
-      "sha256": "04c398ab27ab85cd644b04c76d5ea873b8b6a669d8d829c0e0a934656ad17628",
-      "triangles": 228,
+      "bytes": 65980,
+      "sha256": "1d7cd9c212861ead979d827b8ab2aa5ddcea9ac7aaedb46e36b51dff3500ebfc",
+      "triangles": 776,
       "primitives": 15,
       "materials": 8,
       "images": 0,
@@ -156,9 +156,9 @@
       "gltf_version": 2
     },
     "godot-project/assets/models/npc_marie.glb": {
-      "bytes": 24308,
-      "sha256": "8e92ed982e1b89901178008d496925c3b2782274d82f376bf8f7ab1c21dc6cfc",
-      "triangles": 204,
+      "bytes": 57144,
+      "sha256": "db2827d29d3b73e1cd3451bc75eb75c6ddc13f11d45ab5feaa2eac0c1fbe49b4",
+      "triangles": 632,
       "primitives": 14,
       "materials": 7,
       "images": 0,
@@ -166,9 +166,9 @@
       "gltf_version": 2
     },
     "godot-project/assets/models/npc_pierre.glb": {
-      "bytes": 22784,
-      "sha256": "0df0d46998c839403ab0bd014ccd5a0e298ccf1ec863f477c95f654c093c723d",
-      "triangles": 192,
+      "bytes": 57508,
+      "sha256": "f808b2a0536e9daf2da3ebc49af2db33d964fea1038268db623dccb914f74325",
+      "triangles": 652,
       "primitives": 13,
       "materials": 6,
       "images": 0,
@@ -221,43 +221,43 @@
       "updated_at": "2026-10-08"
     }
   },
-  "updated_at": "2026-10-09T03:54:34+00:00",
+  "updated_at": "2026-10-09T05:06:34+00:00",
   "audio": {
     "street_loop": {
       "path": "godot-project/assets/audio/ambient/street_loop.wav",
       "seconds": 8.0,
-      "bytes": 352844,
-      "sha256": "f72a6b7fa69da6c13c536a91d793f5b2939c9e8b1e4f9b272b52729852ebe041",
+      "bytes": 1411244,
+      "sha256": "52121801d05960c6c9df2867a4a7af76f47e4e3c7783d5e46303463f8619f1b1",
       "source": "CC0-1.0 程序合成（本仓库 tools/make_ambience.py，无第三方素材）",
-      "generator_sha256": "a75007460eeee27de7822a195483f95fe9335e60afecc006afffe07daaa21928"
+      "generator_sha256": "86d06d35068b03c79df3f429ffefebd44f20c7c1fb117c14a8e99d12953902d6"
     },
     "cafe_loop": {
       "path": "godot-project/assets/audio/ambient/cafe_loop.wav",
       "seconds": 8.0,
-      "bytes": 352844,
-      "sha256": "718b5c9eca1063042b5ab5628754ceb11e0e425effb169cf3b76b241653c451b",
+      "bytes": 1411244,
+      "sha256": "22be99f4f1149c1acbb01805d2f7a80350e05789d4b8d0698ccc208e1d8cef1e",
       "source": "CC0-1.0 程序合成（本仓库 tools/make_ambience.py，无第三方素材）",
-      "generator_sha256": "a75007460eeee27de7822a195483f95fe9335e60afecc006afffe07daaa21928"
+      "generator_sha256": "86d06d35068b03c79df3f429ffefebd44f20c7c1fb117c14a8e99d12953902d6"
     },
     "cup_clink": {
       "path": "godot-project/assets/audio/sfx/cup_clink.wav",
       "seconds": 0.6,
-      "bytes": 26504,
-      "sha256": "fa5eec5e758a1a777d53944447e2450d3377a79a1bd4d13e69b970148c133a56",
+      "bytes": 105884,
+      "sha256": "179f370e18ede975899e54cdb48f1d4623a1cb3e4dde63258a694aaead409e72",
       "source": "CC0-1.0 程序合成（本仓库 tools/make_ambience.py，无第三方素材）",
-      "generator_sha256": "a75007460eeee27de7822a195483f95fe9335e60afecc006afffe07daaa21928"
+      "generator_sha256": "86d06d35068b03c79df3f429ffefebd44f20c7c1fb117c14a8e99d12953902d6"
     },
     "footstep": {
       "path": "godot-project/assets/audio/sfx/footstep.wav",
       "seconds": 0.18,
-      "bytes": 7982,
-      "sha256": "15b8be69cf4220270a1fa0a41f0c977d51127cd027f71f191b93a7f091f65ce2",
+      "bytes": 31796,
+      "sha256": "42827590d91f8bbf4a775cf75e62a378f505e116370b68545dacef54604ed9de",
       "source": "CC0-1.0 程序合成（本仓库 tools/make_ambience.py，无第三方素材）",
-      "generator_sha256": "a75007460eeee27de7822a195483f95fe9335e60afecc006afffe07daaa21928"
+      "generator_sha256": "86d06d35068b03c79df3f429ffefebd44f20c7c1fb117c14a8e99d12953902d6"
     }
   },
   "audio_budgets": {
-    "max_audio_bytes": 614400,
+    "max_audio_bytes": 1536000,
     "max_audio_sec": 12,
     "min_audio_sec": 0.5
   },
