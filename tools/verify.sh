@@ -78,8 +78,9 @@ run_step street_check bash -c "$GODOT --headless --path godot-project -s res://s
 run_step dialog_check "$GODOT" --headless --path godot-project -s res://scripts/debug/dialog_check.gd
 run_step_tolerant playthrough_check 77 "$GODOT" --headless --path godot-project -s res://scripts/debug/playthrough_check.gd
 
-# ── 帧时间采样（headless=逻辑耗时；真机 LV_PERF_ENFORCE=1 才判阈值） ──
-run_step perf_drive env LV_ARTIFACTS_DIR="$ART" "$GODOT" --headless --path godot-project -s res://scripts/debug/perf_drive.gd
+# ── 帧时间采样（批次9: 出生点→走廊→Vosges 往返路线; headless=逻辑耗时；
+#    真机 LV_PERF_SPEED=1 + LV_PERF_ENFORCE=1 才判阈值；verify 用 SPEED=4 压时长） ──
+run_step perf_drive env LV_ARTIFACTS_DIR="$ART" LV_PERF_SPEED=4 "$GODOT" --headless --path godot-project -s res://scripts/debug/perf_drive.gd
 
 # ── 3/4 后端类型与 Prompt 组装 ─────────────────────────────────────────
 backend_step() { # name binary...

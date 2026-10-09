@@ -1,0 +1,57 @@
+# 发布级 demo 验收清单（真机逐项签字）
+
+> P3 批次 9 产物。机器层证据已随 `tools/verify.sh` 10/10 固化；本清单只收**必须真人真机**才能判定的项。
+> 分工：**A 段**为机器层终验汇总（引用证据，已由工具跑绿）；**B 段**由用户在真机上逐项验收并签字；
+> **C 段**为已知上限与"不能据此声称"清单——签 B 之前请先读 C。
+
+## 怎么跑
+
+```bash
+# 机器层终验（10 步，含路线 perf，约 15 分钟）
+timeout 3600 bash tools/verify.sh
+
+# 真机帧率门禁（带显示环境 + 保持窗口前台，路线原速约 4.5 分钟）
+LV_ARTIFACTS_DIR=$PWD/artifacts LV_PERF_ENFORCE=1 \
+  tools/Godot_v4.7.2-stable_linux.x86_64 --path godot-project -s res://scripts/debug/perf_drive.gd
+
+# 游玩本体
+cd godot-project && ../tools/Godot_v4.7.2-stable_linux.x86_64 --path . 
+```
+
+真机 perf 两个注意：**保持窗口前台**（失焦即自动暂停，路线会中止）；**不要动鼠标**（路线由驱动直控行进，鼠标输入会接管朝向）。
+
+## A. 机器层终验（verify.sh 10 步，工具跑绿即算过）
+
+| # | 项 | 证据 | 状态 |
+|---|---|---|------|
+| A1 | 十步全绿（street/dialog/playthrough/perf/backend_typecheck/prompt/glb/audio/smoke/regression） | `artifacts/verify-report.json`，scope 字段说明各步能证明什么 | ✅ PASS（2026-10-09，10/10） |
+| A2 | 路线 perf：出生点→接缝1→走廊→接缝2→Vosges 拱廊对面→原路折返，走完无卡死 | `artifacts/perf.json` `route.completed=true, ok=true, meters≈1333`；6 段分段统计 `segments` | ✅ PASS（1333m/6 段全绿） |
+| A3 | 决策 29 面数终核：三街 64,800 < 76,000（逐 surface 口径） | street_check 断言随 A1 通过 | ✅ PASS（随 street_check 断言） |
+| A4 | NPC 总量 5、居民落位、摆臂极差 0.596 rad | dialog_check §9 批次8 断言随 A1 通过 | ✅ PASS（随 dialog_check 断言） |
+| A5 | 拱廊五件套 sha 三处一致、stage≥modelled、八项字段完备 | `landmark_tasks.py validate` 串在 glb_check 步 | ✅ PASS（随 glb_check validate） |
+
+## B. 真机逐项验收（用户签字：每项填 日期 + 通过/不通过 + 备注）
+
+| # | 验收项 | 怎么验 | 预期 | 签字 |
+|---|---|---|---|---|
+| B1 | **全屏真实显示切换**（批次3 headless 留项） | 设置面板切换全屏/窗口，多切几次 | 全屏与窗口切换正常、分辨率跟随、不黑屏不崩 | ____ |
+| B2 | **鼠标第一人称手感** | 逛两街+走廊；调灵敏度/FOV 各档位 | 视角跟手无跳变、FOV 即时生效、头摆与脚步声同步、准星与暂停正常 | ____ |
+| B3 | **真机帧率门禁** | 上方 `LV_PERF_ENFORCE=1` 命令跑完路线 | exit 0；`perf.json` p95≤20ms、p99≤33ms（报告 `headless=false`） | ____ |
+| B4 | **拱廊 silhouette/browser 真机转正**（批次7 pass-degraded 转正项） | 走到 Place des Vosges 拱廊前看：轮廓、券洞、楔石、与两侧楼关系；正面与侧面各看一遍 | 轮廓可辨为三跨红砖拱廊、无破面穿帮、与街景比例协调 | ____ |
+| B5 | **街区视觉观感**（贴图/立面/道具/昼夜） | 两条街步行 + 设置里切换时间看夜景 | 石板路贴图正常、立面门窗檐口细节在、灯椅花坛消防栓等道具到位、夜间窗光与路灯正常 | ____ |
+| B6 | **NPC 五人模型观感** | 吧台 Marie、Rosiers 行人 Pierre 与老人 Jean、Vosges 居民 Colette/Antoine 近看 | 模型完整无穿帮、名牌与气泡正常、走动有摆臂摆腿、无球眼残留 | ____ |
+| B7 | **法语语录地道性 + 朗读**（批次8 用户阅读项） | 与 Marie 点单两轮以上，与两位居民各聊一轮；朗读每句 | 招呼语/点单/闲聊回复读起来自然、无机翻味（LLM 真后端时内容不固定，mock 为固定脚本仅验链路） | ____ |
+| B8 | **cafe 侧/背面白盒复盘**（批次6 留账） | 绕咖啡馆建筑走到侧面与背面看 | 记录观感结论：可接受 / 需要补立面（后者另行排期，不属本批承诺） | ____ |
+| B9 | **自由项**（游玩中发现的问题） | 随意 | 记录于下： | ____ |
+
+签字汇总：全部 B 项通过 → demo 达到"拥有正常体验的可试玩"目标；有不通过项 → 记录并单独立项。
+
+## C. 已知上限与不声称（读完再签）
+
+- **headless p95 ≠ 真机帧率**：verify 里的 perf 是逻辑/物理耗时（且 `LV_PERF_SPEED=4` 压缩时长）；真机帧率只有 B3 能证。
+- **llvmpipe 截图 ≠ 视觉验收**：12 张截图仅位置抽查（软渲染无 shader 特效编译路径）；画面判断以真机为准。
+- **骨骼级步态未做**：决策 27 时间盒走降级路线 = 程序摆动（摆臂 0.596 rad 已断言）；眨眼随球眼移除。
+- **居民不沿斜街走动**：批次8 站定闲望型（`npc_resident.gd`），对话/气泡/名牌齐全。
+- **明确排除项（决策 26 维持）**：跑/蹲/第三人称/手柄。
+- **渲染上限（决策保持）**：`gl_compatibility`、无 SSAO/GI。
+- **面数预算**：单街 ≤30,000 / 总 <76,000 / 单栋 ≤3,000 / GLB ≤8MiB / 贴图 ≤2048²（决策 29 批次7 修订值，变更须"理由+实测+新预算"提案）。
