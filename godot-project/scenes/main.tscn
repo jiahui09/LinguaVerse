@@ -60,7 +60,6 @@ radius = 0.3
 height = 1.7
 
 [node name="Main" type="Node3D"]
-script = ExtResource("1_gm")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Env_main")

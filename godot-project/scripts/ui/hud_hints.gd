@@ -16,16 +16,36 @@ var _crosshair: ColorRect
 var _current_npc: Node = null
 var _used: Dictionary = {"move": false, "look": false, "interact": false, "handbook": false}
 var _tips_faded: bool = false
+## 缓存引用（诊断→优化方案 §3：不再每帧树查找）：失效时才重解析
+var _gm: Node
+var _dm: Node
+var _hb: Node
+## 上次已应用的 UI 位掩码（-1 = 强制重算，避免每帧拼文案）
+var _hint_bits: int = -1
 
 func _ready():
 	layer = 20
+	# 树暂停时仍要刷新状态（准星/E 提示必须跟着 is_game_paused 立即显隐）。
+	# 依赖链：过去 main.tscn 根挂着 game_manager.gd → 根被设为 ALWAYS →
+	# 全场景隐式继承 ALWAYS，"暂停"实际没冻结任何节点；P0 拆掉重复脚本后
+	# 根回 INHERIT，故各需要暂停中存活的节点必须**显式**声明（settings_panel 同款）。
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	add_to_group("hud_hints")
 	_build_ui()
+	_resolve_refs()
 
 	var ray = get_node_or_null("/root/Main/Player/Camera3D/InteractionRay")
 	if ray:
 		ray.target_found.connect(_on_target_found)
 		ray.target_lost.connect(_on_target_lost)
+
+func _resolve_refs() -> void:
+	if _gm == null or not is_instance_valid(_gm):
+		_gm = get_node_or_null("/root/GameManager")
+	if _dm == null or not is_instance_valid(_dm):
+		_dm = get_tree().get_first_node_in_group("dialog_manager")
+	if _hb == null or not is_instance_valid(_hb):
+		_hb = get_tree().get_first_node_in_group("handbook_ui")
 
 func _build_ui():
 	# 底部单行键位条（全宽居中，不占交互空间）
@@ -119,38 +139,49 @@ func _fade_tips():
 
 func _on_target_found(npc: Node):
 	_current_npc = npc
+	_hint_bits = -1   # 目标变了 → 下一帧重算文案
 	_update_hint()
 
 func _on_target_lost():
 	_current_npc = null
+	_hint_bits = -1
 	_update_hint()
 
-func _process(_delta: float):
-	_update_crosshair()
-	# 对话中/手册打开时不显示 E 提示（避免与输入框抢注意力）
-	if _current_npc != null:
-		_update_hint()
+## UI 位掩码（1=暂停 2=对话中 4=手册开）：整数比较替代每帧字典/数组分配
+const BIT_PAUSED := 1
+const BIT_DIALOG := 2
+const BIT_HANDBOOK := 4
 
-## 准星仅在"可自由环顾"态可见：暂停/对话/手册打开即隐（每帧轮询状态，量级 O(1)）
-func _update_crosshair():
-	var gm = get_node_or_null("/root/GameManager")   # headless -s 惯例：节点路径解析
-	var dm = get_tree().get_first_node_in_group("dialog_manager")
-	var dialog_active = dm != null and dm.has_method("is_dialog_active") and dm.is_dialog_active()
-	var hb = get_tree().get_first_node_in_group("handbook_ui")
-	var hb_open = hb != null and hb.visible
-	var paused = gm != null and bool(gm.is_game_paused)
-	var want: bool = not paused and not dialog_active and not hb_open
+func _ui_bits() -> int:
+	var b := 0
+	if _gm != null and bool(_gm.is_game_paused):
+		b |= BIT_PAUSED
+	if _dm != null and _dm.has_method("is_dialog_active") and _dm.is_dialog_active():
+		b |= BIT_DIALOG
+	if _hb != null and _hb.visible:
+		b |= BIT_HANDBOOK
+	return b
+
+func _process(_delta: float):
+	_resolve_refs()
+	var bits := _ui_bits()
+	# 准星仅在"可自由环顾"态可见：暂停/对话/手册打开即隐（O(1)，零分配）
+	var want := bits == 0
 	if _crosshair.visible != want:
 		_crosshair.visible = want
+	# E 提示：只在（目标 or UI 状态）变化时重算文案，其余帧只读两个布尔字段
+	if _current_npc == null or not is_instance_valid(_current_npc):
+		if _hint_label.visible:
+			_hint_label.visible = false
+		return
+	if bits != _hint_bits:
+		_hint_bits = bits
+		_refresh_hint_text(bits)
 
-func _update_hint():
-	var dm = get_tree().get_first_node_in_group("dialog_manager")
-	var dialog_active = dm != null and dm.has_method("is_dialog_active") and dm.is_dialog_active()
-	var hb = get_tree().get_first_node_in_group("handbook_ui")
-	var hb_open = hb != null and hb.visible
-	var gm = get_node_or_null("/root/GameManager")
-	var paused = gm != null and bool(gm.is_game_paused)
-	if _current_npc == null or dialog_active or hb_open or paused:
+## 对话中/手册打开时不显示 E 提示（避免与输入框抢注意力）
+func _refresh_hint_text(bits: int) -> void:
+	if (bits & (BIT_DIALOG | BIT_HANDBOOK | BIT_PAUSED)) != 0 \
+			or _current_npc == null or not is_instance_valid(_current_npc):
 		_hint_label.visible = false
 		return
 	var npc_name := ""
@@ -160,6 +191,12 @@ func _update_hint():
 		npc_name = str(_current_npc.npc_name)
 	_hint_label.text = "E · Parler à " + npc_name
 	_hint_label.visible = true
+
+## 目标/状态即时刷新入口（信号回调用；_process 自己按位掩码节流）
+func _update_hint() -> void:
+	_resolve_refs()
+	_hint_bits = -1
+	_refresh_hint_text(_ui_bits())
 
 # ================= 测试接口 =================
 

@@ -37,6 +37,16 @@ func _run():
 	var dm: Node = main.get_node("DialogManager")
 	var gm: Node = root.get_node_or_null("GameManager")
 
+	# ── 0) 状态单例不变量（P0 修复回归锁）：main.tscn 根曾挂同一 gm 脚本，
+	#    导致内存态双份、handbook 后写覆盖先写、ESC/失焦双路处理 ──
+	var gm_dup := 0
+	for n in root.get_children():
+		var sc: Script = n.get_script()
+		if sc != null and String(sc.resource_path).ends_with("scripts/autoload/game_manager.gd"):
+			gm_dup += 1
+	_check(gm_dup == 1, "GameManager 全树单实例 (count=%d)" % gm_dup)
+	_check(main.get_script() == null, "Main 根节点无脚本（状态唯一写者=autoload）")
+
 	# 保证"无后端"这一前提与本机是否有服务无关（拒绝连接应在毫秒级返回）
 	dm.api_url = "http://127.0.0.1:3997"
 
