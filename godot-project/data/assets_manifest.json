@@ -227,17 +227,17 @@
       "path": "godot-project/assets/audio/ambient/street_loop.wav",
       "seconds": 8.0,
       "bytes": 1411244,
-      "sha256": "52121801d05960c6c9df2867a4a7af76f47e4e3c7783d5e46303463f8619f1b1",
+      "sha256": "e0bca3b180c2b098ce6fad29832c40df5771c428f2ddd0e818de9a5adec2e56c",
       "source": "CC0-1.0 程序合成（本仓库 tools/make_ambience.py，无第三方素材）",
-      "generator_sha256": "86d06d35068b03c79df3f429ffefebd44f20c7c1fb117c14a8e99d12953902d6"
+      "generator_sha256": "9f1851c24e6cf27f9ccaa7a83fade4f52779e67e94d7f2103a1a6c2517e89b15"
     },
     "cafe_loop": {
       "path": "godot-project/assets/audio/ambient/cafe_loop.wav",
       "seconds": 8.0,
       "bytes": 1411244,
-      "sha256": "22be99f4f1149c1acbb01805d2f7a80350e05789d4b8d0698ccc208e1d8cef1e",
+      "sha256": "73f8b2787444a3e9d3fb97435267fd34533ad10aef7c1ec3b64f228499d0628c",
       "source": "CC0-1.0 程序合成（本仓库 tools/make_ambience.py，无第三方素材）",
-      "generator_sha256": "86d06d35068b03c79df3f429ffefebd44f20c7c1fb117c14a8e99d12953902d6"
+      "generator_sha256": "9f1851c24e6cf27f9ccaa7a83fade4f52779e67e94d7f2103a1a6c2517e89b15"
     },
     "cup_clink": {
       "path": "godot-project/assets/audio/sfx/cup_clink.wav",
@@ -245,7 +245,7 @@
       "bytes": 105884,
       "sha256": "179f370e18ede975899e54cdb48f1d4623a1cb3e4dde63258a694aaead409e72",
       "source": "CC0-1.0 程序合成（本仓库 tools/make_ambience.py，无第三方素材）",
-      "generator_sha256": "86d06d35068b03c79df3f429ffefebd44f20c7c1fb117c14a8e99d12953902d6"
+      "generator_sha256": "9f1851c24e6cf27f9ccaa7a83fade4f52779e67e94d7f2103a1a6c2517e89b15"
     },
     "footstep": {
       "path": "godot-project/assets/audio/sfx/footstep.wav",
@@ -253,7 +253,7 @@
       "bytes": 31796,
       "sha256": "42827590d91f8bbf4a775cf75e62a378f505e116370b68545dacef54604ed9de",
       "source": "CC0-1.0 程序合成（本仓库 tools/make_ambience.py，无第三方素材）",
-      "generator_sha256": "86d06d35068b03c79df3f429ffefebd44f20c7c1fb117c14a8e99d12953902d6"
+      "generator_sha256": "9f1851c24e6cf27f9ccaa7a83fade4f52779e67e94d7f2103a1a6c2517e89b15"
     }
   },
   "audio_budgets": {

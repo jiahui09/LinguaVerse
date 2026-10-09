@@ -19,6 +19,19 @@ v2 重做（真机反馈"配音不合适"，用户确认 4 件全部重做、441
     无缝循环（T+X 尾接头交叉折叠 + 全调制取 k/T 整数基频 + 事件不骑缝）/
     一阶滤波全部手写（无 numpy/scipy）
 
+v3 重调（真机复验三症状: 机械/合成感重、响度不合适、杂音/爆音/接缝）：
+  * 去机械感：全部调制从"单正弦规律摆动"换成 irregular_lfo（随机整数倍频+随机
+    相位叠加——仍严格以 dur 为周期故折叠无缝, 但包络不再可辨识地周期摆动）；
+    鸟鸣 4→6 组、pan 随机散布、音节数与远近幅度随机
+  * 响度：新增 normalize_rms_lr——先去直流, 再把两件 loop 统一 RMS=0.085
+    (-21.4dBFS)（v2 纯峰值归一导致两件差 1.5dB, 进出咖啡馆响度跳变）;
+    播放端 sfx 层次: clink -4→0dB、footstep -4→-2dB
+  * 去杂音：crowd 带通 hi 0.28→0.15（≈1050Hz 回到设计带宽）、air 0.35→0.18,
+    各加二级一阶平滑——v2 的单级 LP 留下 ~8% 白噪尾巴（实测样本间最大跳变
+    0.205=中位 11 倍, 听感滋滋）, v3 降至 0.046
+  * 判据升级（check_audio）: 两 loop RMS ≤0.5dB、loop 杂音门 maxΔ≤0.06、
+    直流收紧 2%→0.5%
+
 用法：
   python3 tools/make_ambience.py                 # 写入仓库并更新 manifest 的 audio 段
   python3 tools/make_ambience.py --out /tmp/x     # 只写 WAV（供校验器做确定性比对）
@@ -41,6 +54,8 @@ AMBIENT_SECONDS = 8.0
 CLINK_SECONDS = 0.6
 FOOTSTEP_SECONDS = 0.18
 PEAK_TARGET = 0.5            # 环境音归一化峰值（≈ -6 dBFS）
+RMS_AMBIENT_TARGET = 0.085   # v3: 两件 loop 统一 RMS（-21.4dBFS），消除切换响度跳变
+PEAK_AMBIENT_MAX = 0.5       # v3 RMS 归一后的峰值封顶
 CLINK_PEAK = 0.5012          # -6.0 dBFS
 FOOTSTEP_PEAK = 0.5012       # -6.0 dBFS（与 cup_clink 同族响度）
 CLINK_PAD_FRAMES = 32        # 首尾置零帧数（立体声按帧对齐）
@@ -85,6 +100,53 @@ def normalize_lr(lr, peak):
         raise ValueError("合成结果为静音")
     k = peak / m
     return [[x * k for x in lr[0]], [x * k for x in lr[1]]]
+
+
+def irregular_lfo(n_samples, dur, rng, terms=3, n_range=(1, 13), depth=0.5):
+    """周期性不规则调制（v3 去机械感主力）：随机整数倍频 + 随机相位正弦叠加。
+
+    任意整数倍频 k/dur 都严格以 dur 为周期 → 折叠后无缝；随机相位/幅度/频点
+    让包络不再像单正弦那样规律摆动（v2 的 sin(2π·k·t/dur) 肉眼可辨的周期感
+    是"机械/合成感"的主源之一）。返回中心为 1.0、近似 [1-depth, 1+depth] 的序列。
+    """
+    comps = []
+    a_base = depth / terms
+    for _ in range(terms):
+        comps.append((rng.randint(n_range[0], n_range[1]),
+                      rng.uniform(0.0, 2.0 * math.pi),
+                      a_base * rng.uniform(0.5, 1.5)))
+    out = [1.0] * n_samples
+    for i in range(n_samples):
+        t = i / SR
+        s = 0.0
+        for (k_n, phi, a) in comps:
+            s += a * math.sin(2.0 * math.pi * k_n * t / dur + phi)
+        out[i] = 1.0 + s
+    return out
+
+
+def normalize_rms_lr(lr, rms_target, peak_max):
+    """v3 响度归一：先去直流，再按 L/R 联合 RMS 缩放到目标，最后峰值封顶。
+
+    v2 纯峰值归一导致两件 loop RMS 差 1.5dB（进出咖啡馆响度跳变, 真机反馈
+    "音量/响度不合适"的实锤之一）。RMS 目标取 0.085（-21.4dBFS, 与 v2 街道
+    听感持平——只把 cafe 拉齐到街道, 保守不整体变响）；峰值仍 ≤0.5 防削波。
+    """
+    out = []
+    for ch in lr:
+        m = sum(ch) / len(ch)
+        out.append([x - m for x in ch])          # 去直流
+    all_s = out[0] + out[1]
+    rms = math.sqrt(sum(x * x for x in all_s) / len(all_s))
+    if rms <= 0.0:
+        raise ValueError("合成结果为静音")
+    k = rms_target / rms
+    out = [[x * k for x in ch] for ch in out]
+    peak = max(max(abs(x) for x in out[0]), max(abs(x) for x in out[1]))
+    if peak > peak_max:
+        k2 = peak_max / peak
+        out = [[x * k2 for x in ch] for ch in out]
+    return out
 
 
 def crossfade_loop_ch(buf, T, Xn):
@@ -231,40 +293,45 @@ def synth_street():
     whoosh = one_pole_lp([rng.gauss(0.0, 1.0) for _ in range(N)], 0.01)
 
     # 3) 空气/风层：中频带通慢起伏（街道纵深的"呼吸"）
-    air = bandpass([rng.gauss(0.0, 1.0) for _ in range(N)], 0.05, 0.35)
+    # v3 带宽收窄：hi_alpha 0.35→0.18——v2 的 0.35 留下近白噪高频尾巴（诊断:
+    # 最大相邻样本差 0.205=中位 11 倍, 集中在 2.2-3.0s）, 即真机反馈的"杂音/滋滋"。
+    # 二级平滑：单极 LP 在 Nyquist 仍穿透 ~8%, 再串一阶把尾巴压下去
+    air = one_pole_lp(bandpass([rng.gauss(0.0, 1.0) for _ in range(N)], 0.05, 0.18), 0.18)
 
     # 4) 人潮 murmur：[300,1100]Hz 带通 + 音节感慢调制（远，听不清词——不能像说话）
+    # v3: hi_alpha 0.28→0.15（2kHz→≈1050Hz, 回到设计带宽）+ 二级平滑压高频尾巴
     crowd_raw = [rng.gauss(0.0, 1.0) for _ in range(N)]
-    crowd = bandpass(crowd_raw, 0.05, 0.28)
+    crowd = one_pole_lp(bandpass(crowd_raw, 0.05, 0.15), 0.15)
 
-    # 5) 层叠加 + 全部调制取 k/dur 整数基频（天然周期 → 无缝）
+    # 5) 层叠加：v3 调制全部换成 irregular_lfo（随机整数倍频+随机相位, 仍严格以
+    # dur 为周期→折叠无缝）。v2 的单正弦规律摆动是"机械/合成感重"的主源之一。
+    g_rumble = irregular_lfo(N, dur, rng, terms=3, n_range=(1, 7), depth=0.75)
+    g_whoosh = irregular_lfo(N, dur, rng, terms=2, n_range=(1, 4), depth=0.67)
+    g_crowd = irregular_lfo(N, dur, rng, terms=4, n_range=(3, 15), depth=0.90)
+    g_air = irregular_lfo(N, dur, rng, terms=2, n_range=(1, 5), depth=0.67)
     mono = []
     for i in range(N):
-        t = i / SR
-        g_rumble = 0.55 + 0.30 * math.sin(2 * math.pi * 2 * t / dur + 0.9) \
-                       + 0.15 * math.sin(2 * math.pi * 5 * t / dur + 2.3)
-        g_whoosh = 0.60 + 0.40 * math.sin(2 * math.pi * 1 * t / dur + 4.1)
-        g_crowd = 0.5 + 0.3 * math.sin(2 * math.pi * 3 * t / dur + 1.7) \
-                     + 0.2 * math.sin(2 * math.pi * 11 * t / dur + 0.3)
-        g_air = 0.6 + 0.4 * math.sin(2 * math.pi * 1 * t / dur + 5.6)
-        mono.append(rumble[i] * g_rumble + whoosh[i] * 6.0 * g_whoosh
-                    + crowd[i] * 0.55 * g_crowd + air[i] * 0.8 * g_air)
+        mono.append(rumble[i] * 0.55 * g_rumble[i]
+                    + whoosh[i] * 6.0 * 0.60 * g_whoosh[i]
+                    + crowd[i] * 0.55 * 0.50 * g_crowd[i]
+                    + air[i] * 0.8 * 0.60 * g_air[i])
 
     # 事件缓冲（立体声，事件只落 [Xn+0.3, T-0.8)，绝不骑缝）
     ev = [[0.0] * N, [0.0] * N]
 
-    # 6) 鸟鸣 4 组：每组 2-3 音节，pan 左/右交替
-    pans = [0.15, 0.85, 0.3, 0.7]
-    for g_i in range(4):
+    # 6) 鸟鸣 6 组（v3 4→6, pan 随机散布）：每组 2-4 音节, 远近幅度散布
+    for g_i in range(6):
         base = int(rng.uniform(Xn + 0.3 * SR, T - 1.4 * SR))
-        syllables = rng.randint(2, 3)
+        syllables = rng.randint(2, 4)
         f0 = rng.uniform(2300.0, 2900.0)
+        pan = rng.uniform(0.08, 0.92)
+        dist = rng.uniform(0.6, 1.0)              # 远近感: 距离衰减
         for s in range(syllables):
             st = base + int(s * rng.uniform(0.16, 0.30) * SR)
             fa = f0 + rng.uniform(-200.0, 200.0)
             fb = fa + rng.uniform(600.0, 1100.0)
             env_chirp(ev, st, 0.12 + 0.04 * s, fa, fb,
-                      rng.uniform(0.05, 0.08), pans[g_i])
+                      rng.uniform(0.05, 0.08) * dist, pan)
 
     # 7) 自行车铃（右 pan，双击 ding-ding）
     ding = [(2450.0, 1.0, 0.09), (3680.0, 0.5, 0.06), (4900.0, 0.25, 0.04)]
@@ -292,7 +359,7 @@ def synth_street():
     wet_aps = [(556, 0.6), (331, 0.6)]
     lr = [schroeder_reverb(ch, 0.16, wet_combs, wet_aps) for ch in lr]
     looped = [crossfade_loop_ch(lr[0], T, Xn), crossfade_loop_ch(lr[1], T, Xn)]
-    return normalize_lr(looped, PEAK_TARGET)
+    return normalize_rms_lr(looped, RMS_AMBIENT_TARGET, PEAK_AMBIENT_MAX)
 
 
 # ────────────────────────── 咖啡馆室内音（立体声循环） ──────────────────────────
@@ -323,14 +390,14 @@ def synth_cafe():
     # 3) 暖 hum（92/138Hz 非工频）——合成主体
     w1 = 2 * math.pi * 92.0 / SR
     w2 = 2 * math.pi * 138.0 / SR
+    # v3: 调制同样换成 irregular_lfo（与街道同一去机械感手法, 周期仍=dur 无缝）
+    g_murmur = irregular_lfo(N, dur, rng, terms=3, n_range=(3, 11), depth=0.95)
+    g_room = irregular_lfo(N, dur, rng, terms=2, n_range=(1, 4), depth=0.25)
     mono = []
     for i in range(N):
-        t = i / SR
         hum = 0.02 * math.cos(w1 * i) + 0.015 * math.cos(w2 * i + 0.7)
-        g_murmur = 0.5 + 0.3 * math.sin(2 * math.pi * 3 * t / dur + 0.4) \
-                      + 0.2 * math.sin(2 * math.pi * 7 * t / dur + 1.9)
-        g_room = 0.8 + 0.2 * math.sin(2 * math.pi * 2 * t / dur + 3.3)
-        mono.append(room[i] * g_room + hum + murmur[i] * 1.8 * g_murmur)
+        mono.append(room[i] * 0.8 * g_room[i] + hum
+                    + murmur[i] * 1.8 * 0.5 * g_murmur[i])
 
     ev = [[0.0] * N, [0.0] * N]
 
@@ -370,7 +437,7 @@ def synth_cafe():
     wet_aps = [(441, 0.6), (269, 0.6)]
     lr = [schroeder_reverb(ch, 0.26, wet_combs, wet_aps) for ch in lr]
     looped = [crossfade_loop_ch(lr[0], T, Xn), crossfade_loop_ch(lr[1], T, Xn)]
-    return normalize_lr(looped, PEAK_TARGET)
+    return normalize_rms_lr(looped, RMS_AMBIENT_TARGET, PEAK_AMBIENT_MAX)
 
 
 # ────────────────────────── 杯碟轻碰音效（立体声单次） ──────────────────────────

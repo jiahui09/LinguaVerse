@@ -46,7 +46,9 @@ func _setup_footsteps() -> void:
 	_foot_player = AudioStreamPlayer.new()
 	_foot_player.name = "FootstepPlayer"
 	_foot_player.bus = "Master"
-	_foot_player.volume_db = -4.0
+	# v3 响度（真机反馈"响度不合适"）: 脚步 -4dB→-2dB, 与统一后的环境音
+	# (RMS -21.4dB) 保持可感知但不抢戏的层次
+	_foot_player.volume_db = -2.0
 	var stream = load("res://assets/audio/sfx/footstep.wav")
 	if stream is AudioStream:
 		_foot_player.stream = stream

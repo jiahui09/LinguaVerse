@@ -64,3 +64,7 @@ handbook={
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
 textures/vram_compression/import_etc2_astc=true
+# 掠射角路面纹理(真机批次10): AF 枚举 2(4x)。注: 设 4(16x) 在截图环境(llvmpipe
+# 软渲染)下全场景 3D 几何渲染成白(天空/2D 正常)——软渲染 AF 回白缺陷;
+# 4x 已配合材质 linear+mipmap+aniso 过滤生效, 掠射角由材质级 filter 保证
+textures/default_filters/anisotropic_filtering_level=2

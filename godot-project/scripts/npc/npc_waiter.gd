@@ -121,7 +121,9 @@ func _play_clink():
 		_clink_player.name = "ClinkPlayer"
 		_clink_player.stream = load(CUP_AUDIO)
 		_clink_player.unit_size = 6.0
-		_clink_player.volume_db = -4.0
+		# v3 响度（真机反馈"响度不合适"）: 点单反馈音从 -4dB 提到 0dB,
+		# 与统一后的环境音(-21.4dB RMS) 拉开清晰层次
+		_clink_player.volume_db = 0.0
 		add_child(_clink_player)
 	if _clink_player.stream:
 		_clink_player.play()

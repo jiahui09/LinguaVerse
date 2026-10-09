@@ -94,6 +94,23 @@ func _run():
 	_check(mip_ok == 14 and mip_total == 14,
 		"贴图 mipmap 全开 (%d/%d 张 generate=true)" % [mip_ok, mip_total])
 
+	# AF 门禁（真机复验批次10/11）: mipmap 只救正视 minification；掠射角（站定看前方路面）
+	# 仍被 trilinear 平均成灰+走动 mip 抖动闪烁 → 路面材质必须 linear+mipmap+aniso
+	# （texture_filter=5 是决定性开关, 上面已断言）, 项目 AF level=2(4x) 提供采样倍数。
+	# level 曾设 4(16x): 截图环境白屏经二分证实是漏 XDG_DATA_HOME(user:// 不可写)所致,
+	# 与 AF 无关; 维持 4x 是性能保守取值, 截图已实证中远距离石子清晰, 真机若仍闪再升 16x。
+	# 注: headless 下运行时读回被渲染服务器钳为 2, 无法区分配置值——故断言**配置文件文本**。
+	var road_mat: StandardMaterial3D = gen.get("_road_mat")
+	if road_mat != null:
+		_check(road_mat.texture_filter == BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC,
+			"路面材质各向异性过滤 (texture_filter=%d, 期望 5)" % road_mat.texture_filter)
+	var pj := FileAccess.open("res://project.godot", FileAccess.READ)
+	var af_ok := false
+	if pj != null:
+		af_ok = pj.get_as_text().find("anisotropic_filtering_level=2") >= 0
+		pj.close()
+	_check(af_ok, "项目配置 AF level=2 (4x, 文本断言)")
+
 	# 玩家
 	var player: Node = main.get_node_or_null("Player")
 	_check(player != null, "玩家存在")

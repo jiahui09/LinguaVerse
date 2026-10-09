@@ -278,6 +278,9 @@ func _apply_texture_family(m: StandardMaterial3D, fam: String, tile_m: float, ti
 	m.uv1_triplanar = true
 	m.uv1_world_triplanar = true
 	m.uv1_scale = Vector3(1.0 / tile_m, 1.0 / tile_m, 1.0 / tile_m)
+	# 真机回归(批次10 复验): 掠射角 minification 仅靠 mipmap 仍会被 trilinear 平均成灰
+	# (站定看前方路面=纯色)且逐帧 mip 抖动(走动闪烁)——须开各向异性过滤 (linear+mipmap+aniso)。
+	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 
 ## P3 批次6: 按建筑实际宽/高设 wall_width_m/wall_height_m (修复: 首版漏设,
 ## 窗洞密度全按默认 10×18 算), 并挂墙身拉毛贴图; 尺寸进缓存键 → 每栋窗格与实际对齐。

@@ -123,6 +123,7 @@ def main():
               f"footstep 体积 {FOOTSTEP.stat().st_size}B ≤ {budgets['max_audio_bytes']}B")
 
     # ── 4) 无缝循环（分声道）+ 5) 削波/直流 + 6) 非静音 ──────
+    loop_stats = {}   # v3: {文件名: (rms, maxΔ两声道最大)} 供响度一致/杂音门使用
     for p in AMBIENT:
         if p not in data:
             continue
@@ -145,13 +146,30 @@ def main():
                   f"{p.name} 首5ms无异常突跳({cname}): 最大相邻差={head}"
                   f" ≤ 内容p99×1.5={p99 * 1.5:.0f}")
             mean = sum(ch) / len(ch)
-            check(abs(mean) < 0.02 * 32768, f"{p.name} 无直流偏置({cname}, 均值 {mean:.1f})")
+            # v3 收紧: 生成器已显式去直流（v2 的 2% 阈值=655 样值太松, 0.5%=163）
+            check(abs(mean) < 0.005 * 32768, f"{p.name} 无直流偏置({cname}, 均值 {mean:.1f})")
+            maxd = max(diffs) / 32768.0   # 归一化（diffs 为 int16 原始样值）
+            loop_stats.setdefault(p.name, [0.0, 0.0])
+            loop_stats[p.name][1] = max(loop_stats[p.name][1], maxd)
         check(peak <= 32766, f"{p.name} 无削波 (峰值 {peak})")
         rms = math.sqrt(sum(s * s for s in samples) / len(samples))
         check(rms > 0.01 * 32768, f"{p.name} 非静音 (RMS {rms:.0f})")
+        loop_stats.setdefault(p.name, [0.0, 0.0])
+        loop_stats[p.name][0] = rms
         # v2 立体声宽度：L≠R（Haas+pan；假单声道会在这里被抓）
         diff = sum(1 for a, b in zip(L, R) if a != b) / max(1, len(L))
         check(diff > 0.05, f"{p.name} 立体声宽度 (L≠R 采样占比 {diff:.0%})")
+
+    # v3 响度一致性（真机反馈"响度不合适": v2 两 loop RMS 差 1.5dB → 区域切换响度跳变;
+    # 生成器改为统一 RMS 归一 0.085=-21.4dBFS, 此处锁死 ≤0.5dB 差）
+    if len(loop_stats) == 2:
+        rs = [s[0] for s in loop_stats.values()]
+        d_db = abs(20 * math.log10(max(rs[0], 1e-9) / max(rs[1], 1e-9)))
+        check(d_db < 0.5, f"两 loop RMS 一致 (差 {d_db:.2f}dB ≤ 0.5dB)")
+    # v3 杂音门（真机反馈"杂音/爆音": v2 street 样本间最大跳变 0.205=中位 11 倍,
+    # 听感滋滋——crowd/air 带通过宽的白噪尾巴; v3 二级平滑后实测 ≤0.046, 阈值 0.06）
+    for nm, (_r, md) in loop_stats.items():
+        check(md <= 0.06, f"{nm} 无高频杂音毛刺 (maxΔ {md:.4f} ≤ 0.06)")
 
     # ── 7) cup_clink / footstep 峰值/首尾置零/削波/直流 ─────
     for p, label in ((CLINK, "cup_clink"), (FOOTSTEP, "footstep")):
@@ -170,7 +188,8 @@ def main():
         L, R = samples[0::2], samples[1::2]
         for ch, cname in ((L, "L"), (R, "R")):
             mean = sum(ch) / len(ch)
-            check(abs(mean) < 0.02 * 32768, f"{label} 无直流偏置({cname}, 均值 {mean:.1f})")
+            # v3 同 loop 收紧至 0.5%（footstep 生成器已显式去直流）
+            check(abs(mean) < 0.005 * 32768, f"{label} 无直流偏置({cname}, 均值 {mean:.1f})")
         rms = math.sqrt(sum(s * s for s in samples) / len(samples))
         check(rms > 0.01 * 32768, f"{label} 非静音 (RMS {rms:.0f})")
         diff = sum(1 for a, b in zip(L, R) if a != b) / max(1, len(L))

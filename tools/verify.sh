@@ -75,7 +75,9 @@ run_step_tolerant() { # name skip_code cmd...
 # P3 批次1: street_check 后串 check_layout.py（清单==磁盘==目录 三方核对）,
 # 并入本步骤不新增入口 — verify.sh 保持十步。
 run_step street_check bash -c "$GODOT --headless --path godot-project -s res://scripts/debug/street_check.gd && python3 $ROOT/tools/check_layout.py"
-run_step dialog_check "$GODOT" --headless --path godot-project -s res://scripts/debug/dialog_check.gd
+# 批次11: dialog 步串 input_check（全量输入测试: 事件入口→分发→action→控制器状态机;
+# display 层 niri/焦点/捕获 不可 headless 注入, 留真机手测清单）——保持十步。
+run_step dialog_check bash -c "$GODOT --headless --path godot-project -s res://scripts/debug/dialog_check.gd && $GODOT --headless --path godot-project -s res://scripts/debug/input_check.gd"
 run_step_tolerant playthrough_check 77 "$GODOT" --headless --path godot-project -s res://scripts/debug/playthrough_check.gd
 
 # ── 帧时间采样（批次9: 出生点→走廊→Vosges 往返路线; headless=逻辑耗时；
