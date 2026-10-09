@@ -50,8 +50,9 @@ POV 探索以真实 OSM 数据为骨架的巴黎街区，与 LLM 驱动的 NPC �
 ## Evidence on Hand
 
 - `artifacts/verify-report.json`——10 步全绿、绑定提交、含 scope 自陈。
-- 断言规模：street_check 27 项 / dialog_check 46 项 / playthrough_check 36 项 / check_audio 52 项。
+- 断言规模（本轮 `verify.sh` 全绿时单次实测，计数方式见 `docs/性能优化-设计与实施.md` §8）：street_check **217 项** 0 失败 / dialog_check **115 项** / playthrough_check **51 项** / input_check **35 项** / check_audio **87 项**。
 - `godot-project/screenshots/`——llvmpipe 软渲染截图（**仅位置抽查，不是视觉验收证据**）。
+- `docs/性能优化-设计与实施.md`——性能优化审计/设计/度量：draw calls 同机位 A/B（1752→1067、2181→1172）、定时刻截图视觉等价矩阵与**取证方法学修正记录**；范围限定 llvmpipe 相对对比，不含真机帧率。
 - `data/assets_manifest.json`——资产 SHA256 清单（含音频来源与生成器哈希）。
 - **缺席（后续工作不得伪造）：** 真机 GPU 视觉/帧率验收、真人听感评估、母语者对法语内容的审定、Phase 6 打包产物。
 
