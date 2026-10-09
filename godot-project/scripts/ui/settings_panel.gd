@@ -108,6 +108,7 @@ func _make_row(key: String, title: String, mn: float, mx: float, step: float, fm
 	slider.step = step
 	slider.value = float(_gm.get_setting(key)) if _gm != null else mn
 	slider.value_changed.connect(func(v: float): _on_slider_changed(key, v))
+	slider.drag_ended.connect(_on_slider_drag_ended)   # 拖动收口：一次落盘
 	box.add_child(slider)
 	sliders[key] = slider
 	_labels[key].text = fmt % slider.value
@@ -116,8 +117,21 @@ func _make_row(key: String, title: String, mn: float, mx: float, step: float, fm
 func _on_slider_changed(key: String, value: float) -> void:
 	if _syncing:
 		return
+	# 诊断→优化方案 §3：拖动过程 persist=false（只改内存+立即生效），
+	# 拖动结束/面板关闭时 flush_settings() 收口一次落盘——
+	# 否则一次拖动几十次 value_changed = 几十次整文件同步写。
 	if _gm != null:
-		_gm.set_setting(key, value)   # 钳制/落盘/广播全在 gm（唯一数据源）
+		_gm.set_setting(key, value, false)
+
+func _on_slider_drag_ended(_value_changed: bool) -> void:
+	if _gm != null:
+		_gm.flush_settings()
+
+func _notification(what: int) -> void:
+	# 关窗/退出前把拖动中未落盘的设置收口，避免丢失最后一步调整
+	if what == NOTIFICATION_WM_CLOSE_REQUEST or what == NOTIFICATION_EXIT_TREE:
+		if _gm != null:
+			_gm.flush_settings()
 
 func _on_fullscreen_toggled(pressed: bool) -> void:
 	if _syncing:
@@ -153,6 +167,8 @@ func show_panel() -> void:
 
 func hide_panel() -> void:
 	visible = false
+	if _gm != null:
+		_gm.flush_settings()   # 面板收起 = 一次落盘（拖动中的最后值不丢）
 
 ## 测试/断言快照
 func get_state() -> Dictionary:

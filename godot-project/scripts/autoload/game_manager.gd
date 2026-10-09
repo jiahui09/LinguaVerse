@@ -219,25 +219,52 @@ func _save_handbook() -> void:
 		var base_dir := ProjectSettings.globalize_path("user://")
 		if DirAccess.dir_exists_absolute(base_dir) == false:
 			DirAccess.make_dir_recursive_absolute(base_dir)
-	var f := FileAccess.open(handbook_path, FileAccess.WRITE)
-	if f == null:
+	# 原子替换：写 .tmp 再 rename 覆盖。进程在写入中途被杀/断电时，
+	# 目标文件仍是上一版完整存档（load 手册对坏档"回默认"= 进度清零，
+	# 原子替换把这种最坏情况变成"保留上一次进度"）。
+	if not _write_json_atomic(handbook_path, JSON.stringify(handbook, "\t")):
 		# 写失败不丢数据：内存态照常生效，只警告一次（不刷屏）
 		if not _save_warned:
 			_save_warned = true
 			push_warning("手册存档写入失败（保持内存态）：" + handbook_path)
-		return
-	f.store_string(JSON.stringify(handbook, "\t"))
+
+## 写 JSON 文件：先写同目录 .tmp，再 rename 覆盖目标；rename 不可用时兜底直写。
+## 返回是否成功写到目标路径。
+func _write_json_atomic(path: String, text: String) -> bool:
+	var abs_path := ProjectSettings.globalize_path(path)
+	var abs_tmp := ProjectSettings.globalize_path(path + ".tmp")
+	var f := FileAccess.open(path + ".tmp", FileAccess.WRITE)
+	if f == null:
+		return false
+	f.store_string(text)
+	f.flush()
 	f.close()
+	var err := DirAccess.rename_absolute(abs_tmp, abs_path)
+	if err != OK and FileAccess.file_exists(abs_path):
+		# 部分平台 rename 不覆盖已存在目标：删旧再试一次
+		DirAccess.remove_absolute(abs_path)
+		err = DirAccess.rename_absolute(abs_tmp, abs_path)
+	if err == OK and FileAccess.file_exists(abs_path):
+		return true
+	# 兜底：rename 不可用（跨设备/权限）→ 直写目标，至少本次数据不丢
+	var f2 := FileAccess.open(path, FileAccess.WRITE)
+	if f2 == null:
+		return false
+	f2.store_string(text)
+	f2.close()
+	return true
 
 # ================= 设置（存了就要生效 + user://settings.json 持久化） =================
 
 ## 存档路径（可注入：headless 测试写到项目内临时文件）
 var settings_path: String = SETTINGS_PATH
+## set_setting(persist=false) 累积的未落盘标记
+var _settings_dirty: bool = false
 
 func get_setting(key: String) -> Variant:
 	return settings.get(key, null)
 
-func set_setting(key: String, value: Variant) -> void:
+func set_setting(key: String, value: Variant, persist: bool = true) -> void:
 	if not SETTING_LIMITS.has(key):
 		push_warning("未知设置项：" + key)
 		return
@@ -246,9 +273,25 @@ func set_setting(key: String, value: Variant) -> void:
 		push_warning("设置值类型/范围不合法：" + key)
 		return
 	settings[key] = v
-	save_settings()
+	if persist:
+		save_settings()
+	else:
+		# 连续调整（滑杆拖动）路径：只改内存，由调用方在收口时 flush_settings()。
+		# 否则一次拖动会触发几十次整文件重写（同步 IO 抖动）。
+		_settings_dirty = true
 	apply_settings()
 	settings_changed.emit(key, v)
+
+## set_setting(key, value, false) 之后的收口落盘（拖动结束/面板关闭时调用）
+func flush_settings() -> void:
+	if not _settings_dirty:
+		return
+	_settings_dirty = false
+	save_settings()
+
+## 是否有待落盘的内存态设置（测试/调试可观测）
+func settings_dirty() -> bool:
+	return _settings_dirty
 
 ## 白名单校验：类型不对/越界回钳制（无法钳制则返回 null=拒收）
 func _validated_setting(key: String, value: Variant) -> Variant:
@@ -294,12 +337,10 @@ func save_settings() -> void:
 	var out := {}
 	for key in SETTING_LIMITS.keys():
 		out[key] = settings.get(key)
-	var f := FileAccess.open(settings_path, FileAccess.WRITE)
-	if f == null:
+	# 与手册同款原子替换（半截 settings.json = 音量/FOV 回默认）
+	_settings_dirty = false   # 全量快照已写盘 → 待落盘标记复位
+	if not _write_json_atomic(settings_path, JSON.stringify(out, "\t")):
 		push_warning("设置存档写入失败（保持内存态）：" + settings_path)
-		return
-	f.store_string(JSON.stringify(out, "\t"))
-	f.close()
 
 func apply_settings() -> void:
 	# 音量 → Master 总线（环境音/杯碟声/脚步同受控）

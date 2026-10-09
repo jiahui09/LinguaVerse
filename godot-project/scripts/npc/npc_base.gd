@@ -36,6 +36,7 @@ const DOT_FRAMES := 3          # 思考省略点帧数（.  ..  ...）
 const DOT_INTERVAL := 0.35     # 每帧秒数
 const NOD_DURATION := 0.45     # 点头动作时长
 const FADE_SPAN := 4.0         # 名牌淡出过渡距离
+const LABEL_ALPHA_EPSILON := 0.005   # 名牌 alpha 写入门槛（<1% 步进不可见）
 
 var _state_before_talk: State = State.IDLE
 var _has_met_player: bool = false   # 决策 14：NPC 实例生命周期内记住是否聊过
@@ -205,13 +206,23 @@ func _part_swing(part: Node3D, target_x: float, blend: float):
 		part.rotation.x = lerpf(part.rotation.x, target_x, blend)
 
 ## 名牌/副标题距离淡出（远处名牌只是噪声；气泡只在对话近距离出现，不做淡出）
+## 诊断→优化方案 §3：原实现每 tick 无条件写 modulate（5 NPC × 60Hz =
+## 300 次/秒 Color 构造 + CanvasItem 重绘通知）。改为 alpha 变化 ≥0.005 才写，
+## 远处（alpha 已 0）与贴近时稳态零写；观感步进 <1% 不可见。
+var _label_alpha_cache: float = -1.0
+
 func _update_label_fade():
+	if _name_label == null and _job_label == null:
+		return
 	var alpha := 1.0
 	var vp := get_viewport()
 	var cam: Camera3D = vp.get_camera_3d() if vp else null
 	if cam:
 		var d := cam.global_position.distance_to(global_position)
 		alpha = 1.0 - clampf((d - label_fade_distance) / FADE_SPAN, 0.0, 1.0)
+	if absf(alpha - _label_alpha_cache) < LABEL_ALPHA_EPSILON:
+		return
+	_label_alpha_cache = alpha
 	if _name_label:
 		_name_label.modulate = Color(
 			_name_base_color.r, _name_base_color.g, _name_base_color.b,

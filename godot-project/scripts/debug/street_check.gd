@@ -335,6 +335,23 @@ func _run():
 	_check(glow_on_ok, "set_night_glow(1.0) → 灯 energy > 0")
 	_check(glow_off_ok, "set_night_glow(0.0) → 灯 energy == 0")
 
+	# 夜光联动覆盖**全部**街区（P3 批次2 多街回归：day_night_cycle 原用
+	# get_first_node_in_group → 只有第一个生成器夜里亮；此断言锁死覆盖数）
+	var sun_g: Node = main.get_node_or_null("Sun")
+	var gens_g: Array = get_nodes_in_group("street_generator")   # 本类 extends SceneTree
+	if sun_g != null and sun_g.has_method("_apply_night_glow"):
+		sun_g._apply_night_glow(0.75)
+		var covered := 0
+		for g in gens_g:
+			if g.has_method("night_glow_value") \
+					and is_equal_approx(float(g.night_glow_value()), 0.75):
+				covered += 1
+		_check(covered == gens_g.size() and gens_g.size() >= 3,
+			"夜光联动覆盖全部 %d 个街区生成器 (covered=%d)" % [gens_g.size(), covered])
+		sun_g._apply_night_glow(0.0)   # 恢复白天基线
+	else:
+		_check(false, "Sun 缺少 _apply_night_glow（昼夜联动断言无法执行）")
+
 	# 装饰道具层(4) + 玩家 mask(1|4=5); NPC mask 仍为 1 → 不撞装饰道具
 	_check(decor_layer_ok, "装饰道具 collision_layer == 4")
 	var pc := player as CharacterBody3D

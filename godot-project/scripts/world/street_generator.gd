@@ -610,14 +610,22 @@ func _add_box(body: StaticBody3D, size: Vector3, pos: Vector3):
 ##   factor == 0 → 窗户夜光灭 + 路灯 energy = 0 (白天)
 ##   日落时昼夜循环把 factor 提到 0.35/0.75 → 路灯自动亮起
 ## 窗户部分在本装配器 (材质缓存 _facade_mats); 路灯部分委托 street_furniture。
+## 当前夜光档位（-1=从未下发；供测试断言"夜光覆盖全部街区"）
+var _night_glow: float = -1.0
+
 func set_night_glow(factor: float):
 	var v := clampf(factor, 0.0, 1.0)
+	_night_glow = v
 	for key in _facade_mats:
 		var m := _facade_mats[key] as ShaderMaterial
 		if m:
 			m.set_shader_parameter("night_glow", v)
 	if _furniture != null:
 		_furniture.set_night_glow(v)
+
+## 本街区当前夜光档位（测试/诊断读取）
+func night_glow_value() -> float:
+	return _night_glow
 
 ## 供外部查询: 咖啡馆门面朝向(玩家走进门位置, 世界坐标)
 func get_cafe_door_pos() -> Vector3:

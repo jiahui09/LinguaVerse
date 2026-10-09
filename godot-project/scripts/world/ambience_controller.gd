@@ -19,6 +19,11 @@ var _street: AudioStreamPlayer
 var _cafe: AudioStreamPlayer
 var _street_gain := 0.0
 var _cafe_gain := 0.0
+## 诊断→优化方案 §3：玩家引用缓存 + 收敛后零写。
+## 原实现每帧 1 次组查询（数组分配）+ 2 次 volume_db 写（音量已收敛也在写）。
+var _player: Node
+var _zone_cafe := false      # 上次判定的区域
+var _settled := false        # 增益已达目标 → 本轮可整帧跳过
 
 func _ready():
 	_street = _make_loop_player("StreetAmbience", STREET_WAV, 0.0)
@@ -44,14 +49,24 @@ func _make_loop_player(node_name: String, path: String, gain: float) -> AudioStr
 	return p
 
 func _process(delta: float):
-	var player = get_tree().get_first_node_in_group("player")
+	if _player == null or not is_instance_valid(_player):
+		_player = get_tree().get_first_node_in_group("player")
 	var want_cafe := false
-	if player:
-		want_cafe = player.global_position.x > CAFE_INTERIOR_X
+	if _player != null:
+		want_cafe = _player.global_position.x > CAFE_INTERIOR_X
+	# 收敛且区域未变 → 不查组、不写 volume_db（稳态零开销）
+	if _settled and want_cafe == _zone_cafe:
+		return
+	_zone_cafe = want_cafe
 	var target_cafe := 1.0 if want_cafe else 0.0
 	var target_street := 0.0 if want_cafe else 1.0
+	var old_street := _street_gain
+	var old_cafe := _cafe_gain
 	_street_gain = _move_toward_gain(_street_gain, target_street, delta)
 	_cafe_gain = _move_toward_gain(_cafe_gain, target_cafe, delta)
+	_settled = _street_gain == old_street and _cafe_gain == old_cafe
+	if _settled:
+		return   # 增益没动 → 不写属性（值本来就是上一次写进去的）
 	if _street:
 		_street.volume_db = _gain_to_db(_street_gain)
 	if _cafe:
