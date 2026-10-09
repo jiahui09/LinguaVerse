@@ -39,6 +39,23 @@ func _run():
 		await process_frame
 
 	var viewport := root
+	# P3 批次7: 拱廊机位运行时校准 (手推世界坐标不可信 — vosges 根带 -155° 旋转)
+	var lm: Node3D = _find_by_name(main, "Landmark_place_des_vosges")
+	if lm != null:
+		var lp: Vector3 = lm.global_position
+		var nrm: Vector3 = lm.global_transform.basis.x.normalized()   # 朝街 (+X local)
+		var fwd: Vector3 = lm.global_transform.basis.z.normalized()   # 沿街
+		# 近景: 街对面 9m 平视拱廊中段 (沿街偏 4m 避开前景路灯)
+		_shots.append(["shot_08_arcade_close",
+			lp + nrm * 9.0 + fwd * 4.0 + Vector3(0, 2.4, 0),
+			lp + fwd * 3.5 + Vector3(0, 4.2, 0)])
+		# 全景: 街心退到空档外 34m 高位 (避开对面树列树冠)
+		_shots.append(["shot_09_arcade_wide",
+			lp + nrm * 11.0 - fwd * 34.0 + Vector3(0, 4.5, 0),
+			lp + Vector3(0, 4.5, 0)])
+	else:
+		print("SHOT_SKIP: Landmark_place_des_vosges 未找到 (shot_08/09 缺席)")
+
 	for shot in _shots:
 		var cam_pos: Vector3 = shot[1]
 		var look: Vector3 = shot[2]
@@ -58,6 +75,15 @@ func _run():
 	print("SCREENSHOT_ALL_DONE")
 	main.queue_free()
 	quit(0)
+
+func _find_by_name(n: Node, want: String) -> Node:
+	if String(n.name) == want:
+		return n
+	for c in n.get_children():
+		var r := _find_by_name(c, want)
+		if r != null:
+			return r
+	return null
 
 func _place_camera(main: Node, cam_pos: Vector3, look_at: Vector3):
 	var player: Node3D = main.get_node_or_null("Player")

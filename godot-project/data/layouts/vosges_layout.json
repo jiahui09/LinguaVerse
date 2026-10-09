@@ -15,7 +15,18 @@
     0.0,
     374.41
    ]
-  }
+  },
+  "landmarks": [
+   {
+    "id": "place_des_vosges",
+    "glb": "godot-project/assets/models/place_des_vosges.glb",
+    "side": -1.0,
+    "face": 7.87,
+    "s0": 195.3,
+    "s1": 218.4,
+    "s_center": 206.85
+   }
+  ]
  },
  "street": {
   "name": "Place des Vosges",

@@ -1,0 +1,13 @@
+{
+  "file": "place_des_vosges.glb",
+  "triangles": 1104,
+  "materials": [
+    "inner",
+    "brick",
+    "stone"
+  ],
+  "bytes": 80356,
+  "soft_cap": 1500,
+  "over_cap": false,
+  "parts": 92
+}

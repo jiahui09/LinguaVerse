@@ -1,0 +1,99 @@
+{
+  "id": "place_des_vosges",
+  "currentStage": "modelled",
+  "stages": [
+    "planned",
+    "evidence-ready",
+    "modelled",
+    "verified"
+  ],
+  "checks": {
+    "scale": {
+      "status": "pass",
+      "reviewedBy": "jiahui",
+      "reviewedAt": "2026-10-09T03:08:18Z",
+      "evidencePaths": [
+        "godot-project/screenshots/shot_08_arcade_close.png",
+        "data/landmarks/place_des_vosges/prompt.md",
+        "data/landmarks/place_des_vosges/report.json"
+      ],
+      "note": "近景实测: 拱脚线 4.0m、中跨净宽 5.2m、总高 8.72m < 两侧 heritage 楼 9.6m; 1104 面 / 80,356B (软帽 1500)"
+    },
+    "orientation": {
+      "status": "pass",
+      "reviewedBy": "jiahui",
+      "reviewedAt": "2026-10-09T03:08:18Z",
+      "evidencePaths": [
+        "godot-project/screenshots/shot_08_arcade_close.png",
+        "godot-project/scripts/debug/street_check.gd"
+      ],
+      "note": "前脸 +X 朝街心, 落位 x=side*face=-7.87 / z=206.85 (street_check 断言过); 三券正对镜头"
+    },
+    "silhouette": {
+      "status": "pass-degraded",
+      "reviewedBy": "jiahui",
+      "reviewedAt": "2026-10-09T03:08:18Z",
+      "evidencePaths": [
+        "godot-project/screenshots/shot_09_arcade_wide.png",
+        "godot-project/screenshots/shot_08_arcade_close.png"
+      ],
+      "note": "llvmpipe(opengl3) 截图轮廓验收: 三券 + 檐口双带 + 女儿墙压顶线 8.72m 连续, 两端翼墙收头; 真机待验 (批次9)"
+    },
+    "context": {
+      "status": "pass",
+      "reviewedBy": "jiahui",
+      "reviewedAt": "2026-10-09T03:08:18Z",
+      "evidencePaths": [
+        "godot-project/screenshots/shot_09_arcade_wide.png",
+        "data/landmarks/place_des_vosges/evidence.md",
+        "godot-project/data/layouts/vosges_layout.json"
+      ],
+      "note": "空档 s=195.3..218.4 摆位: 左接 Pavillon du Roi (face 7.87 同线), 右回墙收 Montmorin 5.2m 错台为内凹转角; 街道纵深自然"
+    },
+    "collision": {
+      "status": "pass",
+      "reviewedBy": "jiahui",
+      "reviewedAt": "2026-10-09T03:08:18Z",
+      "evidencePaths": [
+        "godot-project/scripts/debug/street_check.gd",
+        "godot-project/scripts/world/street_generator.gd"
+      ],
+      "note": "StaticBody3D layer1 + 2×BoxShape3D (主体含两翼 + 右端回墙), street_check 断言 layer=1 shapes=2 + 落位容差 0.01"
+    },
+    "browser": {
+      "status": "pass-degraded",
+      "reviewedBy": "jiahui",
+      "reviewedAt": "2026-10-09T03:08:18Z",
+      "evidencePaths": [
+        "godot-project/screenshots/shot_08_arcade_close.png",
+        "godot-project/screenshots/shot_09_arcade_wide.png"
+      ],
+      "note": "llvmpipe 软渲染 + opengl3 驱动 9 截图 0 shader 编译错 (批次6 教训: headless 不编译 shader, 截图是必须门禁); 真机浏览器待验 (批次9)"
+    },
+    "performance": {
+      "status": "pass",
+      "reviewedBy": "jiahui",
+      "reviewedAt": "2026-10-09T03:08:18Z",
+      "evidencePaths": [
+        "data/landmarks/place_des_vosges/report.json",
+        "godot-project/scripts/debug/street_check.gd"
+      ],
+      "note": "GLB 1,104 面 / 80KB ≤ 8MiB / 无贴图; vosges 单街 28,856/30,000, 三街总 64,800/76,000 (决策29 批次7 修订: _mesh_faces 口径修正 65k→76k 已批)"
+    },
+    "provenance": {
+      "status": "pass",
+      "reviewedBy": "jiahui",
+      "reviewedAt": "2026-10-09T03:08:18Z",
+      "evidencePaths": [
+        "data/landmarks/place_des_vosges/evidence.md",
+        "data/landmarks/place_des_vosges/model.md",
+        "data/landmarks/place_des_vosges/job.md",
+        "tools/blender/landmarks/place_des_vosges.py",
+        "godot-project/data/layouts/vosges_layout.json"
+      ],
+      "note": "五件套齐全; OSM ODbL 摆位 + Place des Vosges 真实拱廊形制; sha 三处绑定 (源→GLB→manifest[landmarks]) 由 landmark_tasks validate 核"
+    }
+  },
+  "sourceSha256": "e53bf6490aa88e452ffcfed2b757c1ab2ecc2f8133ae7c6306bc2a92e0a3de0b",
+  "artifactSha256": "0898c7ae6edcbd60b096c83e1298acfd2585527adc1f79c7c33b84aa781c2718"
+}

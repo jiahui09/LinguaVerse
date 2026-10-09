@@ -96,7 +96,8 @@ backend_step backend_typecheck tsc --noEmit -p "$BACKEND"
 backend_step backend_prompt_check tsx "$BACKEND/scripts/check_prompt.ts"
 
 # ── 5 离线资产校验（哈希绑定） ─────────────────────────────────────────
-run_step glb_check python3 "$ROOT/tools/check_glb.py"
+# P3 批次7: 串地标五件套校验 (五件齐全 + stage≥modelled + sha 三处一致, 决策28)
+run_step glb_check bash -c "python3 \"$ROOT/tools/check_glb.py\" && python3 \"$ROOT/tools/landmark_tasks.py\" validate"
 
 # ── 5b 环境音/音效离线校验：格式、体积、无缝循环、峰值、确定性 ─────────
 run_step audio_check python3 "$ROOT/tools/check_audio.py"

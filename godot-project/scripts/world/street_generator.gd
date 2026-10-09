@@ -169,6 +169,7 @@ func build_all():
 
 	_build_all_buildings()
 	_build_cafe_site()
+	_build_landmarks()
 
 ## ---------- 街区清单 (assets_manifest.json 街区级 entry) ----------
 
@@ -541,6 +542,49 @@ func _build_cafe_site():
 		push_error("[StreetGenerator] 加载咖啡馆模型失败: ", CAFE_GLB)
 
 	buildings_root.add_child(cafe_site)
+
+## ---------- 地标层 (方案 §P2-B 行4: 五件套首对象, 决策 24/28) ----------
+## layout.meta.landmarks[] → GLB 落位 + 碰撞 (layer 1); 面数计入 buildings_root
+## 统计; sha 三处绑定由 tools/landmark_tasks.py validate 核 (verify glb_check 步)。
+func _build_landmarks():
+	var lm_raw = layout.get("meta", {}).get("landmarks", [])
+	var lms: Array = lm_raw if lm_raw is Array else []
+	for lm in lms:
+		if not (lm is Dictionary):
+			continue
+		var id := String(lm.get("id", ""))
+		var res_path := "res://" + String(lm.get("glb", "")).trim_prefix("godot-project/")
+		var side := 1.0 if float(lm.get("side", 1)) >= 0.0 else -1.0
+		var face := float(lm.get("face", 6.0))
+		var s_center := float(lm.get("s_center", 0.0))
+		var scene: PackedScene = load(res_path)
+		if scene == null:
+			push_error("[StreetGenerator] 地标 GLB 加载失败: ", res_path)
+			continue
+		var node := StaticBody3D.new()
+		node.name = "Landmark_" + id
+		node.collision_layer = 1
+		node.collision_mask = 1
+		node.position = Vector3(side * face, 0.0, s_center)
+		node.set_meta("source_glb", res_path)
+		var inst: Node = scene.instantiate()
+		inst.name = "Model"
+		node.add_child(inst)
+		# 碰撞: 主体含两翼 (x∈[-1.3,0.15], z∈[-11.55,10.95]) + 右端回墙
+		var col := CollisionShape3D.new()
+		var sh := BoxShape3D.new()
+		sh.size = Vector3(1.45, 8.72, 22.5)
+		col.shape = sh
+		col.position = Vector3(-0.575, 4.36, -0.3)
+		node.add_child(col)
+		var col2 := CollisionShape3D.new()
+		var sh2 := BoxShape3D.new()
+		sh2.size = Vector3(5.2, 8.72, 0.6)
+		col2.shape = sh2
+		col2.position = Vector3(-2.6, 4.36, 11.25)
+		node.add_child(col2)
+		buildings_root.add_child(node)
+		print("[StreetGenerator] 地标 ", id, ": pos=", node.position, " glb=", res_path)
 
 func _add_box(body: StaticBody3D, size: Vector3, pos: Vector3):
 	var col := CollisionShape3D.new()

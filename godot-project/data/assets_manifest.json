@@ -114,6 +114,16 @@
       "images": 0,
       "generator": "Khronos glTF Blender I/O v4.2.83",
       "gltf_version": 2
+    },
+    "godot-project/assets/models/place_des_vosges.glb": {
+      "bytes": 80356,
+      "sha256": "0898c7ae6edcbd60b096c83e1298acfd2585527adc1f79c7c33b84aa781c2718",
+      "triangles": 1104,
+      "primitives": 3,
+      "materials": 3,
+      "images": 0,
+      "generator": "Khronos glTF Blender I/O v4.2.83",
+      "gltf_version": 2
     }
   },
   "blocks": {
@@ -134,8 +144,8 @@
     "vosges": {
       "layout": {
         "path": "godot-project/data/layouts/vosges_layout.json",
-        "bytes": 12055,
-        "sha256": "a8735b511e5ff965fe6f909ab9c27225b4b9c5f7828c74a069987a4ede0a8bff"
+        "bytes": 12274,
+        "sha256": "a9723180cf7291a1b30d91dd8e6a1eb8b7e4a7ab7597a0c65b0f2e381a3c77dd"
       },
       "subsystems": {
         "road_surface": "339697f9cb5a3c3468cec74ae2b103281ac6ad716992942d93c78e81e2439828",
@@ -161,7 +171,7 @@
       "updated_at": "2026-10-08"
     }
   },
-  "updated_at": "2026-10-08T15:03:47+00:00",
+  "updated_at": "2026-10-09T03:14:35+00:00",
   "audio": {
     "street_loop": {
       "path": "godot-project/assets/audio/ambient/street_loop.wav",
@@ -355,6 +365,16 @@
       "family": "paving",
       "role": "rough",
       "generator_sha256": "85dd7d83ad80dbdecdf77368cb312016276e5b35d953694c4fe24a565d007858"
+    }
+  },
+  "landmarks": {
+    "place_des_vosges": {
+      "glb": "godot-project/assets/models/place_des_vosges.glb",
+      "source": "tools/blender/landmarks/place_des_vosges.py",
+      "source_sha256": "e53bf6490aa88e452ffcfed2b757c1ab2ecc2f8133ae7c6306bc2a92e0a3de0b",
+      "artifact_sha256": "0898c7ae6edcbd60b096c83e1298acfd2585527adc1f79c7c33b84aa781c2718",
+      "bytes": 80356,
+      "stage": "modelled"
     }
   }
 }

@@ -641,6 +641,64 @@ func _run():
 	_check_street(vgen, "vosges")
 	_check_street(cgen, "corridor")
 
+	# ── P3 批次7: 地标五件套首对象 (决策 24/28, 方案 §P3 行7) ──
+	# 布局声明 ↔ 运行时落位 ↔ manifest sha 条目 (sha 实测一致性在
+	# tools/landmark_tasks.py validate, 由 verify glb_check 步串入)
+	var lm_id := "place_des_vosges"
+	var lm_meta: Array = []
+	var lm_vf := FileAccess.open("res://data/layouts/vosges_layout.json", FileAccess.READ)
+	if lm_vf:
+		var lm_json: Variant = JSON.parse_string(lm_vf.get_as_text())
+		if lm_json is Dictionary:
+			lm_meta = ((lm_json as Dictionary).get("meta", {}) as Dictionary).get("landmarks", [])
+	_check(lm_meta.size() == 1, "vosges 布局 meta.landmarks 声明 1 个地标 (实际 %d)" % lm_meta.size())
+	var lm_ok := false
+	if lm_meta.size() == 1 and lm_meta[0] is Dictionary:
+		var lm: Dictionary = lm_meta[0]
+		lm_ok = String(lm.get("id", "")) == lm_id \
+			and String(lm.get("glb", "")) == "godot-project/assets/models/%s.glb" % lm_id \
+			and absf(float(lm.get("face", 0.0)) - 7.87) < 0.01 \
+			and absf(float(lm.get("s_center", 0.0)) - 206.85) < 0.01
+	_check(lm_ok, "地标声明 id/glb/face=7.87/s_center=206.85 与摆位规格一致")
+	# 运行时落位
+	var lm_node: Node = null
+	if vgen != null and "buildings_root" in vgen:
+		lm_node = (vgen as Node).get("buildings_root").get_node_or_null("Landmark_" + lm_id)
+	_check(lm_node != null, "Landmark_%s 运行时节点存在 (vosges buildings_root)" % lm_id)
+	if lm_node != null:
+		var lp: Vector3 = (lm_node as Node3D).position
+		_check(absf(lp.x - -7.87) < 0.01 and absf(lp.z - 206.85) < 0.01,
+			"地标落位 x=side*face=-7.87, z=206.85 (实测 %s)" % lp)
+		var n_col := 0
+		var n_mesh := 0
+		for c in (lm_node as Node).get_children():
+			if c is CollisionShape3D:
+				n_col += 1
+			if c is MeshInstance3D:
+				n_mesh += 1
+			for cc in (c as Node).get_children():
+				if cc is MeshInstance3D:
+					n_mesh += 1
+		_check((lm_node as StaticBody3D).collision_layer == 1 and n_col >= 2,
+			"地标碰撞 layer1 + ≥2 形状 (实测 layer=%d shapes=%d)"
+			% [(lm_node as StaticBody3D).collision_layer, n_col])
+		_check(n_mesh >= 1, "地标 GLB Model 已挂载 (MeshInstance≥1, 实测 %d)" % n_mesh)
+		_check(String((lm_node as Node).get_meta("source_glb", "")) == "res://assets/models/%s.glb" % lm_id,
+			"地标 meta.source_glb 指向 %s.glb" % lm_id)
+	# manifest landmarks 条目 (sha 非空; 一致性由 landmark_tasks validate 核)
+	var lm_mf := FileAccess.open("res://data/assets_manifest.json", FileAccess.READ)
+	var lm_mok := false
+	if lm_mf:
+		var lm_mjson: Variant = JSON.parse_string(lm_mf.get_as_text())
+		if lm_mjson is Dictionary:
+			var lment: Variant = ((lm_mjson as Dictionary).get("landmarks", {}) as Dictionary).get(lm_id, null)
+			if lment is Dictionary:
+				var lstage := String((lment as Dictionary).get("stage", ""))
+				lm_mok = String((lment as Dictionary).get("source_sha256", "")).length() == 64 \
+					and String((lment as Dictionary).get("artifact_sha256", "")).length() == 64 \
+					and (lstage == "modelled" or lstage == "verified")
+	_check(lm_mok, "manifest[landmarks].%s sha 双绑定 + stage≥modelled" % lm_id)
+
 	# ── 接缝闭环: meta.placement ↔ 节点变换 ↔ 路面端世界几何 (Δ<0.5m) ──
 	var ident_ok := (gen as Node3D).position == Vector3.ZERO \
 		and absf((gen as Node3D).rotation.y) < 1e-6
@@ -696,10 +754,12 @@ func _run():
 	else:
 		print("[SKIP] LV_FIXED_HOUR=", env_hour, " 已设置 → 跳过 fixed_hour 断言")
 
-	# 面数估算 (决策 29, 批次6 修订 2026-10-09 用户批准): 单街 ≤30,000 + 三街总 ≤65,000 —
+	# 面数估算 (决策 29, 批次6 修订 2026-10-09 用户批准): 单街 ≤30,000 + 三街总 —
 	# 批次6 实测 10,904+20,268+24,536=55,708 > 原 50k → 「理由+实测+新预算」提案已批:
-	# 总 50k→65k (留 9,292≈17% 给批次7 拱廊五件套), 单街 25k→30k (vosges 24,536 余量仅1.9%),
-	# 单栋 3,000 / GLB≤8MiB / 贴图≤2048² 维持。
+	# 总 50k→65k, 单街 25k→30k, 单栋 3,000 / GLB≤8MiB / 贴图≤2048² 维持。
+	# 批次7 修订 (用户批准): _mesh_faces 此前只数 surface 0 → 多材质 GLB (cafe/树/拱廊)
+	# 系统性低估 9,096 面; 修正后真实实测 12,796+23,148+28,856=64,800 (含拱廊 1,104)
+	# → 总预算 65,000→76,000 (~17% 余量口径), 单街 30,000 维持 (vosges 28,856 余 3.9%)。
 	# 遍历全部 generator 的 buildings_root (含 StreetProps 道具)
 	var total_faces := 0
 	var per_gen_faces: Dictionary = {}
@@ -724,7 +784,7 @@ func _run():
 	print("[StreetCheck] 各生成器面数: ", JSON.stringify(per_gen_faces))
 	print("[StreetCheck] 建筑估算面数(rosiers): ", total_faces - prop_faces)
 	print("[StreetCheck] 道具估算面数(rosiers): ", prop_faces)
-	_check(total_faces < 65000, "三街建筑+道具总面数预算(实际 %d < 65000, 批次6 批准)" % total_faces)
+	_check(total_faces < 76000, "三街建筑+道具总面数预算(实际 %d < 76000, 决策29 批次7 修订批准)" % total_faces)
 
 	main.queue_free()
 	_quit()
@@ -772,6 +832,15 @@ func _mesh_faces(mi: MeshInstance3D) -> int:
 		return 12
 	if m is PlaneMesh:
 		return 2
+	# P3 批次7: GLB 常为多材质多 surface (拱廊 3) — 逐 surface 累加, 否则低估
+	if m is ArrayMesh:
+		var t := 0
+		for s in (m as ArrayMesh).get_surface_count():
+			var arrs = m.surface_get_arrays(s)
+			if arrs.is_empty() or arrs[Mesh.ARRAY_INDEX] == null:
+				continue
+			t += int(arrs[Mesh.ARRAY_INDEX].size() / 3)
+		return t
 	var arrs = m.surface_get_arrays(0)
 	if arrs.is_empty() or arrs[Mesh.ARRAY_INDEX] == null:
 		return 0
