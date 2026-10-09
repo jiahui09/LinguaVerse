@@ -13,6 +13,10 @@ extends Node
 @export var duration_sec: float = 8.0
 @export var out_dir: String = ""
 
+## 慢帧取证：单帧 ≥ 此值就记录（段名+样本序号），用于把 max_ms 离群点定位到段/时刻
+const SLOW_FRAME_MS := 50.0
+var _slow_frames: Array = []
+
 var _samples: Array[float] = []
 var _elapsed: float = 0.0
 var _cycle_t: float = 0.0
@@ -44,7 +48,13 @@ func finish_route(ok: bool, meters: float, reason: String = "") -> void:
 
 func _process(delta: float) -> void:
 	_elapsed += delta
-	_samples.append(delta * 1000.0)
+	var ms := delta * 1000.0
+	_samples.append(ms)
+	if ms >= SLOW_FRAME_MS:
+		var seg: String = str(_segments[_segments.size() - 1][0]) if not _segments.is_empty() else "?"
+		var rec := {"ms": snappedf(ms, 0.01), "segment": seg, "sample_idx": _samples.size() - 1}
+		_slow_frames.append(rec)
+		print("[PerfDrive] SLOW %.1fms seg=%s idx=%d" % [ms, seg, _samples.size() - 1])
 
 	# 激活昼夜联动路径（窗光每 10 帧联动一次 set_night_glow）
 	_cycle_t += delta
@@ -112,6 +122,7 @@ func _finish() -> void:
 		"thresholds_enforced": enforce,
 		"stats": stats,
 		"segments": seg_stats,
+		"slow_frames": _slow_frames,
 	}
 	if _route_active:
 		report["route"] = {

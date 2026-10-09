@@ -32,6 +32,10 @@ func _run():
 		win.focus_exited.disconnect(gm._on_focus_exited)
 	if gm != null and gm.get("is_game_paused") == true:
 		gm.call("toggle_pause")
+	# 取证期间强制世界运行：两侧代码的"初次失焦是否已暂停/恢复"时序不同，
+	# 若一侧世界被冻结（玩家不落地、NPC 不推进），同机位也会出现 ~40 的假差异。
+	# 每帧强制 paused=false + 藏面板 → 两侧都按"运行中世界"收敛，结果才可比。
+	paused = false
 	var scene: PackedScene = load("res://scenes/main.tscn")
 	var main: Node = scene.instantiate()
 	root.add_child(main)
@@ -95,8 +99,15 @@ func _run():
 		# 直接调 hide_panel() — 面板只是 CanvasItem, 隐藏即可; 暂停态照常渲染。
 		for p in get_nodes_in_group("settings_panel"):
 			p.call("hide_panel")
-		await process_frame
-		await process_frame
+		# 定机位后必须等**落地/阴影重算收敛**再截：原实现只等 2 帧，路面亮度
+		# 抓在过渡段（_shadow_probe 实测 6~14 帧波动 33~45，第 15 帧起恒定 43.56），
+		# 导致同机位跨版本对比出现 ±17% 的假差异。等 16 帧后再截取稳定帧。
+		for i in range(16):
+			await process_frame
+			paused = false
+			if i % 4 == 0:
+				for p in get_nodes_in_group("settings_panel"):
+					p.call("hide_panel")
 		var img: Image = viewport.get_texture().get_image()
 		var path: String = "res://screenshots/" + shot[0] + ".png"
 		img.save_png(path)
