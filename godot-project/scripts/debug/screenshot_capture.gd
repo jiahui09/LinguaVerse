@@ -56,9 +56,39 @@ func _run():
 	else:
 		print("SHOT_SKIP: Landmark_place_des_vosges 未找到 (shot_08/09 缺席)")
 
+	# P3 批次8: NPC 外观模型近景（决策 27 模型化弃球眼的目检取证; spawner 已 spawn 完）
+	for npc in get_nodes_in_group("npc"):
+		var nn := String(npc.name)
+		var prefix := ""
+		var dist := 3.0
+		var side_off := 0.0
+		if nn.begins_with("NPCWaiter"):
+			prefix = "shot_10_marie_model"
+			# 吧台面高道具(咖啡机组)从正面全挡员工 — 本机位临时把 Marie 移到街心空地
+			# 拍全身取证 (仅截图进程内存, 不落盘; 游戏内站位不变)
+			npc.global_position = Vector3(9.0, 0.0, -14.0)
+			dist = 3.0
+			side_off = 0.0
+		elif nn.begins_with("NPCResident_Colette"):
+			prefix = "shot_11_resident_model"
+		elif nn.begins_with("NPCPedestrian"):
+			prefix = "shot_12_pierre_walk"   # WALK 中: 程序摆动的步态取证
+			dist = 4.5   # 行人会漂移, 留余量
+		if prefix == "":
+			continue
+		var np_: Vector3 = npc.global_position
+		var nfwd: Vector3 = -npc.global_transform.basis.z.normalized()   # NPC 面向 = 前方
+		var nside: Vector3 = Vector3(-nfwd.z, 0.0, nfwd.x)               # 前向绕 Y +90°
+		if nn.begins_with("NPCWaiter"):
+			np_ = npc.global_position   # 已临时移位, 重取
+		_shots.append([prefix,
+			np_ + nfwd * dist + nside * side_off + Vector3(0, 1.55, 0),
+			np_ + Vector3(0, 1.0, 0)])
+
 	for shot in _shots:
 		var cam_pos: Vector3 = shot[1]
 		var look: Vector3 = shot[2]
+		print("SHOT_POS %s cam=%v look=%v" % [shot[0], cam_pos, look])
 		_place_camera(main, cam_pos, look)
 		# 失焦自动暂停会弹设置面板挡镜头 (llvmpipe 无焦点窗口, 设计内)。
 		# 不注入按键 (ESC 是 toggle, 开/关时序受焦点事件到达时刻影响, 不确定);

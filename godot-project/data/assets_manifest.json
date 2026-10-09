@@ -124,6 +124,56 @@
       "images": 0,
       "generator": "Khronos glTF Blender I/O v4.2.83",
       "gltf_version": 2
+    },
+    "godot-project/assets/models/npc_antoine.glb": {
+      "bytes": 25136,
+      "sha256": "f635d9c32de62048aaaa6644f06fb633600bc64fa7a87fc529588519c7ce07aa",
+      "triangles": 216,
+      "primitives": 14,
+      "materials": 7,
+      "images": 0,
+      "generator": "Khronos glTF Blender I/O v4.2.83",
+      "gltf_version": 2
+    },
+    "godot-project/assets/models/npc_colette.glb": {
+      "bytes": 25124,
+      "sha256": "08f8c5b6734e9ef264a6c5963cb2548f20d4c7349e2c37bf9f18b86187e952c7",
+      "triangles": 228,
+      "primitives": 13,
+      "materials": 6,
+      "images": 0,
+      "generator": "Khronos glTF Blender I/O v4.2.83",
+      "gltf_version": 2
+    },
+    "godot-project/assets/models/npc_jean.glb": {
+      "bytes": 26676,
+      "sha256": "04c398ab27ab85cd644b04c76d5ea873b8b6a669d8d829c0e0a934656ad17628",
+      "triangles": 228,
+      "primitives": 15,
+      "materials": 8,
+      "images": 0,
+      "generator": "Khronos glTF Blender I/O v4.2.83",
+      "gltf_version": 2
+    },
+    "godot-project/assets/models/npc_marie.glb": {
+      "bytes": 24308,
+      "sha256": "8e92ed982e1b89901178008d496925c3b2782274d82f376bf8f7ab1c21dc6cfc",
+      "triangles": 204,
+      "primitives": 14,
+      "materials": 7,
+      "images": 0,
+      "generator": "Khronos glTF Blender I/O v4.2.83",
+      "gltf_version": 2
+    },
+    "godot-project/assets/models/npc_pierre.glb": {
+      "bytes": 22784,
+      "sha256": "0df0d46998c839403ab0bd014ccd5a0e298ccf1ec863f477c95f654c093c723d",
+      "triangles": 192,
+      "primitives": 13,
+      "materials": 6,
+      "images": 0,
+      "generator": "Khronos glTF Blender I/O v4.2.83",
+      "gltf_version": 2
     }
   },
   "blocks": {
@@ -171,7 +221,7 @@
       "updated_at": "2026-10-08"
     }
   },
-  "updated_at": "2026-10-09T03:14:35+00:00",
+  "updated_at": "2026-10-09T03:54:34+00:00",
   "audio": {
     "street_loop": {
       "path": "godot-project/assets/audio/ambient/street_loop.wav",

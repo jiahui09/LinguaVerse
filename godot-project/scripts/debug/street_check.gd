@@ -67,9 +67,9 @@ func _run():
 			var n_shapes: int = col.get_child_count()
 			_check(n_shapes >= 6, "碰撞盒数量合理 (%d)" % n_shapes)
 
-	# NPC
+	# NPC（P3 批次8 决策 22: 3 → 5，Vosges 第二街区 +2 居民）
 	var npcs := get_nodes_in_group("npc")
-	_check(npcs.size() == 3, "3 个 NPC 已生成(实际 %d)" % npcs.size())
+	_check(npcs.size() == 5, "5 个 NPC 已生成(决策22, 实际 %d)" % npcs.size())
 	for npc in npcs:
 		_check(npc.global_position.y >= 0.0, "%s 在地面上 y=%.2f" % [npc.name, npc.global_position.y])
 

@@ -68,8 +68,20 @@ func _run():
 	_check(player.is_in_dialog, "玩家进入对话状态")
 	_check(not paused, "对话中未暂停")
 
-	# ── 1b) 名牌/气泡的可视基础（决策 6 + 名牌打磨）──
-	_check(marie.get_node_or_null("BodyMesh/Eyes") != null, "NPC 眼睛已生成（转头/点头才看得见）")
+	# ── 1b) 名牌/气泡的可视基础（决策 6 + 名牌打磨；P3 批次8 决策27 模型化改判据）──
+	var mroot: Node3D = marie.get_node_or_null("Model")
+	_check(mroot != null, "NPC 外观模型化: Model 节点挂载（弃胶囊体）")
+	_check(mroot != null and mroot.get_node_or_null("Head") != null
+		and mroot.get_node_or_null("Torso") != null
+		and mroot.get_node_or_null("ArmL") != null
+		and mroot.get_node_or_null("ArmR") != null
+		and mroot.get_node_or_null("LegL") != null
+		and mroot.get_node_or_null("LegR") != null,
+		"GLB 六部件齐全 (Head/Torso/双臂/双腿)")
+	_check(marie.get_node_or_null("Eyes") == null
+		and marie.get_node_or_null("BodyMesh") == null
+		and (mroot == null or mroot.get_node_or_null("Eyes") == null),
+		"弃球眼: 无 Eyes/BodyMesh 节点（眼窝鼻发在 Head 部件内）")
 	_check(marie._name_label != null and marie._name_label.billboard == BaseMaterial3D.BILLBOARD_ENABLED,
 		"名牌 billboard 常朝相机")
 	_check(marie.get_job_label_text() == "Serveuse de café", "名牌法语职业副标题已挂上")
@@ -408,6 +420,47 @@ func _run():
 			DirAccess.remove_absolute(ProjectSettings.globalize_path("res://handbook_test_tmp.json"))
 	else:
 		print("SKIP: 未注册 GameManager，跳过手册/提示/设置断言")
+
+	# ── 9) P3 批次8：NPC 模型化 + 数量 3→5（决策 22/27）──
+	var all_npc: Array = get_nodes_in_group("npc")
+	_check(all_npc.size() == 5, "NPC 总量 5（决策 22，3→5）(实际 %d)" % all_npc.size())
+
+	var ped8: Node3D = null
+	var residents: Array = []
+	for npc in all_npc:
+		var nn := String(npc.name)
+		if nn.begins_with("NPCPedestrian"):
+			ped8 = npc
+		elif nn.begins_with("NPCResident"):
+			residents.append(npc)
+	_check(residents.size() == 2, "Vosges 居民 2 名就位 (实际 %d)" % residents.size())
+
+	# 居民模型与落位（局部坐标须落在 Vosges 街区内）
+	var vg: Node3D = root.find_child("StreetGeneratorVosges", true, false)
+	_check(vg != null, "StreetGeneratorVosges 节点存在")
+	if vg != null:
+		for r in residents:
+			var local: Vector3 = vg.to_local(r.global_position)
+			_check(absf(local.x) < 14.0 and local.z > -80.0 and local.z < 440.0,
+				"%s 落位在 Vosges 人行道 (局部 %s)" % [r.get("npc_name"), local])
+			_check(r.get_node_or_null("Model") != null,
+				"%s GLB 模型挂载" % r.get("npc_name"))
+			_check(r.get_node_or_null("Eyes") == null, "%s 已弃球眼" % r.get("npc_name"))
+
+	# 步行程序摆动（决策 27 骨骼时间盒的降级路线）：Pierre WALK 中摆臂角度极差
+	if ped8 != null:
+		var arm := ped8.get_node_or_null("Model/ArmL")
+		_check(arm != null, "Pierre 摆臂部件 ArmL 可寻址")
+		if arm != null:
+			var samples: Array = []
+			for i in 4:
+				await create_timer(0.22).timeout
+				samples.append(arm.rotation.x)
+			var span: float = float(samples.max()) - float(samples.min())
+			_check(span > 0.3,
+				"步行程序摆动: 摆臂角度极差 %.3f rad (步频 9.5 rad/s)" % span)
+	else:
+		_check(false, "Pierre 存在（摆动断言宿主）")
 
 	main.queue_free()
 	if failures > 0:

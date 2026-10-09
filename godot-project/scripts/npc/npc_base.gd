@@ -3,16 +3,13 @@ extends CharacterBody3D
 ## NPC 基类
 ## 所有 NPC 继承此脚本
 ##
-## V1 视觉层（占位胶囊模型下的最小"活人感"，不加载任何外部资源，代码建节点）：
-## - 名牌 + 职业副标题：billboard 常朝相机，超出 label_fade_distance 淡出
-## - 台词气泡（Label3D）：对话中显示 NPC 最近一句话；等待 LLM 时显示省略点
-## - 思考动作（决策 6）：身体左右轻晃 + 微仰头，配合气泡省略点，
-##   让等待看起来像"在想怎么说"，而不是"系统在加载"
-## - 点头反馈：回复到达时短暂点头（acknowledge）
-## - 眼睛 + 眨眼：给胶囊一个朝向，转头/点头才看得出来
-## - 对话中持续面向玩家；结束后恢复对话前的状态（决策 9：NPC 回到自己的行为）
+## P3 批次8 视觉层（决策 27 模型化，弃胶囊+球眼）：
+## - Model = 6 部件 GLB（Head/Torso/ArmL/ArmR/LegL/LegR，关节枢轴已在建模时归位）
+## - 名牌/副标题/气泡/思考/点头/面向玩家等机制不变，动作挂点从胶囊迁到 Model/Head
+## - 步行摆动 = 程序摆动（决策 27 骨骼时间盒的降级路线，边界如实记录）：
+##   WALK 时四肢绕肩/髋反相摆 + 躯干微起伏；IDLE/对话回正
+## - 眨眼机制随球眼移除（贴片眼无独立眼睑，如实记录为已知简化）
 ##
-## 注意：V1 的 NPC 是占位胶囊，思考动作是整体倾斜/点头，不是骨骼动画；
 ## 结构自检只验证状态与节点存在，"动作是否好看"必须由人目检。
 
 @export var npc_name: String = "NPC"
@@ -42,16 +39,19 @@ const FADE_SPAN := 4.0         # 名牌淡出过渡距离
 
 var _state_before_talk: State = State.IDLE
 var _has_met_player: bool = false   # 决策 14：NPC 实例生命周期内记住是否聊过
-var _body: MeshInstance3D
+var _body: Node3D                  # P3 批次8: GLB 模型根（决策 27 模型化）
+var _head: Node3D                  # 点头只动头（枢轴=颈，GLB 建模时已归位）
+var _arm_l: Node3D
+var _arm_r: Node3D
+var _leg_l: Node3D
+var _leg_r: Node3D
+var _walk_phase: float = 0.0
 var _name_label: Label3D
 var _job_label: Label3D
 var _bubble: Label3D
-var _eyes: Node3D
 
 var _name_base_color := Color.WHITE
 var _anim_t: float = 0.0
-var _blink_t: float = 3.0
-var _blink_phase: float = -1.0
 var _nod_t: float = 0.0
 var _dot_t: float = 0.0
 var _dot_index: int = 0
@@ -64,11 +64,16 @@ func _ready():
 	_setup_name_label()
 	_setup_job_label()
 	_setup_bubble()
-	_setup_eyes()
 
 func _resolve_visuals():
-	_body = get_node_or_null("BodyMesh") as MeshInstance3D
+	_body = get_node_or_null("Model") as Node3D
 	_name_label = get_node_or_null("NameLabel") as Label3D
+	if _body:
+		_head = _body.get_node_or_null("Head") as Node3D
+		_arm_l = _body.get_node_or_null("ArmL") as Node3D
+		_arm_r = _body.get_node_or_null("ArmR") as Node3D
+		_leg_l = _body.get_node_or_null("LegL") as Node3D
+		_leg_r = _body.get_node_or_null("LegR") as Node3D
 
 ## 名牌：billboard 常朝相机（NPC 会转身，否则名牌会背对玩家）
 func _setup_name_label():
@@ -110,28 +115,7 @@ func _setup_bubble():
 	_bubble.visible = false
 	add_child(_bubble)
 
-## 眼睛：挂在 BodyMesh 上（随呼吸/点头/倾斜一起动），给胶囊一个可见朝向
-func _setup_eyes():
-	if _body == null:
-		return
-	_eyes = Node3D.new()
-	_eyes.name = "Eyes"
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.08, 0.08, 0.1)
-	mat.roughness = 0.35
-	for side in [-1.0, 1.0]:
-		var eye := MeshInstance3D.new()
-		var sphere := SphereMesh.new()
-		sphere.radius = 0.045
-		sphere.height = 0.09
-		sphere.radial_segments = 10
-		sphere.rings = 6
-		eye.mesh = sphere
-		eye.material_override = mat
-		# Godot 前向是 -Z：眼睛放在头部（胶囊中线上段）朝 -Z 一侧
-		eye.position = Vector3(side * 0.1, 0.3, -0.25)
-		_eyes.add_child(eye)
-	_body.add_child(_eyes)
+## P3 批次8：球眼随胶囊一并移除（决策 27 模型化）——眼窝/鼻/发已在 GLB 的 Head 部件里。
 
 func _physics_process(delta: float):
 	_animate(delta)
@@ -161,7 +145,7 @@ func _animate(delta: float):
 		sway_z = sin(_anim_t * 4.6) * 0.05
 		tilt_x = 0.03 + sin(_anim_t * 2.1) * 0.03
 
-	# 点头：回复到达后的短促一次低头
+	# 点头：回复到达后的短促一次低头（只动 Head，枢轴在颈）
 	var nod := 0.0
 	if _nod_t > 0.0:
 		_nod_t = maxf(0.0, _nod_t - delta)
@@ -170,22 +154,13 @@ func _animate(delta: float):
 
 	if _body:
 		var blend := minf(delta * 8.0, 1.0)
-		_body.rotation.x = lerpf(_body.rotation.x, tilt_x + nod, blend)
+		_body.rotation.x = lerpf(_body.rotation.x, tilt_x, blend)
 		_body.rotation.z = lerpf(_body.rotation.z, sway_z, blend)
+		if _head:
+			_head.rotation.x = lerpf(_head.rotation.x, nod, blend)
 
-	# 眨眼（0.14s 一次，3~6.5s 随机间隔）
-	if _eyes:
-		_blink_t -= delta
-		if _blink_phase < 0.0 and _blink_t <= 0.0:
-			_blink_phase = 0.0
-			_blink_t = randf_range(3.0, 6.5)
-		if _blink_phase >= 0.0:
-			_blink_phase += delta / 0.14
-			if _blink_phase >= 1.0:
-				_blink_phase = -1.0
-				_eyes.scale.y = 1.0
-			else:
-				_eyes.scale.y = 1.0 - 0.9 * sin(_blink_phase * PI)
+	# 程序摆动（决策 27 时间盒降级）：WALK 反相摆四肢，其余状态回正
+	_animate_walk(delta)
 
 	# 思考省略点（气泡里 . → .. → ...）
 	if is_thinking and _bubble:
@@ -204,6 +179,30 @@ func _animate(delta: float):
 			rotation.y = lerp_angle(rotation.y, atan2(-d.x, -d.z), minf(delta * 5.0, 1.0))
 
 	_update_label_fade()
+
+## 步行摆动（决策 27：骨骼动画时间盒超时的降级路线——程序摆动，边界如实记录）
+## 左腿前迈与右臂同相（对侧摆臂），枢轴已在 GLB 建模时归到肩/髋。
+func _animate_walk(delta: float):
+	var blend := minf(delta * 8.0, 1.0)
+	var moving := current_state == State.WALK
+	if moving:
+		_walk_phase += delta * 9.5     # ≈1.5Hz 步频（1.2m/s ÷ 0.8m 步幅）
+	else:
+		_walk_phase = 0.0
+	var sw := 0.55 if moving else 0.0
+	var s := sin(_walk_phase)
+	_part_swing(_arm_l, -s * sw, blend)
+	_part_swing(_arm_r, s * sw, blend)
+	_part_swing(_leg_l, s * sw * 1.1, blend)
+	_part_swing(_leg_r, -s * sw * 1.1, blend)
+	# 躯干随步起伏（仅行走；站定回 0）
+	if _body:
+		var bob := absf(sin(_walk_phase * 2.0)) * 0.014 if moving else 0.0
+		_body.position.y = lerpf(_body.position.y, bob, blend)
+
+func _part_swing(part: Node3D, target_x: float, blend: float):
+	if part:
+		part.rotation.x = lerpf(part.rotation.x, target_x, blend)
 
 ## 名牌/副标题距离淡出（远处名牌只是噪声；气泡只在对话近距离出现，不做淡出）
 func _update_label_fade():
